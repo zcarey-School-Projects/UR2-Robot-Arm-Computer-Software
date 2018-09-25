@@ -1,0 +1,241 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using Emgu.CV;
+using Emgu.CV.Structure;
+using Emgu.Util;
+using System.Threading;
+using Emgu.CV.CvEnum;
+using System.IO.Ports;
+using System.IO;
+using System.Management;
+using RobotHelpers;
+
+namespace RobotArmUR2
+{
+	public partial class Form1 : Form
+	{
+
+		private Vision vision;
+		private String originalTitle;
+		private SaveFileDialog saveDialog;
+
+		private const int Default_Camera_Index = 0;
+		private Robot robot;
+		private PaperCalibrater paperCalibrater;
+
+		public Form1()
+		{
+			InitializeComponent();
+			paperCalibrater = new PaperCalibrater(this);
+			vision = new Vision(this, paperCalibrater, Default_Camera_Index);
+			//vision.setCamera(Default_Camera_Index);
+			vision.setInternalImage("DebugImages\\Test Table.jpg");
+			originalTitle = this.Text;
+
+			saveDialog = new SaveFileDialog();
+			saveDialog.RestoreDirectory = true;
+
+			robot = new Robot();
+
+			Properties.Settings.Default.Reload();
+			vision.setPaperMaskPoints(
+				new PointF(Properties.Settings.Default.Point0X, Properties.Settings.Default.Point0Y),
+				new PointF(Properties.Settings.Default.Point1X, Properties.Settings.Default.Point1Y),
+				new PointF(Properties.Settings.Default.Point2X, Properties.Settings.Default.Point2Y),
+				new PointF(Properties.Settings.Default.Point3X, Properties.Settings.Default.Point3Y)
+			);
+		}
+
+		private void Form1_Load(object sender, EventArgs e) {
+			vision.start();
+		}
+
+		private void Form1_FormClosing(object sender, FormClosingEventArgs e) {
+			vision.stop();
+		}
+
+		private void screenshotToolStripMenuItem_Click(object sender, EventArgs e) {
+			byte[,,] rawData = vision.getRawData();
+			int width = vision.getStreamWidth();
+			int height = vision.getStreamHeight();
+
+			saveDialog.Filter = "OpenCV Image (*.rawcvimg)|*.rawcvimg";
+			if(saveDialog.ShowDialog() == DialogResult.OK) {
+				BinaryWriter writer = new BinaryWriter(File.OpenWrite(saveDialog.FileName));
+				writer.Write(width);
+				writer.Write(height);
+
+				byte[] buffer = new byte[width * height];
+
+				for(int channel = 0; channel < 3; channel++) {
+					for(int y = 0; y < height; y++) {
+						for(int x = 0; x < width; x++) {
+							buffer[x + y * width] = rawData[y, x, channel];
+						}
+					}
+
+					writer.Write(buffer, 0, buffer.Length);
+				}
+
+				writer.Close();
+				writer.Close();
+				writer.Dispose();
+			}
+
+		}
+
+		#region Input Method Changers
+		private void imageToolStripMenuItem_Click(object sender, EventArgs e) {
+			if(vision.loadImage() == false) {
+				vision.setCamera(Default_Camera_Index);
+			}
+		}
+
+		private void Camera0Menu_Click(object sender, EventArgs e) {
+			vision.setCamera(0);
+		}
+
+		private void CameraMenu1_Click(object sender, EventArgs e) {
+			vision.setCamera(1);
+		}
+
+		private void Camera2Menu_Click(object sender, EventArgs e) {
+			vision.setCamera(2);
+		}
+		#endregion
+
+		private void AutoConnect_Click(object sender, EventArgs e) {
+			robot.ConnectToRobot();
+		}
+
+		#region UI Multi-Thread Update Methods
+		public enum PictureId {
+			//If you add a picturebox, don't forget to update "getPictureBoxFromId" method!
+			Original,
+			Gray,
+			Canny
+		}
+
+		private PictureBox getPictureBoxFromId(PictureId id) {
+			switch (id) {
+				case PictureId.Original: return OriginalImage;
+				case PictureId.Gray: return GrayImage;
+				case PictureId.Canny: return CannyImage;
+				default: return null;
+			}
+		}
+
+		public void displayImage<TColor>(Image<TColor, byte> image, PictureId target) where TColor : struct, IColor {
+			if (image == null) return;
+			getPictureBoxFromId(target).InvokeIfRequired(pictureBox => { pictureBox.Image = image.Resize(pictureBox.Width, pictureBox.Height, Emgu.CV.CvEnum.Inter.Linear).ToBitmap(); });
+		}
+
+		public void setNativeResolutionText(int sizeX, int sizeY) {
+			ResolutionText.InvokeIfRequired(label => { label.Text = "Native Resolution: " + sizeX + " x " + sizeY; });
+		}
+
+		public void setFPS(float fps) {
+			this.InvokeIfRequired(form => { form.Text = originalTitle + "; FPS: " + fps.ToString("0.00"); });
+		}
+		#endregion
+
+		private void goToHomeToolStripMenuItem_Click(object sender, EventArgs e) {
+			throw new MissingMethodException("Unimplemented Method");
+		}
+
+		private void paperPositionToolStripMenuItem_Click(object sender, EventArgs e) {
+			vision.setMode(Vision.VisionMode.CalibratePaper);
+			paperCalibrater.refresh(vision);
+			paperCalibrater.ShowDialog();
+		}
+
+		public void defaultMode() {
+			vision.setMode(Vision.VisionMode.Default);
+		}
+
+		private void OriginalImage_MouseClick(object sender, MouseEventArgs e) {
+			string rVal = "   ";
+			string gVal = "   ";
+			string bVal = "   ";
+
+			byte[,,] img = vision.getRawData(); //[y, x, channel] as bgr
+			int width = vision.getStreamWidth();
+			int height = vision.getStreamHeight();
+			int x = e.X * width / OriginalImage.Width;
+			int y = e.Y * height / OriginalImage.Height;
+			if (img != null) {
+				if ((x >= 0) && (x < width) && (y >= 0) && (y < height)) {
+					try {
+						rVal = img[y, x, 2].ToString().PadLeft(3);
+						gVal = img[y, x, 1].ToString().PadLeft(3);
+						bVal = img[y, x, 0].ToString().PadLeft(3);
+					}catch(IndexOutOfRangeException) {
+						rVal = "   ";
+						gVal = "   ";
+						bVal = "   ";
+					}
+				}
+			}
+
+			ClickLocation.Text = "X: " + ((e.X + 1) * width / OriginalImage.Width).ToString().PadLeft(4) + " Y: " + ((e.Y + 1) * height / OriginalImage.Height).ToString().PadLeft(4);
+			RGBValues.Text = "R: " + rVal + " G: " + gVal + " B: " + bVal;
+			
+		}
+
+		private void Form1_KeyDown(object sender, KeyEventArgs e) {
+			formKeyEvent(e.KeyCode, true);
+		}
+
+		private void Form1_KeyUp(object sender, KeyEventArgs e) {
+			formKeyEvent(e.KeyCode, false);
+		}
+
+		private void formKeyEvent(Keys key, bool pressed) {
+			if ((key == Keys.A) || (key == Keys.Left)) {
+				if(pressed) Console.WriteLine("Left");
+				robot.ManualControlKeyEvent(Robot.Key.Left, pressed);
+			}else if ((key == Keys.D) || (key == Keys.Right)) {
+				if (pressed) Console.WriteLine("Right");
+				robot.ManualControlKeyEvent(Robot.Key.Right, pressed);
+			}else if((key == Keys.W) || (key == Keys.Up)) {
+				if (pressed) Console.WriteLine("Up");
+				robot.ManualControlKeyEvent(Robot.Key.Up, pressed);
+			}else if ((key == Keys.S) || (key == Keys.Down)) {
+				if (pressed) Console.WriteLine("Down");
+				robot.ManualControlKeyEvent(Robot.Key.Down, pressed);
+			}
+		}
+
+		private void button1_MouseDown(object sender, MouseEventArgs e) {
+			formKeyEvent(Keys.Left, true);
+		}
+
+		private void button1_MouseUp(object sender, MouseEventArgs e) {
+			formKeyEvent(Keys.Left, false);
+		}
+
+		private void button1_MouseLeave(object sender, EventArgs e) {
+			formKeyEvent(Keys.Left, false);
+		}
+
+		private void button2_MouseDown(object sender, MouseEventArgs e) {
+			formKeyEvent(Keys.Right, true);
+		}
+
+		private void button2_MouseUp(object sender, MouseEventArgs e) {
+			formKeyEvent(Keys.Right, false);
+		}
+
+		private void button2_MouseLeave(object sender, EventArgs e) {
+			formKeyEvent(Keys.Right, false);
+		}
+	}
+
+}
