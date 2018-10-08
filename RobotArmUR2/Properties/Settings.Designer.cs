@@ -26,96 +26,240 @@ namespace RobotArmUR2.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public float Point0X {
+        public float PaperPoint0X {
             get {
-                return ((float)(this["Point0X"]));
+                return ((float)(this["PaperPoint0X"]));
             }
             set {
-                this["Point0X"] = value;
+                this["PaperPoint0X"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public float Point0Y {
+        public float PaperPoint0Y {
             get {
-                return ((float)(this["Point0Y"]));
+                return ((float)(this["PaperPoint0Y"]));
             }
             set {
-                this["Point0Y"] = value;
+                this["PaperPoint0Y"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("1")]
-        public float Point1X {
+        public float PaperPoint1X {
             get {
-                return ((float)(this["Point1X"]));
+                return ((float)(this["PaperPoint1X"]));
             }
             set {
-                this["Point1X"] = value;
+                this["PaperPoint1X"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public float Point1Y {
+        public float PaperPoint1Y {
             get {
-                return ((float)(this["Point1Y"]));
+                return ((float)(this["PaperPoint1Y"]));
             }
             set {
-                this["Point1Y"] = value;
+                this["PaperPoint1Y"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("1")]
-        public float Point2X {
+        public float PaperPoint2X {
             get {
-                return ((float)(this["Point2X"]));
+                return ((float)(this["PaperPoint2X"]));
             }
             set {
-                this["Point2X"] = value;
+                this["PaperPoint2X"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("1")]
-        public float Point2Y {
+        public float PaperPoint2Y {
             get {
-                return ((float)(this["Point2Y"]));
+                return ((float)(this["PaperPoint2Y"]));
             }
             set {
-                this["Point2Y"] = value;
+                this["PaperPoint2Y"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public float Point3X {
+        public float PaperPoint3X {
             get {
-                return ((float)(this["Point3X"]));
+                return ((float)(this["PaperPoint3X"]));
             }
             set {
-                this["Point3X"] = value;
+                this["PaperPoint3X"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("1")]
-        public float Point3Y {
+        public float PaperPoint3Y {
             get {
-                return ((float)(this["Point3Y"]));
+                return ((float)(this["PaperPoint3Y"]));
             }
             set {
-                this["Point3Y"] = value;
+                this["PaperPoint3Y"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("54.6375")]
+        public float BLRobotRotation {
+            get {
+                return ((float)(this["BLRobotRotation"]));
+            }
+            set {
+                this["BLRobotRotation"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("241.38356")]
+        public float BLRobotDistance {
+            get {
+                return ((float)(this["BLRobotDistance"]));
+            }
+            set {
+                this["BLRobotDistance"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("71.301")]
+        public float TLRobotRotation {
+            get {
+                return ((float)(this["TLRobotRotation"]));
+            }
+            set {
+                this["TLRobotRotation"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("435.7497")]
+        public float TLRobotDistance {
+            get {
+                return ((float)(this["TLRobotDistance"]));
+            }
+            set {
+                this["TLRobotDistance"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("108.699")]
+        public float TRRobotRotation {
+            get {
+                return ((float)(this["TRRobotRotation"]));
+            }
+            set {
+                this["TRRobotRotation"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("435.7497")]
+        public float TRRobotDistance {
+            get {
+                return ((float)(this["TRRobotDistance"]));
+            }
+            set {
+                this["TRRobotDistance"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("125.362")]
+        public float BRRobotRotation {
+            get {
+                return ((float)(this["BRRobotRotation"]));
+            }
+            set {
+                this["BRRobotRotation"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("241.38356")]
+        public float BRRobotDistance {
+            get {
+                return ((float)(this["BRRobotDistance"]));
+            }
+            set {
+                this["BRRobotDistance"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public float LeftPileAngle {
+            get {
+                return ((float)(this["LeftPileAngle"]));
+            }
+            set {
+                this["LeftPileAngle"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("304.8")]
+        public float LeftPileDistance {
+            get {
+                return ((float)(this["LeftPileDistance"]));
+            }
+            set {
+                this["LeftPileDistance"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("180")]
+        public float RightPileAngle {
+            get {
+                return ((float)(this["RightPileAngle"]));
+            }
+            set {
+                this["RightPileAngle"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("304.8")]
+        public string RightPileDistance {
+            get {
+                return ((string)(this["RightPileDistance"]));
+            }
+            set {
+                this["RightPileDistance"] = value;
             }
         }
     }

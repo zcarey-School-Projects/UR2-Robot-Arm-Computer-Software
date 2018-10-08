@@ -48,10 +48,23 @@
 			this.AutoConnect = new System.Windows.Forms.Button();
 			this.RGBValues = new System.Windows.Forms.Label();
 			this.ClickLocation = new System.Windows.Forms.Label();
+			this.RobotSpeedSlider = new System.Windows.Forms.TrackBar();
+			this.RobotSpeedLabel = new System.Windows.Forms.Label();
+			this.RobotConnected = new System.Windows.Forms.CheckBox();
+			this.RobotPort = new System.Windows.Forms.Label();
+			this.ExtendVisual = new System.Windows.Forms.PictureBox();
+			this.RetractVisual = new System.Windows.Forms.PictureBox();
+			this.RotateLeftVisual = new System.Windows.Forms.PictureBox();
+			this.RotateRightVisual = new System.Windows.Forms.PictureBox();
 			((System.ComponentModel.ISupportInitialize)(this.OriginalImage)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.GrayImage)).BeginInit();
 			this.menuStrip1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.CannyImage)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.RobotSpeedSlider)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.ExtendVisual)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.RetractVisual)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.RotateLeftVisual)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.RotateRightVisual)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// OriginalImage
@@ -88,7 +101,7 @@
             this.calibrateToolStripMenuItem});
 			this.menuStrip1.Location = new System.Drawing.Point(0, 0);
 			this.menuStrip1.Name = "menuStrip1";
-			this.menuStrip1.Size = new System.Drawing.Size(1032, 28);
+			this.menuStrip1.Size = new System.Drawing.Size(1005, 28);
 			this.menuStrip1.TabIndex = 3;
 			this.menuStrip1.Text = "menuStrip1";
 			// 
@@ -190,8 +203,9 @@
 			// robotPositionToolStripMenuItem
 			// 
 			this.robotPositionToolStripMenuItem.Name = "robotPositionToolStripMenuItem";
-			this.robotPositionToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
+			this.robotPositionToolStripMenuItem.Size = new System.Drawing.Size(216, 26);
 			this.robotPositionToolStripMenuItem.Text = "Robot Position";
+			this.robotPositionToolStripMenuItem.Click += new System.EventHandler(this.robotPositionToolStripMenuItem_Click);
 			// 
 			// CannyImage
 			// 
@@ -229,11 +243,99 @@
 			this.ClickLocation.TabIndex = 10;
 			this.ClickLocation.Text = "X:      Y:     ";
 			// 
+			// RobotSpeedSlider
+			// 
+			this.RobotSpeedSlider.Location = new System.Drawing.Point(338, 274);
+			this.RobotSpeedSlider.Maximum = 235;
+			this.RobotSpeedSlider.Minimum = 5;
+			this.RobotSpeedSlider.Name = "RobotSpeedSlider";
+			this.RobotSpeedSlider.Size = new System.Drawing.Size(320, 56);
+			this.RobotSpeedSlider.TabIndex = 11;
+			this.RobotSpeedSlider.Value = 100;
+			this.RobotSpeedSlider.Scroll += new System.EventHandler(this.RobotSpeedSlider_Scroll);
+			// 
+			// RobotSpeedLabel
+			// 
+			this.RobotSpeedLabel.AutoSize = true;
+			this.RobotSpeedLabel.Location = new System.Drawing.Point(661, 291);
+			this.RobotSpeedLabel.Name = "RobotSpeedLabel";
+			this.RobotSpeedLabel.Size = new System.Drawing.Size(73, 17);
+			this.RobotSpeedLabel.TabIndex = 12;
+			this.RobotSpeedLabel.Text = "Speed: 10";
+			// 
+			// RobotConnected
+			// 
+			this.RobotConnected.AutoCheck = false;
+			this.RobotConnected.AutoSize = true;
+			this.RobotConnected.Location = new System.Drawing.Point(12, 388);
+			this.RobotConnected.Name = "RobotConnected";
+			this.RobotConnected.Size = new System.Drawing.Size(98, 21);
+			this.RobotConnected.TabIndex = 15;
+			this.RobotConnected.Text = "Connected";
+			this.RobotConnected.UseVisualStyleBackColor = true;
+			// 
+			// RobotPort
+			// 
+			this.RobotPort.AutoSize = true;
+			this.RobotPort.Location = new System.Drawing.Point(12, 368);
+			this.RobotPort.Name = "RobotPort";
+			this.RobotPort.Size = new System.Drawing.Size(42, 17);
+			this.RobotPort.TabIndex = 16;
+			this.RobotPort.Text = "Port: ";
+			// 
+			// ExtendVisual
+			// 
+			this.ExtendVisual.Image = global::RobotArmUR2.Properties.Resources.ExtendOff;
+			this.ExtendVisual.Location = new System.Drawing.Point(217, 332);
+			this.ExtendVisual.Name = "ExtendVisual";
+			this.ExtendVisual.Size = new System.Drawing.Size(40, 50);
+			this.ExtendVisual.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+			this.ExtendVisual.TabIndex = 17;
+			this.ExtendVisual.TabStop = false;
+			// 
+			// RetractVisual
+			// 
+			this.RetractVisual.Image = global::RobotArmUR2.Properties.Resources.RetractOff;
+			this.RetractVisual.Location = new System.Drawing.Point(217, 388);
+			this.RetractVisual.Name = "RetractVisual";
+			this.RetractVisual.Size = new System.Drawing.Size(40, 50);
+			this.RetractVisual.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+			this.RetractVisual.TabIndex = 18;
+			this.RetractVisual.TabStop = false;
+			// 
+			// RotateLeftVisual
+			// 
+			this.RotateLeftVisual.Image = global::RobotArmUR2.Properties.Resources.RotateLeftOff;
+			this.RotateLeftVisual.Location = new System.Drawing.Point(161, 358);
+			this.RotateLeftVisual.Name = "RotateLeftVisual";
+			this.RotateLeftVisual.Size = new System.Drawing.Size(50, 60);
+			this.RotateLeftVisual.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+			this.RotateLeftVisual.TabIndex = 19;
+			this.RotateLeftVisual.TabStop = false;
+			// 
+			// RotateRightVisual
+			// 
+			this.RotateRightVisual.Image = global::RobotArmUR2.Properties.Resources.RotateRightOff;
+			this.RotateRightVisual.Location = new System.Drawing.Point(263, 358);
+			this.RotateRightVisual.Name = "RotateRightVisual";
+			this.RotateRightVisual.Size = new System.Drawing.Size(50, 60);
+			this.RotateRightVisual.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+			this.RotateRightVisual.TabIndex = 20;
+			this.RotateRightVisual.TabStop = false;
+			// 
 			// Form1
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(1032, 450);
+			this.ClientSize = new System.Drawing.Size(1005, 450);
+			this.Controls.Add(this.RotateRightVisual);
+			this.Controls.Add(this.RotateLeftVisual);
+			this.Controls.Add(this.RetractVisual);
+			this.Controls.Add(this.ExtendVisual);
+			this.Controls.Add(this.RobotPort);
+			this.Controls.Add(this.RobotConnected);
+			this.Controls.Add(this.RobotSpeedLabel);
+			this.Controls.Add(this.RobotSpeedSlider);
 			this.Controls.Add(this.ClickLocation);
 			this.Controls.Add(this.RGBValues);
 			this.Controls.Add(this.AutoConnect);
@@ -255,6 +357,11 @@
 			this.menuStrip1.ResumeLayout(false);
 			this.menuStrip1.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this.CannyImage)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.RobotSpeedSlider)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.ExtendVisual)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.RetractVisual)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.RotateLeftVisual)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.RotateRightVisual)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -283,6 +390,14 @@
 		private System.Windows.Forms.ToolStripMenuItem robotPositionToolStripMenuItem;
 		private System.Windows.Forms.Label RGBValues;
 		private System.Windows.Forms.Label ClickLocation;
+		private System.Windows.Forms.TrackBar RobotSpeedSlider;
+		private System.Windows.Forms.Label RobotSpeedLabel;
+		private System.Windows.Forms.CheckBox RobotConnected;
+		private System.Windows.Forms.Label RobotPort;
+		private System.Windows.Forms.PictureBox ExtendVisual;
+		private System.Windows.Forms.PictureBox RetractVisual;
+		private System.Windows.Forms.PictureBox RotateLeftVisual;
+		private System.Windows.Forms.PictureBox RotateRightVisual;
 	}
 }
 

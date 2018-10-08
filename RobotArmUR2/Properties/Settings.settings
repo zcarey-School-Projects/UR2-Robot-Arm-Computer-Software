@@ -2,29 +2,65 @@
 <SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="RobotArmUR2.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
-    <Setting Name="Point0X" Type="System.Single" Scope="User">
+    <Setting Name="PaperPoint0X" Type="System.Single" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
-    <Setting Name="Point0Y" Type="System.Single" Scope="User">
+    <Setting Name="PaperPoint0Y" Type="System.Single" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
-    <Setting Name="Point1X" Type="System.Single" Scope="User">
+    <Setting Name="PaperPoint1X" Type="System.Single" Scope="User">
       <Value Profile="(Default)">1</Value>
     </Setting>
-    <Setting Name="Point1Y" Type="System.Single" Scope="User">
+    <Setting Name="PaperPoint1Y" Type="System.Single" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
-    <Setting Name="Point2X" Type="System.Single" Scope="User">
+    <Setting Name="PaperPoint2X" Type="System.Single" Scope="User">
       <Value Profile="(Default)">1</Value>
     </Setting>
-    <Setting Name="Point2Y" Type="System.Single" Scope="User">
+    <Setting Name="PaperPoint2Y" Type="System.Single" Scope="User">
       <Value Profile="(Default)">1</Value>
     </Setting>
-    <Setting Name="Point3X" Type="System.Single" Scope="User">
+    <Setting Name="PaperPoint3X" Type="System.Single" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
-    <Setting Name="Point3Y" Type="System.Single" Scope="User">
+    <Setting Name="PaperPoint3Y" Type="System.Single" Scope="User">
       <Value Profile="(Default)">1</Value>
+    </Setting>
+    <Setting Name="BLRobotRotation" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">54.6375</Value>
+    </Setting>
+    <Setting Name="BLRobotDistance" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">241.38356</Value>
+    </Setting>
+    <Setting Name="TLRobotRotation" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">71.301</Value>
+    </Setting>
+    <Setting Name="TLRobotDistance" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">435.7497</Value>
+    </Setting>
+    <Setting Name="TRRobotRotation" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">108.699</Value>
+    </Setting>
+    <Setting Name="TRRobotDistance" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">435.7497</Value>
+    </Setting>
+    <Setting Name="BRRobotRotation" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">125.362</Value>
+    </Setting>
+    <Setting Name="BRRobotDistance" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">241.38356</Value>
+    </Setting>
+    <Setting Name="LeftPileAngle" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="LeftPileDistance" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">304.8</Value>
+    </Setting>
+    <Setting Name="RightPileAngle" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">180</Value>
+    </Setting>
+    <Setting Name="RightPileDistance" Type="System.String" Scope="User">
+      <Value Profile="(Default)">304.8</Value>
     </Setting>
   </Settings>
 </SettingsFile>

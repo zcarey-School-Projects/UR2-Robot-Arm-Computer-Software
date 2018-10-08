@@ -19,7 +19,7 @@ using RobotHelpers;
 
 namespace RobotArmUR2
 {
-	public partial class Form1 : Form
+	public partial class Form1 : Form, RobotUIListener
 	{
 
 		private Vision vision;
@@ -29,11 +29,15 @@ namespace RobotArmUR2
 		private const int Default_Camera_Index = 0;
 		private Robot robot;
 		private PaperCalibrater paperCalibrater;
+		private RobotCalibrater robotCalibrater;
 
 		public Form1()
 		{
 			InitializeComponent();
+			Properties.Settings.Default.Reload();
+			this.robot = new Robot(this);
 			paperCalibrater = new PaperCalibrater(this);
+			robotCalibrater = new RobotCalibrater(robot);
 			vision = new Vision(this, paperCalibrater, Default_Camera_Index);
 			//vision.setCamera(Default_Camera_Index);
 			vision.setInternalImage("DebugImages\\Test Table.jpg");
@@ -42,14 +46,11 @@ namespace RobotArmUR2
 			saveDialog = new SaveFileDialog();
 			saveDialog.RestoreDirectory = true;
 
-			robot = new Robot();
-
-			Properties.Settings.Default.Reload();
 			vision.setPaperMaskPoints(
-				new PointF(Properties.Settings.Default.Point0X, Properties.Settings.Default.Point0Y),
-				new PointF(Properties.Settings.Default.Point1X, Properties.Settings.Default.Point1Y),
-				new PointF(Properties.Settings.Default.Point2X, Properties.Settings.Default.Point2Y),
-				new PointF(Properties.Settings.Default.Point3X, Properties.Settings.Default.Point3Y)
+				new PointF(Properties.Settings.Default.PaperPoint0X, Properties.Settings.Default.PaperPoint0Y),
+				new PointF(Properties.Settings.Default.PaperPoint1X, Properties.Settings.Default.PaperPoint1Y),
+				new PointF(Properties.Settings.Default.PaperPoint2X, Properties.Settings.Default.PaperPoint2Y),
+				new PointF(Properties.Settings.Default.PaperPoint3X, Properties.Settings.Default.PaperPoint3Y)
 			);
 		}
 
@@ -197,20 +198,26 @@ namespace RobotArmUR2
 			formKeyEvent(e.KeyCode, false);
 		}
 
-		private void formKeyEvent(Keys key, bool pressed) {
+		public void formKeyEvent(Keys key, bool pressed) {
 			if ((key == Keys.A) || (key == Keys.Left)) {
-				if(pressed) Console.WriteLine("Left");
 				robot.ManualControlKeyEvent(Robot.Key.Left, pressed);
 			}else if ((key == Keys.D) || (key == Keys.Right)) {
-				if (pressed) Console.WriteLine("Right");
 				robot.ManualControlKeyEvent(Robot.Key.Right, pressed);
 			}else if((key == Keys.W) || (key == Keys.Up)) {
-				if (pressed) Console.WriteLine("Up");
 				robot.ManualControlKeyEvent(Robot.Key.Up, pressed);
 			}else if ((key == Keys.S) || (key == Keys.Down)) {
-				if (pressed) Console.WriteLine("Down");
 				robot.ManualControlKeyEvent(Robot.Key.Down, pressed);
 			}
+		}
+
+		public void ChangeManualRotateImage(Robot.Rotation state) {
+			RotateLeftVisual.InvokeIfRequired(img => { img.Image = ((state == Robot.Rotation.CCW) ? Properties.Resources.RotateLeft : Properties.Resources.RotateLeftOff); });
+			RotateRightVisual.InvokeIfRequired(img => { img.Image = ((state == Robot.Rotation.CW) ? Properties.Resources.RotateRight : Properties.Resources.RotateRightOff); });
+		}
+
+		public void ChangeManualExtensionImage(Robot.Extension state) {
+			ExtendVisual.InvokeIfRequired(img => { img.Image = ((state == Robot.Extension.Outward) ? Properties.Resources.Extend : Properties.Resources.ExtendOff); });
+			RetractVisual.InvokeIfRequired(img => { img.Image = ((state == Robot.Extension.Inward) ? Properties.Resources.Retract : Properties.Resources.RetractOff); });
 		}
 
 		private void button1_MouseDown(object sender, MouseEventArgs e) {
@@ -235,6 +242,22 @@ namespace RobotArmUR2
 
 		private void button2_MouseLeave(object sender, EventArgs e) {
 			formKeyEvent(Keys.Right, false);
+		}
+
+		private void RobotSpeedSlider_Scroll(object sender, EventArgs e) {
+			float ms = RobotSpeedSlider.Value / 10f;
+			RobotSpeedLabel.Text = "Carriage Speed: " + ms + "ms";
+			robot.changeRobotSpeed(RobotSpeedSlider.Value);
+		}
+
+		public void SerialOnConnectionChanged(bool isConnected, string portName) {
+			RobotConnected.InvokeIfRequired(checkBox => { checkBox.CheckState = (isConnected ? CheckState.Checked : CheckState.Unchecked); });
+			Console.WriteLine(isConnected);
+			RobotPort.InvokeIfRequired(textLabel => { textLabel.Text = "Port: " + portName; });
+		}
+
+		private void robotPositionToolStripMenuItem_Click(object sender, EventArgs e) {
+			robotCalibrater.ShowDialog();
 		}
 	}
 

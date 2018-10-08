@@ -31,14 +31,14 @@ namespace RobotArmUR2 {
 		}
 
 		private void PaperCalibrater_FormClosing(object sender, FormClosingEventArgs e) {
-			Properties.Settings.Default.Point0X = paperPoints[0].X;
-			Properties.Settings.Default.Point0Y = paperPoints[0].Y;
-			Properties.Settings.Default.Point1X = paperPoints[1].X;
-			Properties.Settings.Default.Point1Y = paperPoints[1].Y;
-			Properties.Settings.Default.Point2X = paperPoints[2].X;
-			Properties.Settings.Default.Point2Y = paperPoints[2].Y;
-			Properties.Settings.Default.Point3X = paperPoints[3].X;
-			Properties.Settings.Default.Point3Y = paperPoints[3].Y;
+			Properties.Settings.Default.PaperPoint0X = paperPoints[0].X;
+			Properties.Settings.Default.PaperPoint0Y = paperPoints[0].Y;
+			Properties.Settings.Default.PaperPoint1X = paperPoints[1].X;
+			Properties.Settings.Default.PaperPoint1Y = paperPoints[1].Y;
+			Properties.Settings.Default.PaperPoint2X = paperPoints[2].X;
+			Properties.Settings.Default.PaperPoint2Y = paperPoints[2].Y;
+			Properties.Settings.Default.PaperPoint3X = paperPoints[3].X;
+			Properties.Settings.Default.PaperPoint3Y = paperPoints[3].Y;
 			Properties.Settings.Default.Save();
 			UI.defaultMode();
 		}
@@ -51,6 +51,35 @@ namespace RobotArmUR2 {
 		public void displayImage<TColor>(Image<TColor, byte> image) where TColor : struct, IColor {
 			if (image == null) return;
 			PaperPicture.InvokeIfRequired(pictureBox => { pictureBox.Image = image.Resize(pictureBox.Width, pictureBox.Height, Emgu.CV.CvEnum.Inter.Linear).ToBitmap(); });
+		}
+
+		private void calculatePaperCoords(float px, float py) {
+			double p1x = paperPoints[0].X;// * PaperPicture.Width;
+			double p1y = paperPoints[0].Y;// * PaperPicture.Height;
+
+			double x = px / PaperPicture.Width;//px * PaperPicture.Width;
+			double y = py / PaperPicture.Height;//py * PaperPicture.Height;
+
+			double dx1 = paperPoints[1].X - p1x;
+			double dx2 = paperPoints[2].X - paperPoints[3].X;
+			double dy1 = paperPoints[3].Y - p1y;
+			double dy2 = paperPoints[2].Y - paperPoints[1].Y;
+
+			double D = dx2 - dx1;
+			double E = paperPoints[3].X - p1x;
+			double F = dy2 - dy1;
+			double G = paperPoints[1].Y - p1y;
+
+			double alpha = (-E * F) + (D * dy1);
+			double hat = (F * x) - (E * G) - (p1x * F) + (D * p1y) + (dx1 * dy1) - (y * D);
+			double e = (G * x) - (p1x * G) + (dx1 * p1y) - (y * dx1);
+			double b = (-hat + Math.Sqrt(Math.Pow(hat, 2) - 4 * alpha * e)) / (2 * alpha);
+			//double b2 = (-hat - Math.Sqrt(Math.Pow(hat, 2) - 4 * alpha * e)) / (2 * alpha);
+
+			double a = (x - E * b - p1x) / (D * b + dx1);
+			//double a2 = (x - E * b2 - H) / (D * b2 + dx1);
+
+			PaperCoords.InvokeIfRequired(label => { label.Text = "(" + a.ToString("N2") + ", " + b.ToString("N2") + ")"; });
 		}
 
 		private void PaperPicture_MouseMove(object sender, MouseEventArgs e) {
@@ -95,6 +124,8 @@ namespace RobotArmUR2 {
 
 				//PaperPicture.Cursor = (showHand ? OpenHandCursor : Cursors.Default);
 				PaperPicture.Cursor = (showHand ? Cursors.Hand : Cursors.Default);
+
+				calculatePaperCoords(e.X, e.Y);
 			}
 		}
 

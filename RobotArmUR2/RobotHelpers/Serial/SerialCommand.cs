@@ -7,18 +7,27 @@ using System.Threading.Tasks;
 namespace RobotHelpers.Serial {
 	public abstract class SerialCommand {
 
+		protected static byte[] ToAscii(string str) {
+			byte[] data = new byte[str.Length];
+			for(int i = 0; i < str.Length; i++) {
+				data[i] = (byte)str[i];
+			}
+
+			return data;
+		}
+
 		/// <summary>
 		/// Returns a new array that combines the two given byte arrays.
 		/// </summary>
 		/// <param name="first"></param>
 		/// <param name="second"></param>
 		/// <returns></returns>
-		protected byte[] CombineByteArrays(byte[] first, byte[] second) {
+		protected static byte[] CombineByteArrays(byte[] first, byte[] second) {
 			int len = first.Length + second.Length;
-			if (len > 255) {
+			/*if (len > 255) {
 				Console.WriteLine("WARNING: Command length exceeds 255 bytes, clipping data: " + GetName());
 				len = 255;
-			}
+			}*/
 			int len1 = Math.Min(first.Length, len);
 			int len2 = Math.Min(second.Length, 255 - first.Length);
 			if (len2 < 0) len2 = 0;
@@ -35,11 +44,11 @@ namespace RobotHelpers.Serial {
 		/// <param name="array"></param>
 		/// <param name="append"></param>
 		/// <returns></returns>
-		protected byte[] AppendByte(byte[] array, byte append) {
-			if (array.Length >= 255) {
+		protected static byte[] AppendByte(byte[] array, byte append) {
+			/*if (array.Length >= 255) {
 				Console.WriteLine("WARNING: Command length exceeds 255 bytes, clipping data: " + GetName());
 				return array;
-			}
+			}*/
 			byte[] newArray = new byte[array.Length + 1];
 			Array.Copy(array, 0, newArray, 0, array.Length);
 			newArray[array.Length] = append;
@@ -164,6 +173,33 @@ namespace RobotHelpers.Serial {
 		/// <param name="value"></param>
 		/// <returns></returns>
 		protected static byte[] GetBytes(double value) { return BitConverter.GetBytes(value); }
+
+		protected static byte[] ToAscii(sbyte value) { return ToAscii((long)value); }
+		protected static byte[] ToAscii(byte value) { return ToAscii((ulong)value); }
+		protected static byte[] ToAscii(short value) { return ToAscii((long)value); }
+		protected static byte[] ToAscii(ushort value) { return ToAscii((ulong)value); }
+		protected static byte[] ToAscii(int value) { return ToAscii((long)value); }
+		protected static byte[] ToAscii(uint value) { return ToAscii((ulong)value); }
+
+		protected static byte[] ToAscii(long value) {
+			if(value < 0) {
+				return CombineByteArrays(new byte[] { (byte)'-' }, ToAscii((ulong)(-value)));
+			} else {
+				return ToAscii((ulong)value);
+			}
+		}
+
+		protected static byte[] ToAscii(ulong value) {
+			string ascii = "";
+
+			do {
+				byte c = (byte)(value % 10);
+				value /= 10;
+				ascii = c + ascii;
+			} while (value > 0);
+
+			return GetBytes(ascii);
+		}
 		#endregion
 
 	}

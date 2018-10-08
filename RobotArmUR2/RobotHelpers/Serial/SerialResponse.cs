@@ -96,5 +96,20 @@ namespace RobotHelpers.Serial {
 		}
 		#endregion
 
+		#region Parse bytes as Ascii String into Types
+
+		public bool ParseUByte(out byte value) { return byte.TryParse(ToString(), out value); }
+		public bool ParseSByte(out sbyte value) { return sbyte.TryParse(ToString(), out value); }
+		public bool ParseUShort(out ushort value) { return ushort.TryParse(ToString(), out value); }
+		public bool ParseShort(out short value) { return short.TryParse(ToString(), out value); }
+		public bool ParseUInt(out uint value) { return uint.TryParse(ToString(), out value); }
+		public bool ParseInt(out int value) { return int.TryParse(ToString(), out value); }
+		public bool ParseULong(out ulong value) { return ulong.TryParse(ToString(), out value); }
+		public bool ParseLong(out long value) { return long.TryParse(ToString(), out value); }
+		public bool ParseFloat(out float value) { return float.TryParse(ToString(), out value); }
+		public bool ParseDouble(out double value) { return double.TryParse(ToString(), out value); }
+
+		#endregion
+
 	}
 }
