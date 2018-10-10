@@ -8,10 +8,11 @@ using System.Threading;
 using RobotHelpers.Serial;
 using System.Windows.Forms;
 using System.Collections.Concurrent;
+using RobotArmUR2.Robot_Commands;
 
 namespace RobotArmUR2 {
 	public class Robot {
-
+		private static readonly object stackingProgramLock = new object();
 		private static readonly object settingsLock = new object();
 		private static readonly object homeLock = new object();
 		private SerialCommunicator serial;
@@ -28,9 +29,11 @@ namespace RobotArmUR2 {
 
 		private int robotSpeed = 100;
 		private bool robotSpeedDirty = false;
+		private volatile Thread programThread;
+		private volatile bool endProgram = false;
 		//private float temp = Properties.Settings.Default.BLRobotRotation;
 
-		
+
 		public static float Angle1Default { get; private set; } = float.Parse((string)Properties.Settings.Default.Properties["BLRobotRotation"].DefaultValue);
 		public static float Angle2Default { get; private set; } = float.Parse((string)Properties.Settings.Default.Properties["TLRobotRotation"].DefaultValue);
 		public static float Angle3Default { get; private set; } = float.Parse((string)Properties.Settings.Default.Properties["TRRobotRotation"].DefaultValue);
@@ -122,6 +125,60 @@ namespace RobotArmUR2 {
 					robotSpeedDirty = false;
 				}
 
+			}
+		}
+
+		public bool runStackingProgram() { //Returns true if a new thread was started
+			lock (stackingProgramLock) {
+				if (programThread != null /*|| !serial.isOpen()*/) return false;
+				endProgram = false;
+				programThread = new Thread(StackingProgram);
+				programThread.IsBackground = true;
+				programThread.Name = "Stacking Program";
+				programThread.Start();
+
+				return true;
+			}
+		}
+
+		public void cancelStackingProgram() {
+			lock (stackingProgramLock) {
+				if(programThread != null) {
+					endProgram = true;
+					programThread.Join();
+					endProgram = false;
+					if (listener != null) listener.ProgramStateChanged(false);
+					programThread = null;
+				}
+			}
+		}
+
+		private void StackingProgram() {
+			//Before we start, inform the listener that the program is running
+			if (listener != null) listener.ProgramStateChanged(true);
+			//Disable timer wait for finish
+			RobotComTimer.Enabled = false;
+			lock (settingsLock) {
+				//Timer is finished, reset manual move stuff
+				up = false;
+				down = false;
+				left = false;
+				right = false;
+				manualRotate = Rotation.None;
+				manualExtension = Extension.None;
+				wasMoving = false;
+			}
+
+			//Reset manual control, stop all moves
+			SendCommand(new EndMoveCommand());
+			Thread.Sleep(500);
+			//SendCommand(new SetTargetAngleCommand())
+
+			//Before we end the thread, let the listener know we are done
+			if (listener != null) listener.ProgramStateChanged(false);
+
+			lock (stackingProgramLock) {
+				programThread = null; //Let the program know we are finished.
 			}
 		}
 
@@ -224,7 +281,7 @@ namespace RobotArmUR2 {
 
 		public bool requestRotation(ref float rotationResponse) {
 			lock (homeLock) {
-				SerialResponse response = serial.sendCommand(new GetRotation());
+				SerialResponse response = serial.sendCommand(new GetRotationCommand());
 				if (response == null) {
 					return false;
 				} else {
@@ -235,7 +292,7 @@ namespace RobotArmUR2 {
 
 		public bool requestExtension(ref float extensionResponse) {
 			lock (homeLock) {
-				SerialResponse response = serial.sendCommand(new GetExtension());
+				SerialResponse response = serial.sendCommand(new GetExtensionCommand());
 				if (response == null) {
 					return false;
 				} else {
@@ -246,175 +303,10 @@ namespace RobotArmUR2 {
 
 		public void moveTo(float angle, float distance) {
 			lock (homeLock) {
-				SendCommand(new SetTargetAngle(angle));
-				SendCommand(new SetTargetDistance(distance));
+				SendCommand(new SetTargetAngleCommand(angle));
+				SendCommand(new SetTargetDistanceCommand(distance));
 			}
 		}
-
-		#region Serial Commands
-
-		private class GoToHomeCommand : SerialCommand {
-			public override string GetName() {
-				return "Go To Home";
-			}
-
-			public override string getCommand() {
-				return "ReturnHome";
-			}
-
-			public override byte[] GetData() {
-				return null;
-			}
-		}
-
-		private class StartMoveCommand : SerialCommand {
-			private Rotation rotationMove;
-			private Extension extensionMove;
-
-			public StartMoveCommand(Rotation rotation, Extension extension) {
-				rotationMove = rotation;
-				extensionMove = extension;
-			}
-
-			public override string GetName() {
-				return "Start Move Command";
-			}
-
-			public override string getCommand() {
-				return "ManualMove";
-			}
-
-			public override byte[] GetData() {
-				return GetBytes(getRotationValue() + "" + getExtensionValue());
-			}
-
-			private string getRotationValue() {
-				switch (rotationMove) {
-					case Rotation.CCW: return "L";
-					case Rotation.CW: return "R";
-					case Rotation.None:
-					default: return "N";
-				}
-			}
-
-			private string getExtensionValue() {
-				switch (extensionMove) {
-					case Extension.Inward: return "I";
-					case Extension.Outward: return "O";
-					case Extension.None:
-					default: return "N";
-				}
-			}
-		}
-
-		private class EndMoveCommand : SerialCommand {
-			public override string GetName() {
-				return "End Move Command";
-			}
-
-			public override string getCommand() {
-				return "Stop";
-			}
-
-			public override byte[] GetData() {
-				return null;
-			}
-		}
-
-		private class UpdateSpeedCommand : SerialCommand {
-
-			private int baseSpeedMS;
-
-			public UpdateSpeedCommand(int speedMS) {
-				if (speedMS < 1 || speedMS > 500) {
-					baseSpeedMS = 10;
-				} else {
-					baseSpeedMS = speedMS;
-				}
-			}
-
-			public override string getCommand() {
-				return "SetSpeed";
-			}
-
-			public override byte[] GetData() {
-				return ToAscii(baseSpeedMS);
-			}
-
-			public override string GetName() {
-				return "Update Robot Speed";
-			}
-		}
-
-		private class GetRotation : SerialCommand {
-			public override string getCommand() {
-				return "GetRot";
-			}
-
-			public override byte[] GetData() {
-				return null;
-			}
-
-			public override string GetName() {
-				return "Get Rotation";
-			}
-		}
-
-		private class GetExtension : SerialCommand {
-			public override string getCommand() {
-				return "GetDist";
-			}
-
-			public override byte[] GetData() {
-				return null;
-			}
-
-			public override string GetName() {
-				return "Get Extension";
-			}
-		}
-
-		private class SetTargetAngle : SerialCommand {
-			float angle;
-
-			public SetTargetAngle(float angle) {
-				this.angle = angle;
-			}
-
-			public override string getCommand() {
-				return "SetAngle";
-			}
-
-			public override byte[] GetData() {
-				return ToAscii(angle.ToString("N2"));
-			}
-
-			public override string GetName() {
-				return "Set Target Angle";
-			}
-		}
-
-		private class SetTargetDistance : SerialCommand {
-			float distance;
-
-			public SetTargetDistance(float distance) {
-				this.distance = distance;
-			}
-
-			public override string getCommand() {
-				return "SetRad";
-			}
-
-			public override byte[] GetData() {
-				return ToAscii(distance.ToString("N2"));
-			}
-
-			public override string GetName() {
-				return "Set Target Distance";
-			}
-		}
-
-		#endregion
 
 		public enum Rotation {
 			None,
@@ -442,6 +334,8 @@ namespace RobotArmUR2 {
 		void ChangeManualRotateImage(Robot.Rotation state);
 
 		void ChangeManualExtensionImage(Robot.Extension state);
+
+		void ProgramStateChanged(bool running);
 
 	}
 

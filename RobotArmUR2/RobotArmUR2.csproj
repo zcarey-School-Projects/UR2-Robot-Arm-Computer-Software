@@ -63,6 +63,14 @@
     <Compile Include="OptionsForm.Designer.cs">
       <DependentUpon>OptionsForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Robot Commands\EndMoveCommand.cs" />
+    <Compile Include="Robot Commands\GetExtensionCommand.cs" />
+    <Compile Include="Robot Commands\GetRotationCommand.cs" />
+    <Compile Include="Robot Commands\GoToHomeCommand.cs" />
+    <Compile Include="Robot Commands\SetTargetAngleCommand.cs" />
+    <Compile Include="Robot Commands\SetTargetDistanceCommand.cs" />
+    <Compile Include="Robot Commands\StartMoveCommand.cs" />
+    <Compile Include="Robot Commands\UpdateSpeedCommand.cs" />
     <Compile Include="RobotCalibrater.cs">
       <SubType>Form</SubType>
     </Compile>

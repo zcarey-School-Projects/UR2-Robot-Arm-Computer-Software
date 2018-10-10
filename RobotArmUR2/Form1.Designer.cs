@@ -56,6 +56,8 @@
 			this.RetractVisual = new System.Windows.Forms.PictureBox();
 			this.RotateLeftVisual = new System.Windows.Forms.PictureBox();
 			this.RotateRightVisual = new System.Windows.Forms.PictureBox();
+			this.GotoHomePos = new System.Windows.Forms.Button();
+			this.Stack = new System.Windows.Forms.Button();
 			((System.ComponentModel.ISupportInitialize)(this.OriginalImage)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.GrayImage)).BeginInit();
 			this.menuStrip1.SuspendLayout();
@@ -203,7 +205,7 @@
 			// robotPositionToolStripMenuItem
 			// 
 			this.robotPositionToolStripMenuItem.Name = "robotPositionToolStripMenuItem";
-			this.robotPositionToolStripMenuItem.Size = new System.Drawing.Size(216, 26);
+			this.robotPositionToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
 			this.robotPositionToolStripMenuItem.Text = "Robot Position";
 			this.robotPositionToolStripMenuItem.Click += new System.EventHandler(this.robotPositionToolStripMenuItem_Click);
 			// 
@@ -323,11 +325,33 @@
 			this.RotateRightVisual.TabIndex = 20;
 			this.RotateRightVisual.TabStop = false;
 			// 
+			// GotoHomePos
+			// 
+			this.GotoHomePos.Location = new System.Drawing.Point(869, 288);
+			this.GotoHomePos.Name = "GotoHomePos";
+			this.GotoHomePos.Size = new System.Drawing.Size(115, 23);
+			this.GotoHomePos.TabIndex = 21;
+			this.GotoHomePos.Text = "Home Position";
+			this.GotoHomePos.UseVisualStyleBackColor = true;
+			this.GotoHomePos.Click += new System.EventHandler(this.GotoHomePos_Click);
+			// 
+			// Stack
+			// 
+			this.Stack.Location = new System.Drawing.Point(909, 404);
+			this.Stack.Name = "Stack";
+			this.Stack.Size = new System.Drawing.Size(75, 23);
+			this.Stack.TabIndex = 22;
+			this.Stack.Text = "Stack!";
+			this.Stack.UseVisualStyleBackColor = true;
+			this.Stack.Click += new System.EventHandler(this.Stack_Click);
+			// 
 			// Form1
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(1005, 450);
+			this.Controls.Add(this.Stack);
+			this.Controls.Add(this.GotoHomePos);
 			this.Controls.Add(this.RotateRightVisual);
 			this.Controls.Add(this.RotateLeftVisual);
 			this.Controls.Add(this.RetractVisual);
@@ -398,6 +422,8 @@
 		private System.Windows.Forms.PictureBox RetractVisual;
 		private System.Windows.Forms.PictureBox RotateLeftVisual;
 		private System.Windows.Forms.PictureBox RotateRightVisual;
+		private System.Windows.Forms.Button GotoHomePos;
+		private System.Windows.Forms.Button Stack;
 	}
 }
 

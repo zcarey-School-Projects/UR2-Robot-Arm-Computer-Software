@@ -31,6 +31,8 @@ namespace RobotArmUR2
 		private PaperCalibrater paperCalibrater;
 		private RobotCalibrater robotCalibrater;
 
+		private volatile bool manualMoveEnabled = true;
+
 		public Form1()
 		{
 			InitializeComponent();
@@ -199,6 +201,7 @@ namespace RobotArmUR2
 		}
 
 		public void formKeyEvent(Keys key, bool pressed) {
+			if (!manualMoveEnabled) return;
 			if ((key == Keys.A) || (key == Keys.Left)) {
 				robot.ManualControlKeyEvent(Robot.Key.Left, pressed);
 			}else if ((key == Keys.D) || (key == Keys.Right)) {
@@ -258,6 +261,25 @@ namespace RobotArmUR2
 
 		private void robotPositionToolStripMenuItem_Click(object sender, EventArgs e) {
 			robotCalibrater.ShowDialog();
+		}
+
+		private void GotoHomePos_Click(object sender, EventArgs e) {
+			robot.GoToHome();
+		}
+
+		public void ProgramStateChanged(bool running) {
+			GotoHomePos.InvokeIfRequired(button => { button.Enabled = !running; });
+			RobotSpeedSlider.InvokeIfRequired(slider => { slider.Enabled = !running; });
+			AutoConnect.InvokeIfRequired(button => { button.Enabled = !running; });
+			menuStrip1.InvokeIfRequired(menu => { menu.Enabled = !running; });
+			manualMoveEnabled = !running;
+			Stack.InvokeIfRequired(button => { button.Text = (running ? "Cancel" : "Stack!"); });
+		}
+
+		private void Stack_Click(object sender, EventArgs e) {
+			if (!robot.runStackingProgram()) {
+				robot.cancelStackingProgram();
+			}
 		}
 	}
 

@@ -29,6 +29,8 @@ namespace RobotArmUR2{
 		private Image<Gray, byte> paperMask;
 		private PointF[] paperPoints = new PointF[] { new PointF(0, 0), new PointF(1, 0), new Point(1, 1), new Point(0, 1) };
 		private bool paperMaskDirty = true;
+		private List<Triangle2DF> triangleList = new List<Triangle2DF>();
+		private List<RotatedRect> boxList = new List<RotatedRect>();
 
 		private DateTime lastTime = DateTime.UtcNow;
 		private const int FPS_NumFramesToAvg = 10;
@@ -155,8 +157,8 @@ namespace RobotArmUR2{
 			#endregion
 
 			#region Find Triangle and Rectangles
-			List<Triangle2DF> triangleList = new List<Triangle2DF>();
-			List<RotatedRect> boxList = new List<RotatedRect>();
+			triangleList = new List<Triangle2DF>();
+			boxList = new List<RotatedRect>();
 			Image<Bgr, byte> triangleRectImage = origImage.CopyBlank();
 			VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
 			CvInvoke.FindContours(cannyEdges, contours, null, Emgu.CV.CvEnum.RetrType.List, Emgu.CV.CvEnum.ChainApproxMethod.ChainApproxSimple);
@@ -207,6 +209,13 @@ namespace RobotArmUR2{
 			UI.displayImage(origImage, Form1.PictureId.Original);
 			UI.displayImage(grayImage, Form1.PictureId.Gray);
 			UI.displayImage(cannyImage, Form1.PictureId.Canny);
+		}
+
+		public void getShapeLists(ref List<Triangle2DF> triangles, ref List<RotatedRect> boxes) {
+			lock (visionLock) {
+				triangles = new List<Triangle2DF>(triangleList);
+				boxes = new List<RotatedRect>(boxList);
+			}
 		}
 
 		private void getPaperMask() {
@@ -532,7 +541,6 @@ namespace RobotArmUR2{
 		public enum VisionMode {
 			Default,
 			CalibratePaper,
-			CalibrateRobot
 		}
 	}
 }
