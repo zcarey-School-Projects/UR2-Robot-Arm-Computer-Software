@@ -99,14 +99,14 @@ namespace RobotHelpers.Serial {
 			return false;
 		}
 
-		public SerialResponse sendCommand(SerialCommand cmd) {
-			if (!serial.IsOpen) return null;
+		public void sendCommand(SerialCommand cmd) {
+			if (!serial.IsOpen) return;
 			string command = cmd.getCommand();
 			byte[] message = cmd.GetData();
 			if (message == null) message = new byte[0];
 			if ((message.Length + command.Length) > 255) {
 				Console.WriteLine("WARNING: Command length exceeds 255 bytes, not sending command: " + cmd.GetName());
-				return null;
+				return;
 			}
 
 			lock (serialLock) {
@@ -130,27 +130,46 @@ namespace RobotHelpers.Serial {
 						serial.Read(bytes, 0, numBytes);
 					}
 
-					return new SerialResponse(ref bytes);
+					cmd.OnSerialResponse(this, new SerialResponse(ref bytes));
 				} catch (Exception) {
 					Console.WriteLine("Serial Error: " + cmd.GetName());
 					close();
-					return null;
+					return;
 				}
 			}
 		}
 
-		public SerialResponse readBytes(int numBytes) {
+		public bool SendBytes(byte[] bytes) {
+			return SendBytes(bytes, 0, bytes.Length);
+		}
+
+		public bool SendBytes(byte[] bytes, int start, int length) {
+			if (!serial.IsOpen) return false;
+			try {
+				lock (serialLock) {
+					serial.Write(bytes, start, length);
+				}
+				return true;
+			} catch (Exception e) {
+				Console.WriteLine("Serial Send Error: " + e.Message);
+				close();
+				return false;
+			}
+		}
+
+		public SerialResponse ReadBytes(int numBytes) {
+			if (!serial.IsOpen) return null;
 			try {
 				byte[] bytes = new byte[numBytes];
-				if(numBytes > 0) {
+				if (numBytes > 0) {
 					lock (serialLock) {
 						serial.Read(bytes, 0, numBytes);
 					}
 				}
 
 				return new SerialResponse(ref bytes);
-			} catch (Exception) {
-				Console.WriteLine("Serial Read Error.");
+			} catch (Exception e) {
+				Console.WriteLine("Serial Read Error: " + e.Message);
 				close();
 				return null;
 			}

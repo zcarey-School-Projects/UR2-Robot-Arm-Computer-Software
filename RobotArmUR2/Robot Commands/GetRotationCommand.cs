@@ -8,6 +8,10 @@ using System.Threading.Tasks;
 namespace RobotArmUR2.Robot_Commands {
 	class GetRotationCommand : SerialCommand {
 
+		public override void OnSerialResponse(SerialResponse response) {
+			throw new NotImplementedException();
+		}
+
 		public override string getCommand() {
 			return "GetRot";
 		}

@@ -16,6 +16,10 @@ namespace RobotArmUR2.Robot_Commands {
 			extensionMove = extension;
 		}
 
+		public override void OnSerialResponse(SerialResponse response) {
+			throw new NotImplementedException();
+		}
+
 		public override string GetName() {
 			return "Start Move Command";
 		}

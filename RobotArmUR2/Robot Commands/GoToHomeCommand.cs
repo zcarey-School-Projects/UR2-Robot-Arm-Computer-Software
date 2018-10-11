@@ -7,6 +7,11 @@ using RobotHelpers.Serial;
 
 namespace RobotArmUR2.Robot_Commands {
 	class GoToHomeCommand : SerialCommand {
+
+		public override void OnSerialResponse(SerialResponse response) {
+			throw new NotImplementedException();
+		}
+
 		public override string GetName() {
 			return "Go To Home";
 		}
