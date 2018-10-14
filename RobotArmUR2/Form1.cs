@@ -281,6 +281,11 @@ namespace RobotArmUR2
 				robot.cancelStackingProgram();
 			}
 		}
+
+		private void PrescaleSlider_Scroll(object sender, EventArgs e) {
+			PrescaleLabel.Text = "Prescale: " + PrescaleSlider.Value;
+			robot.changeRobotPrescale(PrescaleSlider.Value);
+		}
 	}
 
 }

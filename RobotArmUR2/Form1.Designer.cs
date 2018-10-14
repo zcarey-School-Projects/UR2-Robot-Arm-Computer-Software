@@ -58,6 +58,8 @@
 			this.RotateRightVisual = new System.Windows.Forms.PictureBox();
 			this.GotoHomePos = new System.Windows.Forms.Button();
 			this.Stack = new System.Windows.Forms.Button();
+			this.PrescaleSlider = new System.Windows.Forms.TrackBar();
+			this.PrescaleLabel = new System.Windows.Forms.Label();
 			((System.ComponentModel.ISupportInitialize)(this.OriginalImage)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.GrayImage)).BeginInit();
 			this.menuStrip1.SuspendLayout();
@@ -67,6 +69,7 @@
 			((System.ComponentModel.ISupportInitialize)(this.RetractVisual)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.RotateLeftVisual)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.RotateRightVisual)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.PrescaleSlider)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// OriginalImage
@@ -345,11 +348,31 @@
 			this.Stack.UseVisualStyleBackColor = true;
 			this.Stack.Click += new System.EventHandler(this.Stack_Click);
 			// 
+			// PrescaleSlider
+			// 
+			this.PrescaleSlider.Location = new System.Drawing.Point(338, 317);
+			this.PrescaleSlider.Maximum = 255;
+			this.PrescaleSlider.Name = "PrescaleSlider";
+			this.PrescaleSlider.Size = new System.Drawing.Size(320, 56);
+			this.PrescaleSlider.TabIndex = 23;
+			this.PrescaleSlider.Scroll += new System.EventHandler(this.PrescaleSlider_Scroll);
+			// 
+			// PrescaleLabel
+			// 
+			this.PrescaleLabel.AutoSize = true;
+			this.PrescaleLabel.Location = new System.Drawing.Point(661, 332);
+			this.PrescaleLabel.Name = "PrescaleLabel";
+			this.PrescaleLabel.Size = new System.Drawing.Size(79, 17);
+			this.PrescaleLabel.TabIndex = 24;
+			this.PrescaleLabel.Text = "Prescale: 0";
+			// 
 			// Form1
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(1005, 450);
+			this.Controls.Add(this.PrescaleLabel);
+			this.Controls.Add(this.PrescaleSlider);
 			this.Controls.Add(this.Stack);
 			this.Controls.Add(this.GotoHomePos);
 			this.Controls.Add(this.RotateRightVisual);
@@ -386,6 +409,7 @@
 			((System.ComponentModel.ISupportInitialize)(this.RetractVisual)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.RotateLeftVisual)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.RotateRightVisual)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.PrescaleSlider)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -424,6 +448,8 @@
 		private System.Windows.Forms.PictureBox RotateRightVisual;
 		private System.Windows.Forms.Button GotoHomePos;
 		private System.Windows.Forms.Button Stack;
+		private System.Windows.Forms.TrackBar PrescaleSlider;
+		private System.Windows.Forms.Label PrescaleLabel;
 	}
 }
 

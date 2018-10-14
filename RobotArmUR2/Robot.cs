@@ -306,6 +306,13 @@ namespace RobotArmUR2 {
 			}
 		}
 
+		public void changeRobotPrescale(int prescale) {
+			if (prescale < 0) prescale = 0;
+			if (prescale > 255) prescale = 255;
+
+			SendCommand(new SetPrescaleCommand((byte)prescale));
+		}
+
 		public void moveTo(float angle, float distance) {
 			lock (homeLock) {
 				SendCommand(new SetTargetAngleCommand(angle));
