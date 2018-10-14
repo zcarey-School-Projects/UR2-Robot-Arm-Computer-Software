@@ -29,6 +29,11 @@ namespace RobotArmUR2 {
 
 		private int robotSpeed = 100;
 		private bool robotSpeedDirty = false;
+
+		private byte robotPrescale = 0;
+		private bool robotPrescaleDirty = false;
+
+
 		private volatile Thread programThread;
 		private volatile bool endProgram = false;
 		//private float temp = Properties.Settings.Default.BLRobotRotation;
@@ -104,7 +109,7 @@ namespace RobotArmUR2 {
 		private void markAllDirty() {
 			lock (settingsLock) {
 				robotSpeedDirty = true;
-
+				robotPrescaleDirty = true;
 			}
 		}
 
@@ -123,6 +128,11 @@ namespace RobotArmUR2 {
 				if (robotSpeedDirty) {
 					SendCommand(new UpdateSpeedCommand(robotSpeed));
 					robotSpeedDirty = false;
+				}
+
+				if (robotPrescaleDirty) {
+					SendCommand(new SetPrescaleCommand(robotPrescale));
+					robotPrescaleDirty = false;
 				}
 
 			}
@@ -309,8 +319,7 @@ namespace RobotArmUR2 {
 		public void changeRobotPrescale(int prescale) {
 			if (prescale < 0) prescale = 0;
 			if (prescale > 255) prescale = 255;
-
-			SendCommand(new SetPrescaleCommand((byte)prescale));
+			robotPrescale = (byte)prescale;
 		}
 
 		public void moveTo(float angle, float distance) {
