@@ -320,6 +320,7 @@ namespace RobotArmUR2 {
 			if (prescale < 0) prescale = 0;
 			if (prescale > 255) prescale = 255;
 			robotPrescale = (byte)prescale;
+			robotPrescaleDirty = true;
 		}
 
 		public void moveTo(float angle, float distance) {
