@@ -8,10 +8,6 @@ using System.Threading.Tasks;
 namespace RobotArmUR2.Robot_Commands {
 	class GetRotationCommand : SerialCommand {
 
-		public override void OnSerialResponse(SerialResponse response) {
-			throw new NotImplementedException();
-		}
-
 		public override string getCommand() {
 			return "GetRot";
 		}
@@ -24,5 +20,17 @@ namespace RobotArmUR2.Robot_Commands {
 			return "Get Rotation";
 		}
 
+		public override object OnSerialResponse(SerialCommunicator serial, SerialResponse response) {
+			if(response == null) {
+				return null;
+			} else {
+				float rotationResponse;
+				if (response.ParseFloat(out rotationResponse)) {
+					return rotationResponse;
+				} else {
+					return null;
+				}
+			}
+		}
 	}
 }

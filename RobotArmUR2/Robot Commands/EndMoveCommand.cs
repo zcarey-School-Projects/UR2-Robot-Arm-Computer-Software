@@ -8,10 +8,6 @@ using System.Threading.Tasks;
 namespace RobotArmUR2.Robot_Commands {
 	class EndMoveCommand : SerialCommand {
 
-		public override void OnSerialResponse(SerialResponse response) {
-			throw new NotImplementedException();
-		}
-
 		public override string GetName() {
 			return "End Move Command";
 		}
@@ -24,5 +20,8 @@ namespace RobotArmUR2.Robot_Commands {
 			return null;
 		}
 
+		public override object OnSerialResponse(SerialCommunicator serial, SerialResponse response) {
+			return null;
+		}
 	}
 }

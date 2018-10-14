@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace RobotHelpers.Serial {
 	public abstract class SerialCommand {
 
-		public abstract void OnSerialResponse(SerialCommunicator serial, SerialResponse response);
+		public abstract object OnSerialResponse(SerialCommunicator serial, SerialResponse response);
 
 		protected static byte[] ToAscii(string str) {
 			byte[] data = new byte[str.Length];

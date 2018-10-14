@@ -18,10 +18,6 @@ namespace RobotArmUR2.Robot_Commands {
 			}
 		}
 
-		public override void OnSerialResponse(SerialResponse response) {
-			throw new NotImplementedException();
-		}
-
 		public override string getCommand() {
 			return "SetSpeed";
 		}
@@ -34,5 +30,8 @@ namespace RobotArmUR2.Robot_Commands {
 			return "Update Robot Speed";
 		}
 
+		public override object OnSerialResponse(SerialCommunicator serial, SerialResponse response) {
+			return null;
+		}
 	}
 }

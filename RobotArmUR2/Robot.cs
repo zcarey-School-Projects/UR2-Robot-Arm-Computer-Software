@@ -187,7 +187,7 @@ namespace RobotArmUR2 {
 			serial.setSerialUIListener(listener);
 		}
 
-		private SerialResponse SendCommand(SerialCommand command) {
+		private object SendCommand(SerialCommand command) {
 			if (serial.isOpen()) {
 				return serial.sendCommand(command);
 			} else {
@@ -210,12 +210,7 @@ namespace RobotArmUR2 {
 				lock (settingsLock) {
 					RobotComTimer.Stop();
 				}
-				SerialResponse response = SendCommand(new GoToHomeCommand());
-				while (response != null) {
-					if (response.Data.Length < 1) break;
-					if (response.Data[0] == 1) break;
-					response = serial.readBytes(1);
-				}
+				SendCommand(new GoToHomeCommand()); //Blocks until an error occurs or the robot has reached the home position.
 				RobotComTimer.Start();
 			}
 		}
@@ -281,22 +276,32 @@ namespace RobotArmUR2 {
 
 		public bool requestRotation(ref float rotationResponse) {
 			lock (homeLock) {
-				SerialResponse response = serial.sendCommand(new GetRotationCommand());
+				object response = serial.sendCommand(new GetRotationCommand());
 				if (response == null) {
 					return false;
 				} else {
-					return response.ParseFloat(out rotationResponse);
+					if (response is float) {
+						rotationResponse = (float)response;
+						return true;
+					} else {
+						return false;
+					}
 				}
 			}
 		}
 
 		public bool requestExtension(ref float extensionResponse) {
 			lock (homeLock) {
-				SerialResponse response = serial.sendCommand(new GetExtensionCommand());
+				object response = SendCommand(new GetExtensionCommand());
 				if (response == null) {
 					return false;
 				} else {
-					return response.ParseFloat(out extensionResponse);
+					if (response is float) {
+						extensionResponse = (float)response;
+						return true;
+					} else {
+						return false;
+					}
 				}
 			}
 		}

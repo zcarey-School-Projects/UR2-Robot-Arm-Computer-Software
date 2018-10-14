@@ -99,14 +99,14 @@ namespace RobotHelpers.Serial {
 			return false;
 		}
 
-		public void sendCommand(SerialCommand cmd) {
-			if (!serial.IsOpen) return;
+		public object sendCommand(SerialCommand cmd) {
+			if (!serial.IsOpen) return null;
 			string command = cmd.getCommand();
 			byte[] message = cmd.GetData();
 			if (message == null) message = new byte[0];
 			if ((message.Length + command.Length) > 255) {
 				Console.WriteLine("WARNING: Command length exceeds 255 bytes, not sending command: " + cmd.GetName());
-				return;
+				return null;
 			}
 
 			lock (serialLock) {
@@ -130,11 +130,11 @@ namespace RobotHelpers.Serial {
 						serial.Read(bytes, 0, numBytes);
 					}
 
-					cmd.OnSerialResponse(this, new SerialResponse(ref bytes));
+					return cmd.OnSerialResponse(this, new SerialResponse(ref bytes));
 				} catch (Exception) {
 					Console.WriteLine("Serial Error: " + cmd.GetName());
 					close();
-					return;
+					return null;
 				}
 			}
 		}

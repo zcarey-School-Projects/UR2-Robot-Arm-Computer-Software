@@ -14,10 +14,6 @@ namespace RobotArmUR2.Robot_Commands {
 			this.angle = angle;
 		}
 
-		public override void OnSerialResponse(SerialResponse response) {
-			throw new NotImplementedException();
-		}
-
 		public override string getCommand() {
 			return "SetAngle";
 		}
@@ -30,5 +26,8 @@ namespace RobotArmUR2.Robot_Commands {
 			return "Set Target Angle";
 		}
 
+		public override object OnSerialResponse(SerialCommunicator serial, SerialResponse response) {
+			return null;
+		}
 	}
 }
