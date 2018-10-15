@@ -218,48 +218,72 @@ namespace RobotArmUR2.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public float LeftPileAngle {
+        public float TrianglePileAngle {
             get {
-                return ((float)(this["LeftPileAngle"]));
+                return ((float)(this["TrianglePileAngle"]));
             }
             set {
-                this["LeftPileAngle"] = value;
+                this["TrianglePileAngle"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("304.8")]
-        public float LeftPileDistance {
+        public float TrianglePileDistance {
             get {
-                return ((float)(this["LeftPileDistance"]));
+                return ((float)(this["TrianglePileDistance"]));
             }
             set {
-                this["LeftPileDistance"] = value;
+                this["TrianglePileDistance"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("180")]
-        public float RightPileAngle {
+        public float SquarePileAngle {
             get {
-                return ((float)(this["RightPileAngle"]));
+                return ((float)(this["SquarePileAngle"]));
             }
             set {
-                this["RightPileAngle"] = value;
+                this["SquarePileAngle"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("304.8")]
-        public string RightPileDistance {
+        public float SquarePileDistance {
             get {
-                return ((string)(this["RightPileDistance"]));
+                return ((float)(this["SquarePileDistance"]));
             }
             set {
-                this["RightPileDistance"] = value;
+                this["SquarePileDistance"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("100")]
+        public int RobotSpeed {
+            get {
+                return ((int)(this["RobotSpeed"]));
+            }
+            set {
+                this["RobotSpeed"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int RobotPrescale {
+            get {
+                return ((int)(this["RobotPrescale"]));
+            }
+            set {
+                this["RobotPrescale"] = value;
             }
         }
     }

@@ -54,6 +54,12 @@ namespace RobotArmUR2
 				new PointF(Properties.Settings.Default.PaperPoint2X, Properties.Settings.Default.PaperPoint2Y),
 				new PointF(Properties.Settings.Default.PaperPoint3X, Properties.Settings.Default.PaperPoint3Y)
 			);
+
+			RobotSpeedSlider.Value = Properties.Settings.Default.RobotSpeed;
+			RobotSpeedSlider_Scroll(null, null);
+
+			PrescaleSlider.Value = Properties.Settings.Default.RobotPrescale;
+			PrescaleSlider_Scroll(null, null);
 		}
 
 		private void Form1_Load(object sender, EventArgs e) {
@@ -61,6 +67,9 @@ namespace RobotArmUR2
 		}
 
 		private void Form1_FormClosing(object sender, FormClosingEventArgs e) {
+			Properties.Settings.Default.RobotSpeed = RobotSpeedSlider.Value;
+			Properties.Settings.Default.RobotPrescale = PrescaleSlider.Value;
+			Properties.Settings.Default.Save();
 			vision.stop();
 		}
 
@@ -202,13 +211,13 @@ namespace RobotArmUR2
 
 		public void formKeyEvent(Keys key, bool pressed) {
 			if (!manualMoveEnabled) return;
-			if ((key == Keys.A) || (key == Keys.Left)) {
+			if ((key == Keys.A)/* || (key == Keys.Left)*/) {
 				robot.ManualControlKeyEvent(Robot.Key.Left, pressed);
-			}else if ((key == Keys.D) || (key == Keys.Right)) {
+			}else if ((key == Keys.D)/* || (key == Keys.Right)*/) {
 				robot.ManualControlKeyEvent(Robot.Key.Right, pressed);
-			}else if((key == Keys.W) || (key == Keys.Up)) {
+			}else if((key == Keys.W)/* || (key == Keys.Up)*/) {
 				robot.ManualControlKeyEvent(Robot.Key.Up, pressed);
-			}else if ((key == Keys.S) || (key == Keys.Down)) {
+			}else if ((key == Keys.S)/* || (key == Keys.Down)*/) {
 				robot.ManualControlKeyEvent(Robot.Key.Down, pressed);
 			}
 		}

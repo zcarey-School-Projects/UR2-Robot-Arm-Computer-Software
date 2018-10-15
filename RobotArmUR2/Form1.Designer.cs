@@ -254,7 +254,7 @@
 			this.RobotSpeedSlider.Maximum = 235;
 			this.RobotSpeedSlider.Minimum = 5;
 			this.RobotSpeedSlider.Name = "RobotSpeedSlider";
-			this.RobotSpeedSlider.Size = new System.Drawing.Size(320, 56);
+			this.RobotSpeedSlider.Size = new System.Drawing.Size(426, 56);
 			this.RobotSpeedSlider.TabIndex = 11;
 			this.RobotSpeedSlider.Value = 100;
 			this.RobotSpeedSlider.Scroll += new System.EventHandler(this.RobotSpeedSlider_Scroll);
@@ -262,7 +262,7 @@
 			// RobotSpeedLabel
 			// 
 			this.RobotSpeedLabel.AutoSize = true;
-			this.RobotSpeedLabel.Location = new System.Drawing.Point(661, 291);
+			this.RobotSpeedLabel.Location = new System.Drawing.Point(770, 294);
 			this.RobotSpeedLabel.Name = "RobotSpeedLabel";
 			this.RobotSpeedLabel.Size = new System.Drawing.Size(73, 17);
 			this.RobotSpeedLabel.TabIndex = 12;
@@ -330,7 +330,7 @@
 			// 
 			// GotoHomePos
 			// 
-			this.GotoHomePos.Location = new System.Drawing.Point(869, 288);
+			this.GotoHomePos.Location = new System.Drawing.Point(869, 375);
 			this.GotoHomePos.Name = "GotoHomePos";
 			this.GotoHomePos.Size = new System.Drawing.Size(115, 23);
 			this.GotoHomePos.TabIndex = 21;
@@ -340,7 +340,7 @@
 			// 
 			// Stack
 			// 
-			this.Stack.Location = new System.Drawing.Point(909, 404);
+			this.Stack.Location = new System.Drawing.Point(909, 415);
 			this.Stack.Name = "Stack";
 			this.Stack.Size = new System.Drawing.Size(75, 23);
 			this.Stack.TabIndex = 22;
@@ -353,14 +353,14 @@
 			this.PrescaleSlider.Location = new System.Drawing.Point(338, 317);
 			this.PrescaleSlider.Maximum = 255;
 			this.PrescaleSlider.Name = "PrescaleSlider";
-			this.PrescaleSlider.Size = new System.Drawing.Size(320, 56);
+			this.PrescaleSlider.Size = new System.Drawing.Size(426, 56);
 			this.PrescaleSlider.TabIndex = 23;
 			this.PrescaleSlider.Scroll += new System.EventHandler(this.PrescaleSlider_Scroll);
 			// 
 			// PrescaleLabel
 			// 
 			this.PrescaleLabel.AutoSize = true;
-			this.PrescaleLabel.Location = new System.Drawing.Point(661, 332);
+			this.PrescaleLabel.Location = new System.Drawing.Point(770, 332);
 			this.PrescaleLabel.Name = "PrescaleLabel";
 			this.PrescaleLabel.Size = new System.Drawing.Size(79, 17);
 			this.PrescaleLabel.TabIndex = 24;

@@ -9,6 +9,8 @@ using RobotHelpers.Serial;
 using System.Windows.Forms;
 using System.Collections.Concurrent;
 using RobotArmUR2.Robot_Commands;
+using Emgu.CV.Structure;
+using RobotArmUR2.Robot_Programs;
 
 namespace RobotArmUR2 {
 	public class Robot {
@@ -48,7 +50,13 @@ namespace RobotArmUR2 {
 		public static float Distance2Default { get; private set; } = float.Parse((string)Properties.Settings.Default.Properties["TLRobotDistance"].DefaultValue);
 		public static float Distance3Default { get; private set; } = float.Parse((string)Properties.Settings.Default.Properties["TRRobotDistance"].DefaultValue);
 		public static float Distance4Default { get; private set; } = float.Parse((string)Properties.Settings.Default.Properties["BRRobotDistance"].DefaultValue);
-		
+
+		public static float TriangleStackAngleDefault { get; private set; } = float.Parse((string)Properties.Settings.Default.Properties["TrianglePileAngle"].DefaultValue);
+		public static float TriangleStackDistanceDefault { get; private set; } = float.Parse((string)Properties.Settings.Default.Properties["TrianglePileDistance"].DefaultValue);
+
+		public static float SquareStackAngleDefault { get; private set; } = float.Parse((string)Properties.Settings.Default.Properties["SquarePileAngle"].DefaultValue);
+		public static float SquareStackDistanceDefault { get; private set; } = float.Parse((string)Properties.Settings.Default.Properties["SquarePileDistance"].DefaultValue);
+
 		public float Angle1 { get; set; }
 		public float Angle2 { get; set; }
 		public float Angle3 { get; set; }
@@ -59,7 +67,11 @@ namespace RobotArmUR2 {
 		public float Distance3 { get; set; }
 		public float Distance4 { get; set; }
 
-		private float distanceOffset = 0; //In mm
+		public float TriangleStackAngle { get; set; }
+		public float TriangleStackDistance { get; set; }
+
+		public float SquareStackAngle { get; set; }
+		public float SquareStackDistance { get; set; }
 
 		public Robot() {
 			serial = new SerialCommunicator();
@@ -84,6 +96,12 @@ namespace RobotArmUR2 {
 			Distance2 = Properties.Settings.Default.TLRobotDistance;
 			Distance3 = Properties.Settings.Default.TRRobotDistance;
 			Distance4 = Properties.Settings.Default.BRRobotDistance;
+
+			TriangleStackAngle = Properties.Settings.Default.TrianglePileAngle;
+			TriangleStackDistance = Properties.Settings.Default.TrianglePileDistance;
+
+			SquareStackAngle = Properties.Settings.Default.SquarePileAngle;
+			SquareStackDistance = Properties.Settings.Default.SquarePileDistance;
 		}
 
 		private void setTimerSettings() {
@@ -138,11 +156,11 @@ namespace RobotArmUR2 {
 			}
 		}
 
-		public bool runStackingProgram() { //Returns true if a new thread was started
+		public bool runStackingProgram(Vision vision) { //Returns true if a new thread was started
 			lock (stackingProgramLock) {
 				if (programThread != null /*|| !serial.isOpen()*/) return false;
 				endProgram = false;
-				programThread = new Thread(StackingProgram);
+				programThread = new Thread(() => StackingProgram(vision));
 				programThread.IsBackground = true;
 				programThread.Name = "Stacking Program";
 				programThread.Start();
@@ -163,7 +181,7 @@ namespace RobotArmUR2 {
 			}
 		}
 
-		private void StackingProgram() {
+		private void StackingProgram(Vision vision) {
 			//Before we start, inform the listener that the program is running
 			if (listener != null) listener.ProgramStateChanged(true);
 			//Disable timer wait for finish
@@ -182,7 +200,10 @@ namespace RobotArmUR2 {
 			//Reset manual control, stop all moves
 			SendCommand(new EndMoveCommand());
 			Thread.Sleep(500);
-			//SendCommand(new SetTargetAngleCommand())
+
+			StackingProgram program = new StackingProgram(this, vision);
+			program.runProgram();
+
 
 			//Before we end the thread, let the listener know we are done
 			if (listener != null) listener.ProgramStateChanged(false);
@@ -190,6 +211,14 @@ namespace RobotArmUR2 {
 			lock (stackingProgramLock) {
 				programThread = null; //Let the program know we are finished.
 			}
+		}
+
+		public void raiseServo() {
+			SendCommand(new MoveServoCommand(true));
+		}
+
+		public void lowerServo() {
+			SendCommand(new MoveServoCommand(false));
 		}
 
 		public void setUIListener(RobotUIListener listener) {
@@ -325,8 +354,13 @@ namespace RobotArmUR2 {
 
 		public void moveTo(float angle, float distance) {
 			lock (homeLock) {
-				SendCommand(new SetTargetAngleCommand(angle));
-				SendCommand(new SetTargetDistanceCommand(distance));
+				SendCommand(new MoveToCommand(angle, distance));
+			}
+		}
+
+		public void moveToAndWait(float angle, float distance) {
+			lock (homeLock) {
+				SendCommand(new MoveToWaitCommand(angle, distance));
 			}
 		}
 

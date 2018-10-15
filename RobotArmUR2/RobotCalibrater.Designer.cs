@@ -44,6 +44,16 @@
 			this.BRLabel = new System.Windows.Forms.Label();
 			this.TLLabel = new System.Windows.Forms.Label();
 			this.TRLabel = new System.Windows.Forms.Label();
+			this.TriangleMoveTo = new System.Windows.Forms.Button();
+			this.SquareMoveTo = new System.Windows.Forms.Button();
+			this.TriangleCalibrate = new System.Windows.Forms.Button();
+			this.ResetTriangle = new System.Windows.Forms.Button();
+			this.ResetSquare = new System.Windows.Forms.Button();
+			this.SquareCalibrate = new System.Windows.Forms.Button();
+			this.TriangleLabel = new System.Windows.Forms.Label();
+			this.SquareLabel = new System.Windows.Forms.Label();
+			this.label7 = new System.Windows.Forms.Label();
+			this.label8 = new System.Windows.Forms.Label();
 			this.SuspendLayout();
 			// 
 			// label1
@@ -204,7 +214,7 @@
 			// 
 			// ResetAll
 			// 
-			this.ResetAll.Location = new System.Drawing.Point(395, 163);
+			this.ResetAll.Location = new System.Drawing.Point(395, 230);
 			this.ResetAll.Name = "ResetAll";
 			this.ResetAll.Size = new System.Drawing.Size(75, 23);
 			this.ResetAll.TabIndex = 16;
@@ -248,11 +258,117 @@
 			this.TRLabel.TabIndex = 20;
 			this.TRLabel.Text = "(360.00^, 400.00 mm)";
 			// 
+			// TriangleMoveTo
+			// 
+			this.TriangleMoveTo.Location = new System.Drawing.Point(159, 138);
+			this.TriangleMoveTo.Name = "TriangleMoveTo";
+			this.TriangleMoveTo.Size = new System.Drawing.Size(75, 23);
+			this.TriangleMoveTo.TabIndex = 21;
+			this.TriangleMoveTo.Text = "Move To";
+			this.TriangleMoveTo.UseVisualStyleBackColor = true;
+			this.TriangleMoveTo.Click += new System.EventHandler(this.TriangleMoveTo_Click);
+			// 
+			// SquareMoveTo
+			// 
+			this.SquareMoveTo.Location = new System.Drawing.Point(159, 167);
+			this.SquareMoveTo.Name = "SquareMoveTo";
+			this.SquareMoveTo.Size = new System.Drawing.Size(75, 23);
+			this.SquareMoveTo.TabIndex = 22;
+			this.SquareMoveTo.Text = "Move To";
+			this.SquareMoveTo.UseVisualStyleBackColor = true;
+			this.SquareMoveTo.Click += new System.EventHandler(this.SquareMoveTo_Click);
+			// 
+			// TriangleCalibrate
+			// 
+			this.TriangleCalibrate.Location = new System.Drawing.Point(267, 138);
+			this.TriangleCalibrate.Name = "TriangleCalibrate";
+			this.TriangleCalibrate.Size = new System.Drawing.Size(75, 23);
+			this.TriangleCalibrate.TabIndex = 23;
+			this.TriangleCalibrate.Text = "Calibrate";
+			this.TriangleCalibrate.UseVisualStyleBackColor = true;
+			this.TriangleCalibrate.Click += new System.EventHandler(this.TriangleCalibrate_Click);
+			// 
+			// ResetTriangle
+			// 
+			this.ResetTriangle.Location = new System.Drawing.Point(395, 138);
+			this.ResetTriangle.Name = "ResetTriangle";
+			this.ResetTriangle.Size = new System.Drawing.Size(75, 23);
+			this.ResetTriangle.TabIndex = 24;
+			this.ResetTriangle.Text = "Reset";
+			this.ResetTriangle.UseVisualStyleBackColor = true;
+			this.ResetTriangle.Click += new System.EventHandler(this.ResetTriangle_Click);
+			// 
+			// ResetSquare
+			// 
+			this.ResetSquare.Location = new System.Drawing.Point(395, 167);
+			this.ResetSquare.Name = "ResetSquare";
+			this.ResetSquare.Size = new System.Drawing.Size(75, 23);
+			this.ResetSquare.TabIndex = 25;
+			this.ResetSquare.Text = "Reset";
+			this.ResetSquare.UseVisualStyleBackColor = true;
+			this.ResetSquare.Click += new System.EventHandler(this.ResetSquare_Click);
+			// 
+			// SquareCalibrate
+			// 
+			this.SquareCalibrate.Location = new System.Drawing.Point(267, 167);
+			this.SquareCalibrate.Name = "SquareCalibrate";
+			this.SquareCalibrate.Size = new System.Drawing.Size(75, 23);
+			this.SquareCalibrate.TabIndex = 26;
+			this.SquareCalibrate.Text = "Calibrate";
+			this.SquareCalibrate.UseVisualStyleBackColor = true;
+			this.SquareCalibrate.Click += new System.EventHandler(this.SquareCalibrate_Click);
+			// 
+			// TriangleLabel
+			// 
+			this.TriangleLabel.AutoSize = true;
+			this.TriangleLabel.Location = new System.Drawing.Point(489, 141);
+			this.TriangleLabel.Name = "TriangleLabel";
+			this.TriangleLabel.Size = new System.Drawing.Size(147, 17);
+			this.TriangleLabel.TabIndex = 27;
+			this.TriangleLabel.Text = "(360.00^, 400.00 mm)";
+			// 
+			// SquareLabel
+			// 
+			this.SquareLabel.AutoSize = true;
+			this.SquareLabel.Location = new System.Drawing.Point(489, 170);
+			this.SquareLabel.Name = "SquareLabel";
+			this.SquareLabel.Size = new System.Drawing.Size(147, 17);
+			this.SquareLabel.TabIndex = 28;
+			this.SquareLabel.Text = "(360.00^, 400.00 mm)";
+			// 
+			// label7
+			// 
+			this.label7.AutoSize = true;
+			this.label7.Location = new System.Drawing.Point(12, 141);
+			this.label7.Name = "label7";
+			this.label7.Size = new System.Drawing.Size(99, 17);
+			this.label7.TabIndex = 29;
+			this.label7.Text = "Triangle Stack";
+			// 
+			// label8
+			// 
+			this.label8.AutoSize = true;
+			this.label8.Location = new System.Drawing.Point(12, 170);
+			this.label8.Name = "label8";
+			this.label8.Size = new System.Drawing.Size(93, 17);
+			this.label8.TabIndex = 30;
+			this.label8.Text = "Square Stack";
+			// 
 			// RobotCalibrater
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(648, 198);
+			this.ClientSize = new System.Drawing.Size(648, 265);
+			this.Controls.Add(this.label8);
+			this.Controls.Add(this.label7);
+			this.Controls.Add(this.SquareLabel);
+			this.Controls.Add(this.TriangleLabel);
+			this.Controls.Add(this.SquareCalibrate);
+			this.Controls.Add(this.ResetSquare);
+			this.Controls.Add(this.ResetTriangle);
+			this.Controls.Add(this.TriangleCalibrate);
+			this.Controls.Add(this.SquareMoveTo);
+			this.Controls.Add(this.TriangleMoveTo);
 			this.Controls.Add(this.TRLabel);
 			this.Controls.Add(this.TLLabel);
 			this.Controls.Add(this.BRLabel);
@@ -313,5 +429,15 @@
 		private System.Windows.Forms.Label BRLabel;
 		private System.Windows.Forms.Label TLLabel;
 		private System.Windows.Forms.Label TRLabel;
+		private System.Windows.Forms.Button TriangleMoveTo;
+		private System.Windows.Forms.Button SquareMoveTo;
+		private System.Windows.Forms.Button TriangleCalibrate;
+		private System.Windows.Forms.Button ResetTriangle;
+		private System.Windows.Forms.Button ResetSquare;
+		private System.Windows.Forms.Button SquareCalibrate;
+		private System.Windows.Forms.Label TriangleLabel;
+		private System.Windows.Forms.Label SquareLabel;
+		private System.Windows.Forms.Label label7;
+		private System.Windows.Forms.Label label8;
 	}
 }

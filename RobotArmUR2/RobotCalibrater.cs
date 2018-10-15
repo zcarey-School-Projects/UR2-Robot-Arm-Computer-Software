@@ -108,6 +108,8 @@ namespace RobotArmUR2 {
 			updateLabel(TLLabel, robot.Angle2, robot.Distance2);
 			updateLabel(TRLabel, robot.Angle3, robot.Distance3);
 			updateLabel(BRLabel, robot.Angle4, robot.Distance4);
+			updateLabel(TriangleLabel, robot.TriangleStackAngle, robot.TriangleStackDistance);
+			updateLabel(SquareLabel, robot.SquareStackAngle, robot.SquareStackDistance);
 		}
 
 		private static bool confirmReset() {
@@ -132,6 +134,16 @@ namespace RobotArmUR2 {
 		private void resetPoint4() {
 			robot.Angle4 = Robot.Angle4Default;
 			robot.Distance4 = Robot.Distance4Default;
+		}
+
+		private void resetTriangle() {
+			robot.TriangleStackAngle = Robot.TriangleStackAngleDefault;
+			robot.TriangleStackDistance = Robot.TriangleStackDistanceDefault;
+		}
+
+		private void resetSquare() {
+			robot.SquareStackAngle = Robot.SquareStackAngleDefault;
+			robot.SquareStackDistance = Robot.SquareStackDistanceDefault;
 		}
 
 		private void ResetBL_Click(object sender, EventArgs e) {
@@ -168,8 +180,50 @@ namespace RobotArmUR2 {
 				resetPoint2();
 				resetPoint3();
 				resetPoint4();
+				resetTriangle();
+				resetSquare();
 				updateLabels();
 			}
+		}
+
+		private void TriangleMoveTo_Click(object sender, EventArgs e) {
+			robot.moveTo(robot.TriangleStackAngle, robot.TriangleStackDistance);
+		}
+
+		private void SquareMoveTo_Click(object sender, EventArgs e) {
+			robot.moveTo(robot.SquareStackAngle, robot.SquareStackDistance);
+		}
+
+		private void TriangleCalibrate_Click(object sender, EventArgs e) {
+			float rotation = 0;
+			float distance = 0;
+			if (!robot.requestRotation(ref rotation) || !robot.requestExtension(ref distance)) {
+				MessageBox.Show("Error", "Could not retrieve data.", MessageBoxButtons.OK);
+				return;
+			}
+
+			robot.TriangleStackAngle = rotation;
+			robot.TriangleStackDistance = distance;
+		}
+
+		private void SquareCalibrate_Click(object sender, EventArgs e) {
+			float rotation = 0;
+			float distance = 0;
+			if (!robot.requestRotation(ref rotation) || !robot.requestExtension(ref distance)) {
+				MessageBox.Show("Error", "Could not retrieve data.", MessageBoxButtons.OK);
+				return;
+			}
+
+			robot.SquareStackAngle = rotation;
+			robot.SquareStackDistance = distance;
+		}
+
+		private void ResetTriangle_Click(object sender, EventArgs e) {
+			resetTriangle();
+		}
+
+		private void ResetSquare_Click(object sender, EventArgs e) {
+			resetSquare();
 		}
 	}
 }

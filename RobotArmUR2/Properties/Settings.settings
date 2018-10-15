@@ -50,17 +50,23 @@
     <Setting Name="BRRobotDistance" Type="System.Single" Scope="User">
       <Value Profile="(Default)">241.38356</Value>
     </Setting>
-    <Setting Name="LeftPileAngle" Type="System.Single" Scope="User">
+    <Setting Name="TrianglePileAngle" Type="System.Single" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
-    <Setting Name="LeftPileDistance" Type="System.Single" Scope="User">
+    <Setting Name="TrianglePileDistance" Type="System.Single" Scope="User">
       <Value Profile="(Default)">304.8</Value>
     </Setting>
-    <Setting Name="RightPileAngle" Type="System.Single" Scope="User">
+    <Setting Name="SquarePileAngle" Type="System.Single" Scope="User">
       <Value Profile="(Default)">180</Value>
     </Setting>
-    <Setting Name="RightPileDistance" Type="System.String" Scope="User">
+    <Setting Name="SquarePileDistance" Type="System.Single" Scope="User">
       <Value Profile="(Default)">304.8</Value>
+    </Setting>
+    <Setting Name="RobotSpeed" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">100</Value>
+    </Setting>
+    <Setting Name="RobotPrescale" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">0</Value>
     </Setting>
   </Settings>
 </SettingsFile>

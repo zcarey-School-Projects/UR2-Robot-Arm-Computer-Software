@@ -67,11 +67,15 @@
     <Compile Include="Robot Commands\GetExtensionCommand.cs" />
     <Compile Include="Robot Commands\GetRotationCommand.cs" />
     <Compile Include="Robot Commands\GoToHomeCommand.cs" />
+    <Compile Include="Robot Commands\MoveServoCommand.cs" />
+    <Compile Include="Robot Commands\MoveToCommand.cs" />
+    <Compile Include="Robot Commands\MoveToWaitCommand.cs" />
     <Compile Include="Robot Commands\SetPrescaleCommand.cs" />
     <Compile Include="Robot Commands\SetTargetAngleCommand.cs" />
     <Compile Include="Robot Commands\SetTargetDistanceCommand.cs" />
     <Compile Include="Robot Commands\StartMoveCommand.cs" />
     <Compile Include="Robot Commands\UpdateSpeedCommand.cs" />
+    <Compile Include="Robot Programs\StackingProgram.cs" />
     <Compile Include="RobotCalibrater.cs">
       <SubType>Form</SubType>
     </Compile>

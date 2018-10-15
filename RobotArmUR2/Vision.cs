@@ -211,7 +211,7 @@ namespace RobotArmUR2{
 			UI.displayImage(cannyImage, Form1.PictureId.Canny);
 		}
 
-		public void getShapeLists(ref List<Triangle2DF> triangles, ref List<RotatedRect> boxes) {
+		public void getShapeLists(out List<Triangle2DF> triangles, out List<RotatedRect> boxes) {
 			lock (visionLock) {
 				triangles = new List<Triangle2DF>(triangleList);
 				boxes = new List<RotatedRect>(boxList);
