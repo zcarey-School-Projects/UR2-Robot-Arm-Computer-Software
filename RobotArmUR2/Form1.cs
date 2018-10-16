@@ -286,7 +286,7 @@ namespace RobotArmUR2
 		}
 
 		private void Stack_Click(object sender, EventArgs e) {
-			if (!robot.runStackingProgram()) {
+			if (!robot.runStackingProgram(vision, paperCalibrater)) {
 				robot.cancelStackingProgram();
 			}
 		}

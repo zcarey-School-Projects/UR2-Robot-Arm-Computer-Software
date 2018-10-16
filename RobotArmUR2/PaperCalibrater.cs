@@ -15,7 +15,7 @@ namespace RobotArmUR2 {
 
 		private Form1 UI;
 		private Vision vision;
-		private PointF[] paperPoints;
+		/*private*/public PointF[] paperPoints;
 		private int draggingPoint;
 		private bool dragging = false;
 		//private Cursor OpenHandCursor = new Cursor(Properties.Resources.OpenHand.Handle);

@@ -11,7 +11,7 @@ namespace RobotArmUR2.Robot_Commands {
 		private float angle;
 		private float distance;
 
-		public MoveToCommand(float angle, float distance) {
+		public MoveToWaitCommand(float angle, float distance) {
 			this.angle = angle;
 			this.distance = distance;
 		}

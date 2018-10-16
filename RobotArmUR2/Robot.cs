@@ -156,11 +156,11 @@ namespace RobotArmUR2 {
 			}
 		}
 
-		public bool runStackingProgram(Vision vision) { //Returns true if a new thread was started
+		public bool runStackingProgram(Vision vision, PaperCalibrater paper) { //Returns true if a new thread was started
 			lock (stackingProgramLock) {
 				if (programThread != null /*|| !serial.isOpen()*/) return false;
 				endProgram = false;
-				programThread = new Thread(() => StackingProgram(vision));
+				programThread = new Thread(() => StackingProgram(vision, paper));
 				programThread.IsBackground = true;
 				programThread.Name = "Stacking Program";
 				programThread.Start();
@@ -181,7 +181,7 @@ namespace RobotArmUR2 {
 			}
 		}
 
-		private void StackingProgram(Vision vision) {
+		private void StackingProgram(Vision vision, PaperCalibrater paper) {
 			//Before we start, inform the listener that the program is running
 			if (listener != null) listener.ProgramStateChanged(true);
 			//Disable timer wait for finish
@@ -201,9 +201,14 @@ namespace RobotArmUR2 {
 			SendCommand(new EndMoveCommand());
 			Thread.Sleep(500);
 
-			StackingProgram program = new StackingProgram(this, vision);
-			program.runProgram();
+			StackingProgram program = new StackingProgram(this, vision, paper);
+			while (!endProgram) {
+				if (!program.programStep()) {
+					break;
+				}
+			}
 
+			SendCommand(new EndMoveCommand());
 
 			//Before we end the thread, let the listener know we are done
 			if (listener != null) listener.ProgramStateChanged(false);
