@@ -15,7 +15,7 @@ namespace RobotHelpers.InputHandling {
 			captureDevice = new VideoCapture(cameraId);
 		}
 
-		public override void Dispose() {
+		public override void onDispose() {
 			if (captureDevice == null) return;
 			captureDevice.Stop();
 			captureDevice.Dispose();
@@ -47,14 +47,6 @@ namespace RobotHelpers.InputHandling {
 		public override int getHeight() {
 			if (captureDevice == null) return 0;
 			return captureDevice.Height;
-		}
-
-		public override bool requestLoadInput() {
-			throw new NotImplementedException("Can't open a file for a camera input."); 
-		}
-
-		public override bool setFile(string filename) {
-			throw new NotImplementedException("Can't open a file for a camera input.");
 		}
 
 	}

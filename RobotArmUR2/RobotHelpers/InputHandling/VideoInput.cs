@@ -9,7 +9,7 @@ using Emgu.CV.Structure;
 using System.Windows.Forms;
 
 namespace RobotHelpers.InputHandling {
-	public class VideoInput : InputHandler{
+	public class VideoInput : FileInput{
 
 		private BinaryReader reader;
 		private int width = 0;
@@ -17,11 +17,10 @@ namespace RobotHelpers.InputHandling {
 		private byte[,,] buffer = null;
 		private bool frameAvailable = false;
 
-		public VideoInput(String path) : base() {
-			setFile(path);
-		}
+		public VideoInput() : base() { }
+		public VideoInput(String filename) : base(filename) { }
 
-		public override void Dispose() {
+		public override void onDispose() {
 			if(reader != null) {
 				reader.Close();
 				reader.Dispose();
@@ -72,26 +71,45 @@ namespace RobotHelpers.InputHandling {
 			return height;
 		}
 
-		public override bool requestLoadInput() {
-			dialog.Filter = "RawCV Video (*.rawcv)|*.rawcv";
-			if(dialog.ShowDialog() == DialogResult.OK) {
-				String path = dialog.FileName;
-				return setFile(path);
+		protected override string getDialogFileExtensions() {
+			return "RawCV Video (*.rawcv)|*.rawcv";
+		}
+
+		public override bool setFile(String path) {
+			if (File.Exists(path)) {
+				String extension = Path.GetExtension(path);
+				if (extension == ".rawcv") {
+					readRawCVFile(path);
+				}
+			} else {
+				base.printDebugMsg("Could not find file: " + path);
 			}
 
 			return false;
 		}
 
-		public override bool setFile(string path) {
-			Dispose();
-			if (File.Exists(path)) {
-				reader = new BinaryReader(File.OpenRead(path));
-				width = reader.ReadInt32();
-				height = reader.ReadInt32();
-				buffer = new byte[height, width, 3];
-				frameAvailable = reader.ReadBoolean();
-				return true;
-			} else {
+		private bool readRawCVFile(String path) {
+			BinaryReader fileReader = null;
+
+			try {
+				fileReader = new BinaryReader(File.OpenRead(path));
+				int fileWidth = reader.ReadInt32();
+				int fileHeight = reader.ReadInt32();
+				byte[,,] fileBuffer = new byte[height, width, 3];
+				bool fileFrameAvailable = reader.ReadBoolean();
+
+				if (fileFrameAvailable) {
+					width = fileWidth;
+					height = fileHeight;
+					buffer = fileBuffer;
+					frameAvailable = fileFrameAvailable;
+
+					return true;
+				}
+
+				return false;
+			} catch {
+				if (fileReader != null) fileReader.Dispose();
 				return false;
 			}
 		}

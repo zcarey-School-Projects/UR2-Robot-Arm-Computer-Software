@@ -16,6 +16,7 @@ using System.IO.Ports;
 using System.IO;
 using System.Management;
 using RobotHelpers;
+using RobotArmUR2.VisionProcessing;
 
 namespace RobotArmUR2
 {

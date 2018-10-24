@@ -11,6 +11,7 @@ using System.Collections.Concurrent;
 using RobotArmUR2.Robot_Commands;
 using Emgu.CV.Structure;
 using RobotArmUR2.Robot_Programs;
+using RobotArmUR2.VisionProcessing;
 
 namespace RobotArmUR2 {
 	public class Robot {

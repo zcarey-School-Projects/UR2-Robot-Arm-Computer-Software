@@ -1,4 +1,5 @@
 ﻿using Emgu.CV.Structure;
+using RobotArmUR2.VisionProcessing;
 using System;
 using System.Collections.Generic;
 using System.Drawing;

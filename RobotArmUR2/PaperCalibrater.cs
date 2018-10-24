@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using RobotHelpers;
+using RobotArmUR2.VisionProcessing;
 
 namespace RobotArmUR2 {
 	public partial class PaperCalibrater : Form {
@@ -172,7 +173,7 @@ namespace RobotArmUR2 {
 		}
 
 		private void AutoDetect_Click(object sender, EventArgs e) {
-			if (!vision.AutoDetectPaper(this)) {
+			if (!vision.AutoDetectPaper()) {
 				MessageBox.Show("Could not find the paper.", "Error", MessageBoxButtons.OK);
 			}
 		}

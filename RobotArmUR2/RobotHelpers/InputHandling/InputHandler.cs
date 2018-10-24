@@ -13,16 +13,14 @@ namespace RobotHelpers.InputHandling {
 
 	public abstract class InputHandler {
 
-		protected static OpenFileDialog dialog;
+		protected static readonly object inputLock = new object();
 
 		private Stopwatch timer;
-		protected Image<Bgr, byte> frameBuffer;
-		private bool playing = true;
+		private Image<Bgr, byte> frameBuffer;
+		private volatile bool playing = true;
 
-		public InputHandler() {
+		protected InputHandler() {
 			timer = new Stopwatch();
-			dialog = new OpenFileDialog();
-			dialog.RestoreDirectory = true;
 			timer.Start();
 		}
 
@@ -30,7 +28,16 @@ namespace RobotHelpers.InputHandling {
 			Dispose();
 		}
 
-		public abstract void Dispose();
+		public void Dispose() {
+			lock (inputLock) {
+				if (frameBuffer != null) frameBuffer.Dispose();
+				frameBuffer = null;
+				playing = false;
+				onDispose();
+			}
+		}
+
+		public abstract void onDispose();
 
 		/// <summary>
 		/// Returns the path to the current working directory, i.e. Files in your solution.
@@ -42,7 +49,7 @@ namespace RobotHelpers.InputHandling {
 
 		/// <summary>
 		/// <para>Waits the required amount of time then returns the next loadded frame.</para>
-		/// <para>If a video for image file is loaded, the method will block to match 30fps.</para>
+		/// <para>If an image file is loaded, the method will block to match 15fps.</para>
 		/// </summary>
 		/// <returns>null if there was no frame to read.</returns>
 		public Image<Bgr, byte> getFrame() {
@@ -52,19 +59,28 @@ namespace RobotHelpers.InputHandling {
 			}
 			timer.Restart(); //Set elapsed time to 0.
 
-			if (playing) {
-				if (isFrameAvailable()) {
-					frameBuffer = readFrame();
-				} else {
-					frameBuffer = null;
+			lock (inputLock) {
+				if (playing) {
+					//Safetly dispose of the previous frame from memory. Since we always pass copies we can do this.
+					if (frameBuffer != null) {
+						frameBuffer.Dispose();
+						frameBuffer = null;
+					}
+
+					//If a new frame is available, store it in memory for future use.
+					if (isFrameAvailable()) {
+						frameBuffer = readFrame();
+					}
 				}
+
+				//If there is a frame stored in memory, return a copy of it.
+				if (frameBuffer != null) {
+					return frameBuffer.Clone();
+				}
+
+				//We couldn't find an input image, so return null.
+				return null;
 			}
-			
-			if(frameBuffer != null) {
-				return frameBuffer.Clone();
-			}
-			
-			return null;
 		}
 
 		///<summary>
@@ -99,8 +115,10 @@ namespace RobotHelpers.InputHandling {
 		///</summary>
 		///<returns>Bytes in [y,x, channel] format.</returns>
 		public byte[,,] readRawData() {
-			if (frameBuffer == null) return null;
-			return frameBuffer.Clone().Data;
+			lock (inputLock) {
+				if (frameBuffer == null) return null;
+				return frameBuffer.Clone().Data;
+			}
 		}
 
 		///<summary>
@@ -114,35 +132,28 @@ namespace RobotHelpers.InputHandling {
 		public abstract int getWidth();
 		public abstract int getHeight();
 
-		///<summary>
-		///<para>Opens a dialog for the user to select an input file to load.</para>
-		///</summary>
-		///<returns>Input loaded.</returns>
-		public abstract bool requestLoadInput();
-
-		///<summary>
-		///<para>Sets the input to a local file.</para>
-		///<param name="filename">File name of the local file to load.</param>
-		///</summary>
-		///<returns>File was loaded.</returns>
-		public abstract bool setFile(String filename);
-
 		/// <summary>
 		/// <para>Resumes the input of previously paused. If wasn't paused, nothing happens.</para>
 		/// </summary>
 		public void play() {
-			playing = true;
+			lock (inputLock) {
+				playing = true;
+			}
 		}
 
 		/// <summary>
 		/// <para>Pauses the input. If getFrame is called when paused, the previous frame is returned instead. Runs at 15fps when paused to avoid over computation.</para>
 		/// </summary>
 		public void pause() {
-			playing = false;
+			lock (inputLock) {
+				playing = false;
+			}
 		}
 
 		public bool isPlaying() {
-			return playing;
+			lock (inputLock) {
+				return playing;
+			}
 		}
 
 		protected void printDebugMsg(String msg) {

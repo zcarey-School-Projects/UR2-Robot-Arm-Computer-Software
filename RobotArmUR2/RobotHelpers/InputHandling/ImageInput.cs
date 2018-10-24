@@ -10,22 +10,19 @@ using System.Windows.Forms;
 using System.Drawing;
 
 namespace RobotHelpers.InputHandling {
-	public class ImageInput : InputHandler{
+	public class ImageInput : FileInput{
 
 		private int width = 0;
 		private int height = 0;
-		private byte[,,] buffer;
 		private Image<Bgr, byte> imageBuffer;
 
-		public ImageInput(String path) : base() {
-			setFile(path);
-		}
+		public ImageInput() : base() { }
+		public ImageInput(String filename) : base(filename) { }
 
-		public override void Dispose() {
+		public override void onDispose() {
 			width = 0;
 			height = 0;
 			imageBuffer = null;
-			buffer = null;
 		}
 
 		protected override int getDelayMS() {
@@ -38,7 +35,7 @@ namespace RobotHelpers.InputHandling {
 
 		protected override Image<Bgr, byte> readFrame() {
 			if(imageBuffer != null) {
-				return imageBuffer;
+				return imageBuffer.Clone();
 			} else {
 				return null;
 			}
@@ -48,64 +45,99 @@ namespace RobotHelpers.InputHandling {
 
 		public override int getHeight() { return height; }
 
-		public override bool requestLoadInput() {
-			dialog.Filter = "Image Files (*.png, *.jpg, *.rawcvimg)|*.png;*.jpg;*.rawcvimg|RawCV Image (*.rawcvimg)|*.rawcvimg|PNG (*.png)|*.png|JPG (*.jpg)|*.jpg";
-			if (dialog.ShowDialog() == DialogResult.OK) {
-				String path = dialog.FileName;
-				return setFile(path);
-			}
-
-			return false;
+		protected override string getDialogFileExtensions() {
+			return "Image Files (*.bmp, *.gif, *.jpeg, *.jpg, *.exif, *.png, *.tiff, *.rawcvimg)|*.bmp;*.gif;*.jpeg;*.jpg;*.exif;*.png;*.tiff;*.rawcvimg" +
+				"|BMP (*.bmp)|*.bmp" +
+				"|GIF (*.png)|*.png" +
+				"|JPEG (*.jpeg, *.jpg)|*.jpeg;*.jpg" +
+				"|EXIF (*.exif)|*.exif" +
+				"|PNG (*.png)|*.png" +
+				"|TIFF (*.tiff)|*.tiff" +
+				"|RawCV Image (*.rawcvimg)|*.rawcvimg";
 		}
 
 		public override bool setFile(String path) {
 			if (File.Exists(path)) {
 				String extension = Path.GetExtension(path);
-				if(extension == ".rawcvimg") {
-					BinaryReader reader = new BinaryReader(File.OpenRead(path));
-					width = reader.ReadInt32();
-					height = reader.ReadInt32();
-					buffer = new byte[height, width, 3];
-
-					for (int channel = 0; channel < 3; channel++) {
-						for (int y = 0; y < height; y++) {
-							for (int x = 0; x < width; x++) {
-								buffer[y, x, channel] = reader.ReadByte();
-							}
-						}
-					}
-
-					imageBuffer = new Image<Bgr, byte>(buffer);
-
-					reader.Close();
-					reader.Dispose();
-				}else if (extension == ".png" || extension == ".jpg") {
-					Bitmap img = new Bitmap(path);
-					width = img.Width;
-					height = img.Height;
-					buffer = new byte[height, width, 3];
-					for(int y = 0; y < img.Height; y++) {
-						for(int x = 0; x < img.Width; x++) {
-							Color pixel = img.GetPixel(x, y);
-							buffer[y, x, 0] = pixel.B;
-							buffer[y, x, 1] = pixel.G;
-							buffer[y, x, 2] = pixel.R;
-						}
-					}
-
-					imageBuffer = new Image<Bgr, byte>(buffer);
-
-					img.Dispose();
-				} else {
-					base.printDebugMsg("Unknown file type: " + extension);
+				switch (extension) {
+					case ".rawcvimg": return readRawCVImage(path);
+					/*case ".bmp":
+					case ".gif":
+					case ".jpeg":
+					case ".jpg":
+					case ".exif":
+					case ".png":
+					case ".tiff":*/
+					//return readGenericImage(path);
+					//default: return false;
+					default: return readGenericImage(path);
 				}
-
-				return true;
 			} else {
 				base.printDebugMsg("Could not find file: " + path);
 			}
 
 			return false;
+		}
+
+		//This functions assumes that it is confirmed that the given path is a raw CV image type, and file exists.
+		private bool readGenericImage(String path) {
+			Bitmap img = null;
+
+			try {
+				img = new Bitmap(path);
+				int fileWidth = img.Width;
+				int fileHeight = img.Height;
+				byte[,,] buffer = new byte[fileHeight, fileWidth, 3];
+
+				for (int y = 0; y < fileHeight; y++) {
+					for (int x = 0; x < fileWidth; x++) {
+						Color pixel = img.GetPixel(x, y);
+						buffer[y, x, 0] = pixel.B;
+						buffer[y, x, 1] = pixel.G;
+						buffer[y, x, 2] = pixel.R;
+					}
+				}
+
+				imageBuffer = new Image<Bgr, byte>(buffer);
+				width = fileWidth;
+				height = fileHeight;
+
+				return true;
+			} catch {
+				return false;
+			} finally {
+				if (img != null) img.Dispose();
+			}
+		}
+
+		//This functions assumes that it is confirmed that the given path is a raw CV image type, and file exists.
+		private bool readRawCVImage(String path) {
+			BinaryReader reader = new BinaryReader(File.OpenRead(path));
+
+			try {
+				int fileWidth = reader.ReadInt32();
+				int fileHeight = reader.ReadInt32();
+				byte[,,] buffer = new byte[fileHeight, fileWidth, 3];
+
+				for (int channel = 0; channel < 3; channel++) {
+					for (int y = 0; y < height; y++) {
+						for (int x = 0; x < width; x++) {
+							buffer[y, x, channel] = reader.ReadByte();
+						}
+					}
+				}
+
+				imageBuffer = new Image<Bgr, byte>(buffer); 
+				width = fileWidth;
+				height = fileHeight;
+				
+				return true;
+			} catch {
+				return false;
+			} finally {
+				reader.Close();
+				reader.Dispose();
+			}
 		}
 
 	}
