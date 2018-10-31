@@ -17,14 +17,14 @@ using System.IO;
 using System.Management;
 using RobotHelpers;
 using RobotArmUR2.VisionProcessing;
+using RobotHelpers.InputHandling;
 
 namespace RobotArmUR2
 {
-	public partial class Form1 : Form, RobotUIListener
+	public partial class Form1 : Form, RobotUIListener, IVisionUI
 	{
 
 		private Vision vision;
-		private String originalTitle;
 		private SaveFileDialog saveDialog;
 
 		private const int Default_Camera_Index = 0;
@@ -39,17 +39,19 @@ namespace RobotArmUR2
 			InitializeComponent();
 			Properties.Settings.Default.Reload();
 			this.robot = new Robot(this);
-			paperCalibrater = new PaperCalibrater(this);
 			robotCalibrater = new RobotCalibrater(robot);
-			vision = new Vision(this, paperCalibrater, Default_Camera_Index);
+			vision = new Vision(/*paperCalibrater*/);
 			//vision.setCamera(Default_Camera_Index);
-			vision.setInternalImage("DebugImages\\Test Table.jpg");
-			originalTitle = this.Text;
+			vision.InputStream = new ImageInput("DebugImages\\Test Table.jpg");
+			//vision.SetUIListener(this);
+			vision.UIListener = this;
+
+			paperCalibrater = new PaperCalibrater(this, vision);
 
 			saveDialog = new SaveFileDialog();
 			saveDialog.RestoreDirectory = true;
 
-			vision.setPaperMaskPoints(
+			vision.PaperCalibration = new PaperCalibration(
 				new PointF(Properties.Settings.Default.PaperPoint0X, Properties.Settings.Default.PaperPoint0Y),
 				new PointF(Properties.Settings.Default.PaperPoint1X, Properties.Settings.Default.PaperPoint1Y),
 				new PointF(Properties.Settings.Default.PaperPoint2X, Properties.Settings.Default.PaperPoint2Y),
@@ -74,10 +76,25 @@ namespace RobotArmUR2
 			vision.stop();
 		}
 
+		public void VisionUI_NewFrameFinished(Vision vision) {
+			//BeginInvoke(new Action(() => { //Thread safety!
+				OriginalImage.Image = vision.InputImage.Bitmap;
+				GrayImage.Image = vision.ThresholdImage.Bitmap;
+				CannyImage.Image = vision.WarpedImage.Bitmap;
+
+			paperCalibrater.NewFrameFinished(vision);
+			//}));
+		}
+
 		private void screenshotToolStripMenuItem_Click(object sender, EventArgs e) {
-			byte[,,] rawData = vision.getRawData();
-			int width = vision.getStreamWidth();
-			int height = vision.getStreamHeight();
+			InputHandler input = vision.InputStream;
+			if(input != null) {
+				input.UserPromptSaveScreenshot();
+			}
+			/*
+			byte[,,] rawData = vision.InputStream.ReadRawData(); //TODO make ReadRawData() a property of inputHanlder
+			int width = vision.InputStream.GetWidth(); //TODO make getWidth a property of input handler
+			int height = vision.InputStream.GetHeight(); //TODO make getHeight a property of input handler
 
 			saveDialog.Filter = "OpenCV Image (*.rawcvimg)|*.rawcvimg";
 			if(saveDialog.ShowDialog() == DialogResult.OK) {
@@ -101,76 +118,42 @@ namespace RobotArmUR2
 				writer.Close();
 				writer.Dispose();
 			}
-
+			*/
 		}
 
 		#region Input Method Changers
 		private void imageToolStripMenuItem_Click(object sender, EventArgs e) {
-			if(vision.loadImage() == false) {
-				vision.setCamera(Default_Camera_Index);
+			ImageInput newInput = new ImageInput();
+			if (newInput.PromptUserToLoadFile()) {
+				vision.InputStream = newInput;
 			}
 		}
 
-		private void Camera0Menu_Click(object sender, EventArgs e) {
-			vision.setCamera(0);
-		}
+		private void changeCamera(int cameraIndex) { vision.InputStream = new CameraInput(cameraIndex); }
 
-		private void CameraMenu1_Click(object sender, EventArgs e) {
-			vision.setCamera(1);
-		}
+		private void Camera0Menu_Click(object sender, EventArgs e) { changeCamera(0); }
 
-		private void Camera2Menu_Click(object sender, EventArgs e) {
-			vision.setCamera(2);
-		}
+		private void CameraMenu1_Click(object sender, EventArgs e) { changeCamera(1); }
+
+		private void Camera2Menu_Click(object sender, EventArgs e) { changeCamera(2); }
 		#endregion
 
 		private void AutoConnect_Click(object sender, EventArgs e) {
 			robot.ConnectToRobot();
 		}
 
-		#region UI Multi-Thread Update Methods
-		public enum PictureId {
-			//If you add a picturebox, don't forget to update "getPictureBoxFromId" method!
-			Original,
-			Gray,
-			Canny
-		}
-
-		private PictureBox getPictureBoxFromId(PictureId id) {
-			switch (id) {
-				case PictureId.Original: return OriginalImage;
-				case PictureId.Gray: return GrayImage;
-				case PictureId.Canny: return CannyImage;
-				default: return null;
-			}
-		}
-
-		public void displayImage<TColor>(Image<TColor, byte> image, PictureId target) where TColor : struct, IColor {
-			if (image == null) return;
-			getPictureBoxFromId(target).InvokeIfRequired(pictureBox => { pictureBox.Image = image.Resize(pictureBox.Width, pictureBox.Height, Emgu.CV.CvEnum.Inter.Linear).ToBitmap(); });
-		}
-
-		public void setNativeResolutionText(int sizeX, int sizeY) {
-			ResolutionText.InvokeIfRequired(label => { label.Text = "Native Resolution: " + sizeX + " x " + sizeY; });
-		}
-
-		public void setFPS(float fps) {
-			this.InvokeIfRequired(form => { form.Text = originalTitle + "; FPS: " + fps.ToString("0.00"); });
-		}
-		#endregion
-
 		private void goToHomeToolStripMenuItem_Click(object sender, EventArgs e) {
 			throw new MissingMethodException("Unimplemented Method");
 		}
 
 		private void paperPositionToolStripMenuItem_Click(object sender, EventArgs e) {
-			vision.setMode(Vision.VisionMode.CalibratePaper);
-			paperCalibrater.refresh(vision);
+			//vision.setMode(Vision.VisionMode.CalibratePaper);
+			//paperCalibrater.refresh(vision);
 			paperCalibrater.ShowDialog();
 		}
 
 		public void defaultMode() {
-			vision.setMode(Vision.VisionMode.Default);
+			//vision.setMode(Vision.VisionMode.Default);
 		}
 
 		private void OriginalImage_MouseClick(object sender, MouseEventArgs e) {
@@ -178,9 +161,9 @@ namespace RobotArmUR2
 			string gVal = "   ";
 			string bVal = "   ";
 
-			byte[,,] img = vision.getRawData(); //[y, x, channel] as bgr
-			int width = vision.getStreamWidth();
-			int height = vision.getStreamHeight();
+			byte[,,] img = vision.InputStream.ReadRawData(); //[y, x, channel] as bgr
+			int width = vision.InputStream.GetWidth();
+			int height = vision.InputStream.GetHeight();
 			int x = e.X * width / OriginalImage.Width;
 			int y = e.Y * height / OriginalImage.Height;
 			if (img != null) {
@@ -296,6 +279,36 @@ namespace RobotArmUR2
 			PrescaleLabel.Text = "Prescale: " + PrescaleSlider.Value;
 			robot.changeRobotPrescale(PrescaleSlider.Value);
 		}
+
+		public void VisionUI_SetFPSCounter(float fps) {
+			BeginInvoke(new Action(() => { //Thread safe, baby
+				FpsStatusLabel.Text = fps.ToString("N2").PadLeft(6); //Converts FPS to a string with 2 decimals, with at most 3 digits
+			}));
+		}
+
+		public void VisionUI_SetNativeResolutionText(Size resolution) {
+			BeginInvoke(new Action(() => { //Thread safety!
+				ResolutionText.Text = "Native Resolution: " + resolution.Width + " x " + resolution.Height;
+			}));
+		}
+
+		/*private PictureBox getPictureBoxFromId(PictureId id) {
+			switch (id) {
+				case PictureId.Original: return OriginalImage;
+				case PictureId.Gray: return GrayImage;
+				case PictureId.Canny: return CannyImage;
+				default: return null;
+			}
+		}*/
+
+		/*public void VisionUI_DisplayImage<TColor, TDepth>(Image<TColor, TDepth> image, PictureId pictureId) where TColor : struct, IColor where TDepth : new() {
+			PictureBox box = getPictureBoxFromId(pictureId);
+			if (box == null) return;
+			BeginInvoke(new Action(() => { //Always be thread safe, kids!
+				box.Image = image.Bitmap;
+			}));
+
+		}*/
 	}
 
 }

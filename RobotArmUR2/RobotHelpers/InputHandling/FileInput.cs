@@ -16,9 +16,11 @@ namespace RobotHelpers.InputHandling {
 			dialog.RestoreDirectory = true;
 		}
 
-		protected FileInput() : base() {}
+		public FileInput() {
 
-		protected FileInput(String filename) : base() {
+		}
+
+		public FileInput(String filename) {
 			LoadFromFile(filename);
 		}
 
@@ -29,7 +31,9 @@ namespace RobotHelpers.InputHandling {
 		///<returns>File was loaded.</returns>
 		public bool LoadFromFile(String path) {
 			lock (inputLock) {
-				return setFile(path);
+				bool result = setFile(path);
+				printDebugMsg((result ? "Successfully loaded file: " : "Could not load file: ") + path);
+				return result;
 			}
 		}
 
@@ -38,7 +42,7 @@ namespace RobotHelpers.InputHandling {
 		///<param name="filename">File name of the local file to load.</param>
 		///</summary>
 		///<returns>File was loaded.</returns>
-		public abstract bool setFile(String path);
+		protected abstract bool setFile(String path);
 
 		///<summary>
 		///<para>Returns the possible file extensions for an OpenFileDialog.</para>

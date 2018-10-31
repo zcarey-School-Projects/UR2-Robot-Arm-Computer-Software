@@ -15,7 +15,7 @@ namespace RobotHelpers.InputHandling {
 			captureDevice = new VideoCapture(cameraId);
 		}
 
-		public override void onDispose() {
+		protected override void onDispose() {
 			if (captureDevice == null) return;
 			captureDevice.Stop();
 			captureDevice.Dispose();
@@ -32,19 +32,26 @@ namespace RobotHelpers.InputHandling {
 		}
 
 		protected override Image<Bgr, byte> readFrame() {
-			if (isNextFrameAvailable()) {
-				return captureDevice.QueryFrame().ToImage<Bgr, byte>();
-			}
+			//try {
+				if (isNextFrameAvailable()) {
+					Mat rawFormat = captureDevice.QueryFrame();
+					if (rawFormat != null) {
+						return rawFormat.ToImage<Bgr, byte>();
+					}
+				}
+			//} catch {
+			//	Dispose();
+			//}
 
 			return null;
 		}
 
-		public override int getWidth() {
+		public override int GetWidth() {
 			if (captureDevice == null) return 0;
 			return captureDevice.Width;
 		}
 
-		public override int getHeight() {
+		public override int GetHeight() {
 			if (captureDevice == null) return 0;
 			return captureDevice.Height;
 		}

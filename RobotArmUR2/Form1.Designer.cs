@@ -60,6 +60,8 @@
 			this.Stack = new System.Windows.Forms.Button();
 			this.PrescaleSlider = new System.Windows.Forms.TrackBar();
 			this.PrescaleLabel = new System.Windows.Forms.Label();
+			this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+			this.FpsStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
 			((System.ComponentModel.ISupportInitialize)(this.OriginalImage)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.GrayImage)).BeginInit();
 			this.menuStrip1.SuspendLayout();
@@ -70,6 +72,7 @@
 			((System.ComponentModel.ISupportInitialize)(this.RotateLeftVisual)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.RotateRightVisual)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.PrescaleSlider)).BeginInit();
+			this.statusStrip1.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// OriginalImage
@@ -77,6 +80,7 @@
 			this.OriginalImage.Location = new System.Drawing.Point(12, 31);
 			this.OriginalImage.Name = "OriginalImage";
 			this.OriginalImage.Size = new System.Drawing.Size(320, 240);
+			this.OriginalImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
 			this.OriginalImage.TabIndex = 0;
 			this.OriginalImage.TabStop = false;
 			this.OriginalImage.MouseClick += new System.Windows.Forms.MouseEventHandler(this.OriginalImage_MouseClick);
@@ -95,6 +99,7 @@
 			this.GrayImage.Location = new System.Drawing.Point(338, 31);
 			this.GrayImage.Name = "GrayImage";
 			this.GrayImage.Size = new System.Drawing.Size(320, 240);
+			this.GrayImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
 			this.GrayImage.TabIndex = 2;
 			this.GrayImage.TabStop = false;
 			// 
@@ -217,6 +222,7 @@
 			this.CannyImage.Location = new System.Drawing.Point(664, 31);
 			this.CannyImage.Name = "CannyImage";
 			this.CannyImage.Size = new System.Drawing.Size(320, 240);
+			this.CannyImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
 			this.CannyImage.TabIndex = 5;
 			this.CannyImage.TabStop = false;
 			// 
@@ -366,11 +372,29 @@
 			this.PrescaleLabel.TabIndex = 24;
 			this.PrescaleLabel.Text = "Prescale: 0";
 			// 
+			// statusStrip1
+			// 
+			this.statusStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
+			this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.FpsStatusLabel});
+			this.statusStrip1.Location = new System.Drawing.Point(0, 449);
+			this.statusStrip1.Name = "statusStrip1";
+			this.statusStrip1.Size = new System.Drawing.Size(1005, 25);
+			this.statusStrip1.TabIndex = 25;
+			this.statusStrip1.Text = "statusStrip1";
+			// 
+			// FpsStatusLabel
+			// 
+			this.FpsStatusLabel.Name = "FpsStatusLabel";
+			this.FpsStatusLabel.Size = new System.Drawing.Size(79, 20);
+			this.FpsStatusLabel.Text = "000.00 FPS";
+			// 
 			// Form1
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(1005, 450);
+			this.ClientSize = new System.Drawing.Size(1005, 474);
+			this.Controls.Add(this.statusStrip1);
 			this.Controls.Add(this.PrescaleLabel);
 			this.Controls.Add(this.PrescaleSlider);
 			this.Controls.Add(this.Stack);
@@ -410,6 +434,8 @@
 			((System.ComponentModel.ISupportInitialize)(this.RotateLeftVisual)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.RotateRightVisual)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.PrescaleSlider)).EndInit();
+			this.statusStrip1.ResumeLayout(false);
+			this.statusStrip1.PerformLayout();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -450,6 +476,8 @@
 		private System.Windows.Forms.Button Stack;
 		private System.Windows.Forms.TrackBar PrescaleSlider;
 		private System.Windows.Forms.Label PrescaleLabel;
+		private System.Windows.Forms.StatusStrip statusStrip1;
+		private System.Windows.Forms.ToolStripStatusLabel FpsStatusLabel;
 	}
 }
 

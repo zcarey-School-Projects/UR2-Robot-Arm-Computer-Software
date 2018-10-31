@@ -19,7 +19,7 @@ namespace RobotHelpers.InputHandling {
 		public ImageInput() : base() { }
 		public ImageInput(String filename) : base(filename) { }
 
-		public override void onDispose() {
+		protected override void onDispose() {
 			width = 0;
 			height = 0;
 			imageBuffer = null;
@@ -41,9 +41,9 @@ namespace RobotHelpers.InputHandling {
 			}
 		}
 
-		public override int getWidth() { return width; }
+		public override int GetWidth() { return width; }
 
-		public override int getHeight() { return height; }
+		public override int GetHeight() { return height; }
 
 		protected override string getDialogFileExtensions() {
 			return "Image Files (*.bmp, *.gif, *.jpeg, *.jpg, *.exif, *.png, *.tiff, *.rawcvimg)|*.bmp;*.gif;*.jpeg;*.jpg;*.exif;*.png;*.tiff;*.rawcvimg" +
@@ -56,7 +56,7 @@ namespace RobotHelpers.InputHandling {
 				"|RawCV Image (*.rawcvimg)|*.rawcvimg";
 		}
 
-		public override bool setFile(String path) {
+		protected override bool setFile(String path) {
 			if (File.Exists(path)) {
 				String extension = Path.GetExtension(path);
 				switch (extension) {

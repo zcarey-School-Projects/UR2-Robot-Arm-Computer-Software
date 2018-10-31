@@ -13,8 +13,9 @@ namespace RobotArmUR2.VisionProcessing {
 
 		private static readonly object visionLock = new object();
 
-		private Image<Gray, bool> paperMask;
-		public PointF[] paperMaskPoints { get; set; } = new PointF[] { new PointF(0, 0), new PointF(1, 0), new Point(1, 1), new Point(0, 1) };
+		private Image<Gray, byte> paperMask;
+		//public PointF[] paperMaskPoints { get; set; } = new PointF[] { new PointF(0, 0), new PointF(1, 0), new Point(1, 1), new Point(0, 1) };
+		public PaperCalibration paperMaskPoints { get; set; } = new PaperCalibration();
 		public bool paperMaskDirty = true;
 
 		public Image<Gray, byte> grayImage { get; private set; }
@@ -48,7 +49,8 @@ namespace RobotArmUR2.VisionProcessing {
 
 		public void Dispose() {
 			if (paperMask != null) paperMask.Dispose();
-			paperMaskPoints = new PointF[] { };
+			//paperMaskPoints = new PointF[] { };
+			paperMaskPoints = null;
 			if (grayImage != null) grayImage.Dispose();
 			if (cannyImage != null) cannyImage.Dispose();
 			cannyEdges = null;
@@ -70,7 +72,7 @@ namespace RobotArmUR2.VisionProcessing {
 				//Mask the gray image.
 				for (int y = 0; y < image.Height; y++) {
 					for (int x = 0; x < image.Width; x++) {
-						if (paperMask.Data[y, x, 0] == false) {
+						if (paperMask.Data[y, x, 0] < (255 / 2)) {
 							image.Data[y, x, 0] = MaskColor;
 						}
 					}
@@ -78,21 +80,36 @@ namespace RobotArmUR2.VisionProcessing {
 			}
 		}
 
-		private Image<Gray, bool> GeneratePaperMask(int width, int height) {
-			Image<Gray, bool> newMask = new Image<Gray, bool>(width, height);
+		private Image<Gray, byte> GeneratePaperMask(int width, int height) {
+			Image<Gray, byte> newMask = new Image<Gray, byte>(width, height);
 
 			/*if (paperMaskPoints == null) {
 				paperMask.Draw(new Rectangle(0, 0, paperMask.Width, paperMask.Height), new Gray(255));
 			} else {*/
-				Point[] points = new Point[paperMaskPoints.Length];
-				for (int i = 0; i < paperMaskPoints.Length; i++) {
-					points[i] = new Point((int)(width * paperMaskPoints[i].X), (int)(height * paperMaskPoints[i].Y));
-				}
-				//paperMask.DrawPolyline(points, true, new Gray(255), -1);
-				paperMask.FillConvexPoly(points, new Gray(255));
+				Point[] points = new Point[4];
+			/*for (int i = 0; i < paperMaskPoints.Length; i++) {
+				points[i] = new Point((int)(width * paperMaskPoints[i].X), (int)(height * paperMaskPoints[i].Y));
+			}*/
+			points[0] = new Point((int)(width * paperMaskPoints.BL.X), (int)(height * paperMaskPoints.BL.Y));
+			points[1] = new Point((int)(width * paperMaskPoints.TL.X), (int)(height * paperMaskPoints.TL.Y));
+			points[2] = new Point((int)(width * paperMaskPoints.TR.X), (int)(height * paperMaskPoints.TR.Y));
+			points[3] = new Point((int)(width * paperMaskPoints.BR.X), (int)(height * paperMaskPoints.BR.Y));
+			//paperMask.DrawPolyline(points, true, new Gray(255), -1);
+			newMask.FillConvexPoly(points, new Gray(255));
 			//}
 
 			return newMask;
+		}
+
+		public void MaskInputImage(Image<Bgr, byte> input) {
+			grayImage = input.Convert<Gray, byte>();
+			MaskImage(grayImage, 255);
+			grayImage = grayImage.ThresholdBinary(new Gray(255 / 2), new Gray(255));
+		}
+
+		public void FindShapesInMaskedImage() {
+			CannyEdgeDetection();
+			DetectShapes();
 		}
 
 		private void CannyEdgeDetection() {
@@ -171,6 +188,18 @@ namespace RobotArmUR2.VisionProcessing {
 			//Organize Points
 			List<PointF> points = new List<PointF>();
 			points.AddRange(largest.GetVertices());
+
+			PaperCalibration paper = new PaperCalibration();
+			paper.BL = new PointF(points[0].X / image.Width, points[0].Y / image.Height);
+			paper.TL = new PointF(points[1].X / image.Width, points[1].Y / image.Height);
+			paper.TR = new PointF(points[2].X / image.Width, points[2].Y / image.Height);
+			paper.BR = new PointF(points[3].X / image.Width, points[3].Y / image.Height);
+
+			paper.SortPointOrder();
+
+			/*
+			List<PointF> points = new List<PointF>();
+			points.AddRange(largest.GetVertices());
 			PointF[] leftPoints = new PointF[2];
 
 			for (int i = 0; i < 2; i++) {
@@ -183,7 +212,7 @@ namespace RobotArmUR2.VisionProcessing {
 				}
 				points.Remove(leftPoints[i]);
 			}
-
+			
 			if (leftPoints[0].Y < leftPoints[1].Y) {
 				paperMaskPoints[0] = leftPoints[0];
 				paperMaskPoints[3] = leftPoints[1];
@@ -205,7 +234,7 @@ namespace RobotArmUR2.VisionProcessing {
 				paperMaskPoints[i].X /= image.Width;
 				paperMaskPoints[i].Y /= image.Height;
 			}
-
+			*/
 			return true;
 		}
 

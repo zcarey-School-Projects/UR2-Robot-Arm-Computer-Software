@@ -8,16 +8,28 @@ using Emgu.CV;
 using Emgu.CV.Structure;
 using System.Threading;
 using System.Windows.Forms;
+using System.Drawing.Imaging;
 
 namespace RobotHelpers.InputHandling {
 
 	public abstract class InputHandler {
 
 		protected static readonly object inputLock = new object();
+		protected static readonly object screenshotLock = new object();
 
 		private Stopwatch timer;
 		private Image<Bgr, byte> frameBuffer;
 		private volatile bool playing = true;
+
+		private static SaveFileDialog saveDialog;
+
+		static InputHandler(){
+			saveDialog = new SaveFileDialog();
+			saveDialog.RestoreDirectory = true;
+			saveDialog.AddExtension = true;
+			saveDialog.Filter = "BMP (*.bmp)|*.bmp|EMF (*.emf)|*.emf|EXIF (*.exif)|*.exif|GIF (*.gif)|*.gif|Icon(*.ico)|*.ico|JPEG (*.jpeg)|*.jpeg|PNG (*.png)|*.png|TIFF (*.tiff)|*.tiff|WMF (*.wmf)|*.wmf";
+			saveDialog.DefaultExt = "*.png";
+		}
 
 		protected InputHandler() {
 			timer = new Stopwatch();
@@ -37,13 +49,13 @@ namespace RobotHelpers.InputHandling {
 			}
 		}
 
-		public abstract void onDispose();
+		protected abstract void onDispose();
 
 		/// <summary>
 		/// Returns the path to the current working directory, i.e. Files in your solution.
 		/// </summary>
 		/// <returns></returns>
-		public String getWorkingDirectory() {
+		public static String GetWorkingDirectory() {
 			return System.IO.Directory.GetCurrentDirectory() + "\\";
 		}
 
@@ -52,7 +64,7 @@ namespace RobotHelpers.InputHandling {
 		/// <para>If an image file is loaded, the method will block to match 15fps.</para>
 		/// </summary>
 		/// <returns>null if there was no frame to read.</returns>
-		public Image<Bgr, byte> getFrame() {
+		public Image<Bgr, byte> GetFrame() {
 			//Block read until specified delay.
 			while(timer.ElapsedMilliseconds < (playing ? getDelayMS() : 67)) {
 				Thread.Sleep(1);
@@ -68,7 +80,7 @@ namespace RobotHelpers.InputHandling {
 					}
 
 					//If a new frame is available, store it in memory for future use.
-					if (isFrameAvailable()) {
+					if (IsFrameAvailable()) {
 						frameBuffer = readFrame();
 					}
 				}
@@ -96,7 +108,7 @@ namespace RobotHelpers.InputHandling {
 		/// <returns>If there is a frame available to be read. 
 		/// </returns>
 		/// </summary>
-		public bool isFrameAvailable() {
+		public bool IsFrameAvailable() {
 			//if (timer.ElapsedMilliseconds < getDelayMS()) return false;
 			return isNextFrameAvailable();
 		}
@@ -114,7 +126,7 @@ namespace RobotHelpers.InputHandling {
 		///<para>Reads the raw bytes of the last loaded frame.</para>
 		///</summary>
 		///<returns>Bytes in [y,x, channel] format.</returns>
-		public byte[,,] readRawData() {
+		public byte[,,] ReadRawData() {
 			lock (inputLock) {
 				if (frameBuffer == null) return null;
 				return frameBuffer.Clone().Data;
@@ -129,13 +141,13 @@ namespace RobotHelpers.InputHandling {
 		///<returns>The next frame, or null if no frame was available.</returns>
 		protected abstract Image<Bgr, byte> readFrame();
 
-		public abstract int getWidth();
-		public abstract int getHeight();
+		public abstract int GetWidth();
+		public abstract int GetHeight();
 
 		/// <summary>
 		/// <para>Resumes the input of previously paused. If wasn't paused, nothing happens.</para>
 		/// </summary>
-		public void play() {
+		public void Play() {
 			lock (inputLock) {
 				playing = true;
 			}
@@ -144,15 +156,47 @@ namespace RobotHelpers.InputHandling {
 		/// <summary>
 		/// <para>Pauses the input. If getFrame is called when paused, the previous frame is returned instead. Runs at 15fps when paused to avoid over computation.</para>
 		/// </summary>
-		public void pause() {
+		public void Pause() {
 			lock (inputLock) {
 				playing = false;
 			}
 		}
 
-		public bool isPlaying() {
+		public bool IsPlaying() {
 			lock (inputLock) {
 				return playing;
+			}
+		}
+
+		public void UserPromptSaveScreenshot() {
+			lock (screenshotLock) {
+				Image<Bgr, byte> screenshot;
+				lock (inputLock) {
+					if (frameBuffer == null) return;
+					screenshot = frameBuffer.Copy();
+				}
+				if (screenshot == null) return;
+				if (saveDialog.ShowDialog() == DialogResult.OK) {
+					string filename = saveDialog.FileName;
+					ImageFormat format = null;
+					
+
+					switch (System.IO.Path.GetExtension(filename)) {
+						case ".bmp": format = ImageFormat.Bmp; break;
+						case ".emf": format = ImageFormat.Emf; break;
+						case ".exif": format = ImageFormat.Exif; break;
+						case ".gif": format = ImageFormat.Gif; break;
+						case ".ico": format = ImageFormat.Icon; break;
+						case ".jpeg": format = ImageFormat.Jpeg; break;
+						case ".png": format = ImageFormat.Png; break;
+						case ".tiff": format = ImageFormat.Tiff; break;
+						case ".wmf": format = ImageFormat.Wmf; break;
+					}
+
+					if(format != null) {
+						screenshot.Bitmap.Save(filename, format);
+					}
+				}
 			}
 		}
 

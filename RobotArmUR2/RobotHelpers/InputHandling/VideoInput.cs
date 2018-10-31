@@ -20,7 +20,7 @@ namespace RobotHelpers.InputHandling {
 		public VideoInput() : base() { }
 		public VideoInput(String filename) : base(filename) { }
 
-		public override void onDispose() {
+		protected override void onDispose() {
 			if(reader != null) {
 				reader.Close();
 				reader.Dispose();
@@ -63,11 +63,11 @@ namespace RobotHelpers.InputHandling {
 			return null;
 		}
 
-		public override int getWidth() {
+		public override int GetWidth() {
 			return width;
 		}
 
-		public override int getHeight() {
+		public override int GetHeight() {
 			return height;
 		}
 
@@ -75,7 +75,7 @@ namespace RobotHelpers.InputHandling {
 			return "RawCV Video (*.rawcv)|*.rawcv";
 		}
 
-		public override bool setFile(String path) {
+		protected override bool setFile(String path) {
 			if (File.Exists(path)) {
 				String extension = Path.GetExtension(path);
 				if (extension == ".rawcv") {

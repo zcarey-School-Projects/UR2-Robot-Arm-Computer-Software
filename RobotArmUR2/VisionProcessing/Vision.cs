@@ -11,44 +11,150 @@ using Emgu.CV.Util;
 using System.Diagnostics;
 using RobotHelpers.InputHandling;
 using RobotArmUR2.VisionProcessing;
+using RobotHelpers;
 
 namespace RobotArmUR2.VisionProcessing{
 
-	public class Vision{
+	public class Vision : IDisposable {
 
+		private static readonly object exitLock = new object();
+		private static readonly object inputLock = new object();
 		private static readonly object visionLock = new object();
-		private bool keepThreadRunning = true;
+		private static readonly object calibrationLock = new object();
 
-		private Form1 UI;
-		private PaperCalibrater paperCalibrater;
+		private VisionUIInvoker uiListener = new VisionUIInvoker();
+		public IVisionUI UIListener { get => uiListener.Listener; set => uiListener.Listener = value; } //TODO thread safe
+
+		private InputHandler inputStream;
+		public InputHandler InputStream {
+			get {
+				lock (inputLock) {
+					return inputStream;
+				}
+			}
+			set {
+				lock (inputLock) {
+					if (inputStream != null) inputStream.Dispose();
+					inputStream = value;
+				}
+			} }
+
+		private Image<Bgr, byte> rawImage = new Image<Bgr, byte>(1, 1); //Full pixel size, non-edited
+		public Image<Bgr, byte> RawImage {
+			get {
+				lock (visionLock) { return rawImage.Copy(); }
+			}
+			private set {
+				lock (visionLock) {
+					if (value == null) rawImage = new Image<Bgr, byte>(1, 1);
+					else rawImage = value;
+				}
+			}
+		} 
+
+		private Image<Bgr, byte> inputImage = new Image<Bgr, byte>(1, 1); //Resized raw image for better memory usage
+		public Image<Bgr, byte> InputImage {
+			get {
+				lock (visionLock) { return inputImage.Copy(); }
+			}
+			private set {
+				lock (visionLock) {
+					if (value == null) inputImage = new Image<Bgr, byte>(1, 1);
+					else inputImage = value;
+				}
+			}
+		} 
+
+		private Image<Gray, byte> grayscaleImage = new Image<Gray, byte>(1, 1); //Grayscaled InputImage
+		public Image<Gray, byte> GrayscaleImage {
+			get {
+				lock (visionLock) { return grayscaleImage.Copy(); }
+			}
+			private set {
+				lock (visionLock) {
+					if (value == null) grayscaleImage = new Image<Gray, byte>(1, 1);
+					else grayscaleImage = value;
+				}
+			}
+		}
+
+		private Image<Gray, byte> thresholdImage = new Image<Gray, byte>(1, 1);//Thresholded Greyscale Image to either a black/white, no gray
+		public Image<Gray, byte> ThresholdImage {
+			get {
+				lock (visionLock) { return thresholdImage.Copy(); }
+			}
+			private set {
+				lock (visionLock) {
+					if (value == null) thresholdImage = new Image<Gray, byte>(1, 1);
+					else thresholdImage = value;
+				}
+			}
+		}
+
+		private Image<Gray, byte> warpedImage = new Image<Gray, byte>(1, 1); //Warped image so the corners of the paper are in the corner of the image.
+		public Image<Gray, byte> WarpedImage {
+			get {
+				lock (visionLock) { return warpedImage.Copy(); }
+			}
+			private set {
+				lock (visionLock) {
+					if (value == null) warpedImage = new Image<Gray, byte>(1, 1);
+					else warpedImage = value;
+				}
+			}
+		}
+
+		private Image<Gray, byte> cannyImage = new Image<Gray, byte>(1, 1); //Canny edges detected from ThresholdImage
+		public Image<Gray, byte> CannyImage {
+			get {
+				lock (visionLock) { return cannyImage.Copy(); }
+			}
+			private set {
+				lock (visionLock) {
+					if (value == null) cannyImage = new Image<Gray, byte>(1, 1);
+					else cannyImage = value;
+				}
+			}
+		}
+
+		private List<Triangle2DF> triangleList = new List<Triangle2DF>(); //List of detected triangles
+		public List<Triangle2DF> Triangles { get => new List<Triangle2DF>(triangleList); private set => triangleList = value; }
+
+		private List<RotatedRect> squareList = new List<RotatedRect>(); //List of detected squares
+		public List<RotatedRect> Squares { get => new List<RotatedRect>(squareList); private set => squareList = value; }
+
+		private PaperCalibration paperCalibration = new PaperCalibration();
+		public PaperCalibration PaperCalibration {
+			get {
+				lock (calibrationLock) {
+					return new PaperCalibration(paperCalibration);
+				}
+			}
+			set {
+				lock (calibrationLock) {
+					if (value != null) {
+						paperCalibration = value;
+						paperCalibration.SortPointOrder();
+					}
+				}
+			}
+		}
+
+
+		private volatile bool exitThread = false;
 		private Thread captureThread;
-		private InputHandler input;
 
-		private Image<Bgr, byte> origImage;
+		private FPSCounter fpsCounter = new FPSCounter();
 
-
-		private ImageProcessing imageProc = new ImageProcessing();
-
-		private DateTime lastTime = DateTime.UtcNow;
-		private const int FPS_NumFramesToAvg = 10;
-		private float[] FPS_times = new float[FPS_NumFramesToAvg];
-		private int FPS_index = 0;
-		private float totalFPS = 0;
-		private Stopwatch timer = new Stopwatch();
-		private bool nullFPS = true;
-
-		private VisionMode mode = VisionMode.Default;
-
-		public Vision(Form1 UI, PaperCalibrater paperCalibrater) {
-			this.UI = UI;
-			this.paperCalibrater = paperCalibrater;
-			captureThread = new Thread(VisionThread);
+		public Vision() {
+			captureThread = new Thread(visionThreadLoop);
 			captureThread.Name = "Vision Processing Thread";
 			captureThread.IsBackground = true;
 		}
 
-		public Vision(Form1 UI, PaperCalibrater paperCalibrater, int cameraIndex) : this(UI, paperCalibrater){
-			input = new CameraInput(0);
+		public Vision(int cameraIndex) : this(){
+			inputStream = new CameraInput(cameraIndex);
+			inputStream.Play();
 		}
 
 		~Vision() {
@@ -56,279 +162,175 @@ namespace RobotArmUR2.VisionProcessing{
 		}
 
 		public void Dispose() {
-			if(input != null) input.Dispose();
-			if(origImage != null) origImage.Dispose();
-			if (imageProc != null) imageProc.Dispose();
+			//if(inputStream != null) inputStream.Dispose();
+			//if(origImage != null) origImage.Dispose();
+			//if (imageProc != null) imageProc.Dispose();
 		}
 
-		private void VisionThread() {
+		private void visionThreadLoop() {
 			while (true) {
-				calculateFPS(); //Calculate FPS and write to text
-
-				//Check if the thread should continue running.
-				lock (visionLock) {
-					if (!keepThreadRunning) {
+				lock (exitLock) {
+					if (exitThread) {
 						break;
 					}
+				}	
+
+				if (!inputImages()) {
+					fpsCounter.Reset();
+					uiListener.SetNativeResolutionText(new Size(0, 0));
+					lock (visionLock) {
+						InputImage = null;
+						GrayscaleImage = null;
+						ThresholdImage = null;
+						WarpedImage = null;
+						CannyImage = null;
+					}
+					Thread.Sleep(1); //Keeps the thread from going mach 3 when there is no input, but still fast enough that it isn't "stalling" the pogram.
+				} else {
+					fpsCounter.Tick();
+					uiListener.SetNativeResolutionText(rawImage.Size);
+					lock (visionLock) { //Prevents image grabbing while images are being processed.
+						processVision();
+					}
 				}
 
-				//If a new input image is grabbed successfully, continue with processing it.
-				if (inputImages()) {
-					switch (mode) {
-						case VisionMode.Default: processVision(); displayImages(); break;
-						case VisionMode.CalibratePaper: calibratePaper(); break;
-						default: processVision(); break;
-					}
-				} else {
-					Thread.Sleep(1);
-				}
-				
+				uiListener.SetFPSCounter(fpsCounter.FPS);
+				uiListener.NewFrameFinished(this);
 			}
 
-			Dispose();
-		}
-
-		public bool AutoDetectPaper() {
-			return imageProc.AutoDetectPaper(origImage);
+			exitThread = false;
 		}
 
 		private bool inputImages() {
-			if (input == null) {
-				origImage = null;
-			} else {
-				origImage = input.getFrame(); //Attempt to read a new frame.
+			lock (inputLock) {
+				lock (visionLock) {
+					if (inputStream == null) {
+						RawImage = null;
+					} else {
+						Image<Bgr, byte> input = inputStream.GetFrame(); //Attempt to read a new frame.
+						RawImage = input;
+						if (input == null) return false;
+
+						//Scale image so Height = 640, but still keeps aspect ratio.
+						inputImage = input.Resize(640d / input.Height, Emgu.CV.CvEnum.Inter.Cubic);
+						return true;
+					}
+
+					return false;
+				}
 			}
-
-			//If no image is read, just return a blank image and wait 1 ms to try again.
-			if (origImage == null) {
-				origImage = new Image<Bgr, byte>(1, 1);
-				//grayImage = new Image<Gray, byte>(1, 1);
-				displayImages(); //Update the images to be blank.
-				nullFPS = true; //So we can reset the FPS counter.
-				return false;
-			}
-
-			nullFPS = false; //So we know we don't have to reset the FPS counter
-			UI.setNativeResolutionText(origImage.Width, origImage.Height); //TODO: Not update resolution text every frame.
-
-			//Resize the image to allow for faster / more efficient computing (If needed).
-			origImage = origImage.Resize(640, 480, Emgu.CV.CvEnum.Inter.Cubic);
-
-			return true;
 		}
 
+		//Does all the necessary processing on images to properly detect shapes.
 		private void processVision() {
+			GrayscaleImage = InputImage.Convert<Gray, byte>(); //Convert to black/white image since it is all we care about.
+			ThresholdImage = grayscaleImage.ThresholdBinary(new Gray(255d / 2), new Gray(255));
+			warpImage();
 
-			#region Image Conditioning
-			//Grab gray image for shape detection
-			//grayImage = origImage.Convert<Gray, byte>();
-			
-			#endregion
-
+			//imageProc.MaskInputImage(origImage);
+			//imageProc.FindShapesInMaskedImage();
+			//imageProc.DrawFoundShapes(origImage);
 		}
 
+		//Warps the ThresholdImage so the calibrated corners take up the entire image.
+		private void warpImage() {
+			PointF[] paperPoints;
+			lock (calibrationLock) {
+				paperPoints = paperCalibration.ToArray(thresholdImage.Size);
+			}
+			warpedImage = new Image<Gray, byte>(550, 425); //Should be close to aspect ratio of the paper.
+			if (paperPoints == null) return; //Rare, but possible
+			Size size = warpedImage.Size;
+			PointF[] targetPoints = new PointF[] { new PointF(0, size.Height - 1), new PointF(0, 0), new PointF(size.Width - 1, 0), new PointF(size.Width - 1, size.Height - 1) };
+
+			using (var matrix = CvInvoke.GetPerspectiveTransform(paperPoints, targetPoints)) {
+				warpedImage = new Image<Gray, byte>(550, 425);
+				CvInvoke.WarpPerspective(thresholdImage, warpedImage, matrix, warpedImage.Size, Emgu.CV.CvEnum.Inter.Cubic);
+			}
+		}
+
+		/*public bool AutoDetectPaper() {
+			return imageProc.AutoDetectPaper(origImage);
+		}
+		*/
+
+
+		/*
+		private void processVision() {
+			if (origImage == null || origImage.Width < 1 || origImage.Height < 1) return;
+			imageProc.MaskInputImage(origImage);
+			imageProc.FindShapesInMaskedImage();
+			imageProc.DrawFoundShapes(origImage);
+		}*/
+		/*
 		private void displayImages() {
-			UI.displayImage(origImage, Form1.PictureId.Original);
-			UI.displayImage(imageProc.grayImage, Form1.PictureId.Gray);
-			UI.displayImage(imageProc.cannyImage, Form1.PictureId.Canny);
+			uiListener.Invoke_DisplayImage(origImage, PictureId.Original);
+			uiListener.Invoke_DisplayImage(imageProc.grayImage, PictureId.Gray);
+			uiListener.Invoke_DisplayImage(imageProc.cannyImage, PictureId.Canny);
 		}
-
+		*/
+		/*
 		public void getShapeLists(out List<Triangle2DF> triangles, out List<RotatedRect> boxes) {
 			lock (visionLock) {
 				triangles = new List<Triangle2DF>(imageProc.triangleList);
 				boxes = new List<RotatedRect>(imageProc.boxList);
 			}
 		}
-
-		public void setPaperMaskPoints(PointF p1, PointF p2, PointF p3, PointF p4) {
+		*/
+		/*
+		public void setPaperMaskPoints(PaperCalibration paper) {
 			lock (visionLock) {
-				imageProc.paperMaskPoints = new PointF[] { p1, p2, p3, p4 };
+				paper.SortPointOrder();
+				imageProc.paperMaskPoints = paper;
 				imageProc.paperMaskDirty = true;
 			}
 		}
-
-		public PointF[] getPaperMaskPoints() {
-			PointF[] copyArray = new PointF[imageProc.paperMaskPoints.Length];
-			for(int i = 0; i < imageProc.paperMaskPoints.Length; i++) {
-				copyArray[i] = new PointF(imageProc.paperMaskPoints[i].X, imageProc.paperMaskPoints[i].Y);
-			}
-
-			return copyArray;
+		*/
+		/*
+		public PaperCalibration getPaperMaskPoints() {
+			return new PaperCalibration(imageProc.paperMaskPoints);
 		}
-
+		*/
+		/*
 		private void calibratePaper() {
 			Image<Bgr, byte> rect = origImage.CopyBlank();
-			Point[] points = new Point[imageProc.paperMaskPoints.Length];
-			for(int i = 0; i < points.Length; i++) {
-				points[i] = new Point((int)(imageProc.paperMaskPoints[i].X * origImage.Width), (int)(imageProc.paperMaskPoints[i].Y * origImage.Height));
-			}
+			Point[] points = new Point[4];
+			//for(int i = 0; i < points.Length; i++) {
+			//	points[i] = new Point((int)(imageProc.paperMaskPoints[i].X * origImage.Width), (int)(imageProc.paperMaskPoints[i].Y * origImage.Height));
+			//}
+			points[0] = new Point((int)(imageProc.paperMaskPoints.BL.X * origImage.Width), (int)(imageProc.paperMaskPoints.BL.Y * origImage.Height));
+			points[1] = new Point((int)(imageProc.paperMaskPoints.TL.X * origImage.Width), (int)(imageProc.paperMaskPoints.TL.Y * origImage.Height));
+			points[2] = new Point((int)(imageProc.paperMaskPoints.TR.X * origImage.Width), (int)(imageProc.paperMaskPoints.TR.Y * origImage.Height));
+			points[3] = new Point((int)(imageProc.paperMaskPoints.BR.X * origImage.Width), (int)(imageProc.paperMaskPoints.BR.Y * origImage.Height));
 			//rect.DrawPolyline(points, true, new Bgr(42, 240, 247), 0);
 			rect.FillConvexPoly(points, new Bgr(42, 240, 247));
 			CvInvoke.AddWeighted(origImage, 0.8, rect, 0.2, 0, origImage);
 
-			foreach(PointF point in imageProc.paperMaskPoints) {
-				origImage.Draw(new CircleF(new PointF(origImage.Width * point.X, origImage.Height * point.Y), 10), new Bgr(42, 240, 247), 3);
+			foreach(Point point in points) {
+				origImage.Draw(new CircleF(point, 10), new Bgr(42, 240, 247), 3);
 			}
 			
 			paperCalibrater.displayImage(origImage);
 		}
-
-		private void calculateFPS() {
-			float FPS = 0;
-			if (!nullFPS) {
-				DateTime currentTime = DateTime.UtcNow;
-				TimeSpan span = currentTime.Subtract(lastTime);
-				float currentFPS = 1000f / (float)span.TotalMilliseconds;
-				lastTime = currentTime;
-				totalFPS -= FPS_times[FPS_index];
-				totalFPS += currentFPS;
-				FPS_times[FPS_index] = currentFPS;
-				FPS_index++;
-				if (FPS_index >= FPS_NumFramesToAvg) {
-					FPS_index = 0;
-				}
-				FPS = totalFPS / FPS_NumFramesToAvg;
-			} else {
-				FPS_times = new float[FPS_NumFramesToAvg];
-				FPS_index = 0;
-				totalFPS = 0;
-			}
-
-			UI.setFPS(FPS);
-		}
-
+		*/
 		public void start() { if(!captureThread.IsAlive) captureThread.Start(); }
 
 		public void stop() {
 			if (captureThread.IsAlive) {
-				lock (visionLock) {
+				lock (exitLock) {
 					//Safely let the thread know to exit.
-					keepThreadRunning = false;
+					exitThread = true;
 				}
 				captureThread.Join(); //Wait for the thread to finish before closing.
 			}
 		}
 
-		public void play() {
-			lock (visionLock) {
-				input.play();
+		public void CloseInputStream() {
+			lock (inputLock) {
+				inputStream.Dispose();
+				inputStream = null;
 			}
 		}
 
-		public void pause() {
-			lock (visionLock) {
-				input.pause();
-			}
-		}
-
-		public void closeInputStreams() {
-			lock (visionLock) {
-				input.Dispose();
-				input = null;
-			}
-		}
-
-		public bool setCamera(int cameraId) {
-			lock (visionLock) {
-				input.Dispose();
-				input = new CameraInput(cameraId);
-				//input.play();
-				return input.isFrameAvailable();
-			}
-		}
-
-		public bool setInternalVideo(String filename) {
-			return setVideo(input.getWorkingDirectory() + filename);
-		}
-
-		public bool setVideo(String filename) {
-			lock (visionLock) {
-				if (input is VideoInput) {
-					return ((VideoInput)input).LoadFromFile(filename);
-				} else {
-					input.Dispose();
-					input = new VideoInput(filename);
-					return input.isFrameAvailable();
-				}
-			}
-		}
-
-		public bool setInternalImage(String filename) {
-			return setImage(input.getWorkingDirectory() + filename);
-		}
-
-		public bool setImage(String filename) {
-			lock (visionLock) {
-				if (input is ImageInput) {
-					return ((ImageInput)input).LoadFromFile(filename);
-				} else {
-					bool wasPlaying = input.isPlaying();
-					input.Dispose();
-					input = new ImageInput(filename);
-					if (!wasPlaying) input.pause();
-					return input.isFrameAvailable();
-				}
-			}
-		}
-
-		public bool loadImage() {
-			lock (visionLock) {
-				if (!(input is ImageInput)) {
-					bool wasPlaying = input.isPlaying();
-					input.Dispose();
-					input = new ImageInput(null);
-					if (!wasPlaying) input.pause();
-				}
-
-				return ((FileInput)input).PromptUserToLoadFile();
-			}
-		}
-
-		public bool loadVideo() {
-			lock (visionLock) {
-				if (!(input is VideoInput)) {
-					bool wasPlaying = input.isPlaying();
-					input.Dispose();
-					input = new VideoInput(null);
-					if (!wasPlaying) input.pause();
-				}
-
-				return ((FileInput)input).PromptUserToLoadFile();
-			}
-		}
-
-		public bool loadInput() {
-			lock (visionLock) {
-				if (input is FileInput) {
-					return ((FileInput)input).PromptUserToLoadFile();
-				}
-				return false;
-			}
-		}
-
-		public byte[,,] getRawData() {
-			lock (visionLock) {
-				return input.readRawData();
-			}
-		}
-
-		public int getStreamWidth() {
-			return input.getWidth();
-		}
-
-		public int getStreamHeight() {
-			return input.getHeight();
-		}
-
-		public void setMode(VisionMode newMode) {
-			lock (visionLock) {
-				mode = newMode;
-			}
-		}
-
-		public enum VisionMode {
-			Default,
-			CalibratePaper,
-		}
 	}
 }

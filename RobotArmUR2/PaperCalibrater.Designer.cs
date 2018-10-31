@@ -35,6 +35,7 @@
 			this.PaperPicture.Location = new System.Drawing.Point(0, 0);
 			this.PaperPicture.Name = "PaperPicture";
 			this.PaperPicture.Size = new System.Drawing.Size(640, 480);
+			this.PaperPicture.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
 			this.PaperPicture.TabIndex = 0;
 			this.PaperPicture.TabStop = false;
 			this.PaperPicture.MouseDown += new System.Windows.Forms.MouseEventHandler(this.PaperPicture_MouseDown);
