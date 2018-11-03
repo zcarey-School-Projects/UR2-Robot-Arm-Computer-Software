@@ -211,6 +211,7 @@ namespace RobotArmUR2.VisionProcessing{
 						RawImage = input;
 						if (input == null) return false;
 
+						//TODO change so height os 480
 						//Scale image so Height = 640, but still keeps aspect ratio.
 						inputImage = input.Resize(640d / input.Height, Emgu.CV.CvEnum.Inter.Cubic);
 						return true;

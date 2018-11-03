@@ -32,11 +32,19 @@ namespace RobotArmUR2
 		private PaperCalibrater paperCalibrater;
 		private RobotCalibrater robotCalibrater;
 
+		private EmguPictureBox<Bgr, byte> origImage;
+		private EmguPictureBox<Gray, byte> threshImage;
+		private EmguPictureBox<Gray, byte> warpedImage;
+
 		private volatile bool manualMoveEnabled = true;
 
 		public Form1()
 		{
 			InitializeComponent();
+			origImage = new EmguPictureBox<Bgr, byte>(this, Image1);
+			threshImage = new EmguPictureBox<Gray, byte>(this, Image2);
+			warpedImage = new EmguPictureBox<Gray, byte>(this, Image3);
+
 			Properties.Settings.Default.Reload();
 			this.robot = new Robot(this);
 			robotCalibrater = new RobotCalibrater(robot);
@@ -46,7 +54,7 @@ namespace RobotArmUR2
 			//vision.SetUIListener(this);
 			vision.UIListener = this;
 
-			paperCalibrater = new PaperCalibrater(this, vision);
+			paperCalibrater = new PaperCalibrater(/*this, vision*/);
 
 			saveDialog = new SaveFileDialog();
 			saveDialog.RestoreDirectory = true;
@@ -67,6 +75,7 @@ namespace RobotArmUR2
 
 		private void Form1_Load(object sender, EventArgs e) {
 			vision.start();
+
 		}
 
 		private void Form1_FormClosing(object sender, FormClosingEventArgs e) {
@@ -77,13 +86,11 @@ namespace RobotArmUR2
 		}
 
 		public void VisionUI_NewFrameFinished(Vision vision) {
-			//BeginInvoke(new Action(() => { //Thread safety!
-				OriginalImage.Image = vision.InputImage.Bitmap;
-				GrayImage.Image = vision.ThresholdImage.Bitmap;
-				CannyImage.Image = vision.WarpedImage.Bitmap;
+			origImage.Image = vision.InputImage; //grabs image before continuing, therefore should be thread safe.
+			threshImage.Image = vision.ThresholdImage;
+			warpedImage.Image = vision.WarpedImage;
 
 			paperCalibrater.NewFrameFinished(vision);
-			//}));
 		}
 
 		private void screenshotToolStripMenuItem_Click(object sender, EventArgs e) {
@@ -157,30 +164,32 @@ namespace RobotArmUR2
 		}
 
 		private void OriginalImage_MouseClick(object sender, MouseEventArgs e) {
+			
 			string rVal = "   ";
 			string gVal = "   ";
 			string bVal = "   ";
+			string x = "    ";
+			string y = "    ";
 
-			byte[,,] img = vision.InputStream.ReadRawData(); //[y, x, channel] as bgr
-			int width = vision.InputStream.GetWidth();
-			int height = vision.InputStream.GetHeight();
-			int x = e.X * width / OriginalImage.Width;
-			int y = e.Y * height / OriginalImage.Height;
-			if (img != null) {
-				if ((x >= 0) && (x < width) && (y >= 0) && (y < height)) {
-					try {
-						rVal = img[y, x, 2].ToString().PadLeft(3);
-						gVal = img[y, x, 1].ToString().PadLeft(3);
-						bVal = img[y, x, 0].ToString().PadLeft(3);
-					}catch(IndexOutOfRangeException) {
-						rVal = "   ";
-						gVal = "   ";
-						bVal = "   ";
-					}
+			Point? hit = origImage.GetImagePoint(new Point(e.X, e.Y));
+			if(hit != null) {
+				Point pos = (Point)hit;
+				x = pos.X.ToString().PadLeft(4);
+				y = pos.Y.ToString().PadLeft(4);
+				try {
+					rVal = origImage.Image.Data[pos.Y, pos.X, 2].ToString().PadLeft(3);
+					gVal = origImage.Image.Data[pos.Y, pos.X, 1].ToString().PadLeft(3);
+					bVal = origImage.Image.Data[pos.Y, pos.X, 0].ToString().PadLeft(3);
+				} catch (IndexOutOfRangeException) {
+					rVal = "   ";
+					gVal = "   ";
+					bVal = "   ";
+					x = "    ";
+					y = "    ";
 				}
 			}
-
-			ClickLocation.Text = "X: " + ((e.X + 1) * width / OriginalImage.Width).ToString().PadLeft(4) + " Y: " + ((e.Y + 1) * height / OriginalImage.Height).ToString().PadLeft(4);
+			
+			ClickLocation.Text = "X: " + x + " Y: " + y;
 			RGBValues.Text = "R: " + rVal + " G: " + gVal + " B: " + bVal;
 			
 		}
@@ -203,6 +212,14 @@ namespace RobotArmUR2
 				robot.ManualControlKeyEvent(Robot.Key.Up, pressed);
 			}else if ((key == Keys.S)/* || (key == Keys.Down)*/) {
 				robot.ManualControlKeyEvent(Robot.Key.Down, pressed);
+			}else if((key == Keys.E)) {
+				robot.raiseServo();
+			}else if((key == Keys.Q)) {
+				robot.lowerServo();
+			}else if((key == Keys.M)) {
+				robot.magnetOn();
+			}else if((key == Keys.N)) {
+				robot.magnetOff();
 			}
 		}
 

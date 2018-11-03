@@ -77,6 +77,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EmguPictureBox.cs" />
     <Compile Include="OptionsForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -90,6 +91,7 @@
     <Compile Include="Robot Commands\MoveServoCommand.cs" />
     <Compile Include="Robot Commands\MoveToCommand.cs" />
     <Compile Include="Robot Commands\MoveToWaitCommand.cs" />
+    <Compile Include="Robot Commands\SetMagnetCommand.cs" />
     <Compile Include="Robot Commands\SetPrescaleCommand.cs" />
     <Compile Include="Robot Commands\SetTargetAngleCommand.cs" />
     <Compile Include="Robot Commands\SetTargetDistanceCommand.cs" />

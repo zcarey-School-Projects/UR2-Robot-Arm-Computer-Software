@@ -15,18 +15,20 @@ using Emgu.CV.Structure;
 namespace RobotArmUR2 {
 	public partial class PaperCalibrater : Form {
 
-		private Form1 UI;
+		//private Form1 UI;
 		private Vision vision;
 		///*private*/public /*PointF[]*/PaperCalibration paperPoints;
-		private /*int*/ PointF draggingPoint;
+		private /*int*/ CalibrationPoint draggingPoint = CalibrationPoint.BottomLeft;
 		private bool dragging = false;
 		//private Cursor OpenHandCursor = new Cursor(Properties.Resources.OpenHand.Handle);
 		//private Cursor ClosedHandCursor = new Cursor(Properties.Resources.ClosedHand.Handle);
+		private EmguPictureBox<Bgr, byte> picture;
 
-		public PaperCalibrater(Form1 UI, Vision vision) {
+		public PaperCalibrater(/*Vision vision*/) {
 			InitializeComponent();
-			this.UI = UI;
-			this.vision = vision;
+			picture = new EmguPictureBox<Bgr, byte>(this, PaperPicture);
+			//this.UI = UI;
+			//this.vision = vision;
 		}
 
 		private void PaperCalibrater_Load(object sender, EventArgs e) {
@@ -45,10 +47,12 @@ namespace RobotArmUR2 {
 			Properties.Settings.Default.PaperPoint3X = paperPoints.BR.X;
 			Properties.Settings.Default.PaperPoint3Y = paperPoints.BR.Y;
 			Properties.Settings.Default.Save();*/
-			UI.defaultMode();
+			//UI.defaultMode();
 		}
 
 		public void NewFrameFinished(Vision vision) {
+			this.vision = vision;
+
 			Image<Bgr, byte> img = vision.InputImage;
 			Image<Bgr, byte> rect = img.CopyBlank();
 			PointF[] points = vision.PaperCalibration.ToArray(rect.Size);
@@ -59,16 +63,16 @@ namespace RobotArmUR2 {
 			rect.FillConvexPoly(paperPoints, new Bgr(42, 240, 247));
 			CvInvoke.AddWeighted(img, 0.8, rect, 0.2, 0, img);
 
-			foreach (Point point in paperPoints) {
+			foreach (PointF point in points) {
 				img.Draw(new CircleF(point, 10), new Bgr(42, 240, 247), 3);
 			}
 
-			PaperPicture.Image = img.Bitmap;
+			picture.Image = img;
 		}
 
 		public void displayImage<TColor>(Image<TColor, byte> image) where TColor : struct, IColor {
-			if (image == null) return;
-			PaperPicture.InvokeIfRequired(pictureBox => { pictureBox.Image = image.Resize(pictureBox.Width, pictureBox.Height, Emgu.CV.CvEnum.Inter.Linear).ToBitmap(); });
+			//if (image == null) return;
+			//PaperPicture.InvokeIfRequired(pictureBox => { pictureBox.Image = image.Resize(pictureBox.Width, pictureBox.Height, Emgu.CV.CvEnum.Inter.Linear).ToBitmap(); });
 		}
 		/*
 		private void calculatePaperCoords(float px, float py) {
@@ -107,9 +111,12 @@ namespace RobotArmUR2 {
 			}
 
 			if (dragging) {
-				//ref PointF point = ref draggingPoint;
-				draggingPoint.X = (float)e.X / PaperPicture.Width;
-				draggingPoint.Y = (float)e.Y / PaperPicture.Height;
+				PointF? hit = picture.GetRelativeImagePoint(new Point(e.X, e.Y));
+				if (hit == null) return;
+				PointF relative = (PointF)hit;
+
+				PaperCalibration calibration = vision.PaperCalibration;
+				calibration.SetPoint(draggingPoint, relative);
 				/*int position = (Bx - Ax) * (Y - Ay) - (By - Ay) * (X - Ax); <0 is below, >0 is above, 0 = on line
 				
 				if (draggingPoint == 0) {
@@ -129,18 +136,21 @@ namespace RobotArmUR2 {
 				//TODO: constrain points
 				//vision.setPaperMaskPoints(paperPoints.BL, paperPoints.TL, paperPoints.TR, paperPoints.BR);
 				//vision.setPaperMaskPoints(paperPoints);
+				vision.PaperCalibration = calibration;
 			} else {
 				bool showHand = false;
-				/*foreach (PointF point in paperPoints.ToArray()) {
-					int x = (int)(point.X * PaperPicture.Width);
-					int y = (int)(point.Y * PaperPicture.Height);
-					double distance = Math.Sqrt(Math.Pow(e.X - x, 2) + Math.Pow(e.Y - y, 2));
-					if (distance <= 11) {
-						showHand = true;
-						break;
+				PaperCalibration calibration = vision.PaperCalibration;
+				Point? hit = picture.GetImagePoint(new Point(e.X, e.Y));
+				if (hit != null) {
+					Point relative = (Point)hit;
+					foreach (PointF point in calibration.ToArray(picture.Image.Size)) {
+						double distance = Math.Sqrt(Math.Pow(relative.X - point.X, 2) + Math.Pow(relative.Y - point.Y, 2));
+						if (distance <= 11) {
+							showHand = true;
+							break;
+						}
 					}
-				}*/
-
+				}
 				//PaperPicture.Cursor = (showHand ? OpenHandCursor : Cursors.Default);
 				PaperPicture.Cursor = (showHand ? Cursors.Hand : Cursors.Default);
 
@@ -149,24 +159,31 @@ namespace RobotArmUR2 {
 		}
 
 		private void PaperPicture_MouseLeave(object sender, EventArgs e) {
-			//PaperPicture_MouseUp(null, null);
+			PaperPicture_MouseUp(null, null);
 		}
 
 		private void PaperPicture_MouseDown(object sender, MouseEventArgs e) {
+			if (vision == null) return;
 			if (!dragging) {
+				if (picture.Image == null) return; //TODO With EmguPictureBox, is this needed?
+				PaperCalibration calibration = vision.PaperCalibration;
 				bool found = false;
 				double closest = double.MaxValue;
-				/*foreach (PointF point in paperPoints.ToArray()) {
-					int x = (int)(point.X * PaperPicture.Width);
-					int y = (int)(point.Y * PaperPicture.Height);
-					double distance = Math.Sqrt(Math.Pow(e.X - x, 2) + Math.Pow(e.Y - y, 2));
+				//foreach (PointF point in calibration.ToArray(PaperPicture.Size)) {
+				Point? hit = picture.GetImagePoint(new Point(e.X, e.Y));
+				if (hit == null) return; //TODO instead clip to closest point on image
+				Point relative = (Point)hit;
+				Size imgSize = picture.Image.Size;
+				foreach (CalibrationPoint pos in (CalibrationPoint[]) Enum.GetValues(typeof(CalibrationPoint))) {
+					PointF point = calibration.GetPoint(pos);
+					double distance = Math.Sqrt(Math.Pow(relative.X - point.X * imgSize.Width, 2) + Math.Pow(relative.Y - point.Y * imgSize.Height, 2));
 					if ((distance < closest) && (distance <= 11)) {
 						found = true;
 						closest = distance;
-						draggingPoint = point;
+						draggingPoint = pos;
 					}
 				}
-				*/
+				
 				if (found) {
 					//PaperPicture.Cursor = ClosedHandCursor;
 					PaperPicture.Cursor = Cursors.Default;
@@ -190,6 +207,7 @@ namespace RobotArmUR2 {
 			//paperPoints = new PaperCalibration();
 			//vision.setPaperMaskPoints(paperPoints[0], paperPoints[1], paperPoints[2], paperPoints[3]);
 			//vision.setPaperMaskPoints(paperPoints);
+			if (vision == null) return;
 			vision.PaperCalibration = new PaperCalibration();
 		}
 
@@ -197,6 +215,7 @@ namespace RobotArmUR2 {
 			//if (!vision.AutoDetectPaper()) {
 			//	MessageBox.Show("Could not find the paper.", "Error", MessageBoxButtons.OK);
 			//}
+			Console.WriteLine("Non-Implemented feature!");
 		}
 	}
 

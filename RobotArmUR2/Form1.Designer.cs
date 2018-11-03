@@ -27,9 +27,7 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
-			this.OriginalImage = new System.Windows.Forms.PictureBox();
 			this.ResolutionText = new System.Windows.Forms.Label();
-			this.GrayImage = new System.Windows.Forms.PictureBox();
 			this.menuStrip1 = new System.Windows.Forms.MenuStrip();
 			this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -44,7 +42,6 @@
 			this.goToHomeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.paperPositionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.robotPositionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.CannyImage = new System.Windows.Forms.PictureBox();
 			this.AutoConnect = new System.Windows.Forms.Button();
 			this.RGBValues = new System.Windows.Forms.Label();
 			this.ClickLocation = new System.Windows.Forms.Label();
@@ -52,38 +49,31 @@
 			this.RobotSpeedLabel = new System.Windows.Forms.Label();
 			this.RobotConnected = new System.Windows.Forms.CheckBox();
 			this.RobotPort = new System.Windows.Forms.Label();
-			this.ExtendVisual = new System.Windows.Forms.PictureBox();
-			this.RetractVisual = new System.Windows.Forms.PictureBox();
-			this.RotateLeftVisual = new System.Windows.Forms.PictureBox();
-			this.RotateRightVisual = new System.Windows.Forms.PictureBox();
 			this.GotoHomePos = new System.Windows.Forms.Button();
 			this.Stack = new System.Windows.Forms.Button();
 			this.PrescaleSlider = new System.Windows.Forms.TrackBar();
 			this.PrescaleLabel = new System.Windows.Forms.Label();
 			this.statusStrip1 = new System.Windows.Forms.StatusStrip();
 			this.FpsStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
-			((System.ComponentModel.ISupportInitialize)(this.OriginalImage)).BeginInit();
-			((System.ComponentModel.ISupportInitialize)(this.GrayImage)).BeginInit();
+			this.RotateRightVisual = new System.Windows.Forms.PictureBox();
+			this.RotateLeftVisual = new System.Windows.Forms.PictureBox();
+			this.RetractVisual = new System.Windows.Forms.PictureBox();
+			this.ExtendVisual = new System.Windows.Forms.PictureBox();
+			this.Image3 = new System.Windows.Forms.PictureBox();
+			this.Image2 = new System.Windows.Forms.PictureBox();
+			this.Image1 = new System.Windows.Forms.PictureBox();
 			this.menuStrip1.SuspendLayout();
-			((System.ComponentModel.ISupportInitialize)(this.CannyImage)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.RobotSpeedSlider)).BeginInit();
-			((System.ComponentModel.ISupportInitialize)(this.ExtendVisual)).BeginInit();
-			((System.ComponentModel.ISupportInitialize)(this.RetractVisual)).BeginInit();
-			((System.ComponentModel.ISupportInitialize)(this.RotateLeftVisual)).BeginInit();
-			((System.ComponentModel.ISupportInitialize)(this.RotateRightVisual)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.PrescaleSlider)).BeginInit();
 			this.statusStrip1.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.RotateRightVisual)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.RotateLeftVisual)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.RetractVisual)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.ExtendVisual)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.Image3)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.Image2)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.Image1)).BeginInit();
 			this.SuspendLayout();
-			// 
-			// OriginalImage
-			// 
-			this.OriginalImage.Location = new System.Drawing.Point(12, 31);
-			this.OriginalImage.Name = "OriginalImage";
-			this.OriginalImage.Size = new System.Drawing.Size(320, 240);
-			this.OriginalImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-			this.OriginalImage.TabIndex = 0;
-			this.OriginalImage.TabStop = false;
-			this.OriginalImage.MouseClick += new System.Windows.Forms.MouseEventHandler(this.OriginalImage_MouseClick);
 			// 
 			// ResolutionText
 			// 
@@ -93,15 +83,6 @@
 			this.ResolutionText.Size = new System.Drawing.Size(167, 17);
 			this.ResolutionText.TabIndex = 1;
 			this.ResolutionText.Text = "Native Resolution --- x ---";
-			// 
-			// GrayImage
-			// 
-			this.GrayImage.Location = new System.Drawing.Point(338, 31);
-			this.GrayImage.Name = "GrayImage";
-			this.GrayImage.Size = new System.Drawing.Size(320, 240);
-			this.GrayImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-			this.GrayImage.TabIndex = 2;
-			this.GrayImage.TabStop = false;
 			// 
 			// menuStrip1
 			// 
@@ -217,15 +198,6 @@
 			this.robotPositionToolStripMenuItem.Text = "Robot Position";
 			this.robotPositionToolStripMenuItem.Click += new System.EventHandler(this.robotPositionToolStripMenuItem_Click);
 			// 
-			// CannyImage
-			// 
-			this.CannyImage.Location = new System.Drawing.Point(664, 31);
-			this.CannyImage.Name = "CannyImage";
-			this.CannyImage.Size = new System.Drawing.Size(320, 240);
-			this.CannyImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-			this.CannyImage.TabIndex = 5;
-			this.CannyImage.TabStop = false;
-			// 
 			// AutoConnect
 			// 
 			this.AutoConnect.Location = new System.Drawing.Point(12, 415);
@@ -294,46 +266,6 @@
 			this.RobotPort.TabIndex = 16;
 			this.RobotPort.Text = "Port: ";
 			// 
-			// ExtendVisual
-			// 
-			this.ExtendVisual.Image = global::RobotArmUR2.Properties.Resources.ExtendOff;
-			this.ExtendVisual.Location = new System.Drawing.Point(217, 332);
-			this.ExtendVisual.Name = "ExtendVisual";
-			this.ExtendVisual.Size = new System.Drawing.Size(40, 50);
-			this.ExtendVisual.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-			this.ExtendVisual.TabIndex = 17;
-			this.ExtendVisual.TabStop = false;
-			// 
-			// RetractVisual
-			// 
-			this.RetractVisual.Image = global::RobotArmUR2.Properties.Resources.RetractOff;
-			this.RetractVisual.Location = new System.Drawing.Point(217, 388);
-			this.RetractVisual.Name = "RetractVisual";
-			this.RetractVisual.Size = new System.Drawing.Size(40, 50);
-			this.RetractVisual.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-			this.RetractVisual.TabIndex = 18;
-			this.RetractVisual.TabStop = false;
-			// 
-			// RotateLeftVisual
-			// 
-			this.RotateLeftVisual.Image = global::RobotArmUR2.Properties.Resources.RotateLeftOff;
-			this.RotateLeftVisual.Location = new System.Drawing.Point(161, 358);
-			this.RotateLeftVisual.Name = "RotateLeftVisual";
-			this.RotateLeftVisual.Size = new System.Drawing.Size(50, 60);
-			this.RotateLeftVisual.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-			this.RotateLeftVisual.TabIndex = 19;
-			this.RotateLeftVisual.TabStop = false;
-			// 
-			// RotateRightVisual
-			// 
-			this.RotateRightVisual.Image = global::RobotArmUR2.Properties.Resources.RotateRightOff;
-			this.RotateRightVisual.Location = new System.Drawing.Point(263, 358);
-			this.RotateRightVisual.Name = "RotateRightVisual";
-			this.RotateRightVisual.Size = new System.Drawing.Size(50, 60);
-			this.RotateRightVisual.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-			this.RotateRightVisual.TabIndex = 20;
-			this.RotateRightVisual.TabStop = false;
-			// 
 			// GotoHomePos
 			// 
 			this.GotoHomePos.Location = new System.Drawing.Point(869, 375);
@@ -389,6 +321,74 @@
 			this.FpsStatusLabel.Size = new System.Drawing.Size(79, 20);
 			this.FpsStatusLabel.Text = "000.00 FPS";
 			// 
+			// RotateRightVisual
+			// 
+			this.RotateRightVisual.Image = global::RobotArmUR2.Properties.Resources.RotateRightOff;
+			this.RotateRightVisual.Location = new System.Drawing.Point(263, 358);
+			this.RotateRightVisual.Name = "RotateRightVisual";
+			this.RotateRightVisual.Size = new System.Drawing.Size(50, 60);
+			this.RotateRightVisual.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+			this.RotateRightVisual.TabIndex = 20;
+			this.RotateRightVisual.TabStop = false;
+			// 
+			// RotateLeftVisual
+			// 
+			this.RotateLeftVisual.Image = global::RobotArmUR2.Properties.Resources.RotateLeftOff;
+			this.RotateLeftVisual.Location = new System.Drawing.Point(161, 358);
+			this.RotateLeftVisual.Name = "RotateLeftVisual";
+			this.RotateLeftVisual.Size = new System.Drawing.Size(50, 60);
+			this.RotateLeftVisual.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+			this.RotateLeftVisual.TabIndex = 19;
+			this.RotateLeftVisual.TabStop = false;
+			// 
+			// RetractVisual
+			// 
+			this.RetractVisual.Image = global::RobotArmUR2.Properties.Resources.RetractOff;
+			this.RetractVisual.Location = new System.Drawing.Point(217, 388);
+			this.RetractVisual.Name = "RetractVisual";
+			this.RetractVisual.Size = new System.Drawing.Size(40, 50);
+			this.RetractVisual.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+			this.RetractVisual.TabIndex = 18;
+			this.RetractVisual.TabStop = false;
+			// 
+			// ExtendVisual
+			// 
+			this.ExtendVisual.Image = global::RobotArmUR2.Properties.Resources.ExtendOff;
+			this.ExtendVisual.Location = new System.Drawing.Point(217, 332);
+			this.ExtendVisual.Name = "ExtendVisual";
+			this.ExtendVisual.Size = new System.Drawing.Size(40, 50);
+			this.ExtendVisual.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+			this.ExtendVisual.TabIndex = 17;
+			this.ExtendVisual.TabStop = false;
+			// 
+			// Image3
+			// 
+			this.Image3.Location = new System.Drawing.Point(664, 31);
+			this.Image3.Name = "Image3";
+			this.Image3.Size = new System.Drawing.Size(320, 240);
+			this.Image3.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+			this.Image3.TabIndex = 5;
+			this.Image3.TabStop = false;
+			// 
+			// Image2
+			// 
+			this.Image2.Location = new System.Drawing.Point(338, 31);
+			this.Image2.Name = "Image2";
+			this.Image2.Size = new System.Drawing.Size(320, 240);
+			this.Image2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+			this.Image2.TabIndex = 2;
+			this.Image2.TabStop = false;
+			// 
+			// Image1
+			// 
+			this.Image1.Location = new System.Drawing.Point(12, 31);
+			this.Image1.Name = "Image1";
+			this.Image1.Size = new System.Drawing.Size(320, 240);
+			this.Image1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+			this.Image1.TabIndex = 0;
+			this.Image1.TabStop = false;
+			this.Image1.MouseClick += new System.Windows.Forms.MouseEventHandler(this.OriginalImage_MouseClick);
+			// 
 			// Form1
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -410,10 +410,10 @@
 			this.Controls.Add(this.ClickLocation);
 			this.Controls.Add(this.RGBValues);
 			this.Controls.Add(this.AutoConnect);
-			this.Controls.Add(this.CannyImage);
-			this.Controls.Add(this.GrayImage);
+			this.Controls.Add(this.Image3);
+			this.Controls.Add(this.Image2);
 			this.Controls.Add(this.ResolutionText);
-			this.Controls.Add(this.OriginalImage);
+			this.Controls.Add(this.Image1);
 			this.Controls.Add(this.menuStrip1);
 			this.KeyPreview = true;
 			this.MainMenuStrip = this.menuStrip1;
@@ -423,29 +423,27 @@
 			this.Load += new System.EventHandler(this.Form1_Load);
 			this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Form1_KeyDown);
 			this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.Form1_KeyUp);
-			((System.ComponentModel.ISupportInitialize)(this.OriginalImage)).EndInit();
-			((System.ComponentModel.ISupportInitialize)(this.GrayImage)).EndInit();
 			this.menuStrip1.ResumeLayout(false);
 			this.menuStrip1.PerformLayout();
-			((System.ComponentModel.ISupportInitialize)(this.CannyImage)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.RobotSpeedSlider)).EndInit();
-			((System.ComponentModel.ISupportInitialize)(this.ExtendVisual)).EndInit();
-			((System.ComponentModel.ISupportInitialize)(this.RetractVisual)).EndInit();
-			((System.ComponentModel.ISupportInitialize)(this.RotateLeftVisual)).EndInit();
-			((System.ComponentModel.ISupportInitialize)(this.RotateRightVisual)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.PrescaleSlider)).EndInit();
 			this.statusStrip1.ResumeLayout(false);
 			this.statusStrip1.PerformLayout();
+			((System.ComponentModel.ISupportInitialize)(this.RotateRightVisual)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.RotateLeftVisual)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.RetractVisual)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.ExtendVisual)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.Image3)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.Image2)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.Image1)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
 		}
 
 		#endregion
-
-		private System.Windows.Forms.PictureBox OriginalImage;
 		private System.Windows.Forms.Label ResolutionText;
-		private System.Windows.Forms.PictureBox GrayImage;
+		private System.Windows.Forms.PictureBox Image2;
 		private System.Windows.Forms.MenuStrip menuStrip1;
 		private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem saveToolStripMenuItem;
@@ -456,7 +454,7 @@
 		private System.Windows.Forms.ToolStripMenuItem Camera0Menu;
 		private System.Windows.Forms.ToolStripMenuItem Camera1Menu;
 		private System.Windows.Forms.ToolStripMenuItem Camera2Menu;
-		private System.Windows.Forms.PictureBox CannyImage;
+		private System.Windows.Forms.PictureBox Image3;
 		private System.Windows.Forms.Button AutoConnect;
 		private System.Windows.Forms.ToolStripMenuItem calibrateToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem goToHomeToolStripMenuItem;
@@ -478,6 +476,7 @@
 		private System.Windows.Forms.Label PrescaleLabel;
 		private System.Windows.Forms.StatusStrip statusStrip1;
 		private System.Windows.Forms.ToolStripStatusLabel FpsStatusLabel;
+		private System.Windows.Forms.PictureBox Image1;
 	}
 }
 

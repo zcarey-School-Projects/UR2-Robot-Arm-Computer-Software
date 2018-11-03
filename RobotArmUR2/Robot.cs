@@ -227,6 +227,14 @@ namespace RobotArmUR2 {
 			SendCommand(new MoveServoCommand(false));
 		}
 
+		public void magnetOn() {
+			SendCommand(new SetMagnetCommand(true));
+		}
+
+		public void magnetOff() {
+			SendCommand(new SetMagnetCommand(false));
+		}
+
 		public void setUIListener(RobotUIListener listener) {
 			this.listener = listener;
 			serial.setSerialUIListener(listener);
