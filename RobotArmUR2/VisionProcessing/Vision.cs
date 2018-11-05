@@ -1,17 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Emgu.CV;
 using Emgu.CV.Structure;
 using System.Threading;
 using System.Drawing;
-using Emgu.CV.Util;
-using System.Diagnostics;
 using RobotHelpers.InputHandling;
-using RobotArmUR2.VisionProcessing;
 using RobotHelpers;
+using Emgu.CV.Util;
 
 namespace RobotArmUR2.VisionProcessing{
 
@@ -23,7 +18,7 @@ namespace RobotArmUR2.VisionProcessing{
 		private static readonly object calibrationLock = new object();
 
 		private VisionUIInvoker uiListener = new VisionUIInvoker();
-		public IVisionUI UIListener { get => uiListener.Listener; set => uiListener.Listener = value; } //TODO thread safe
+		public IVisionUI UIListener { get => uiListener.Listener; set => uiListener.Listener = value; }
 
 		private InputHandler inputStream;
 		public InputHandler InputStream {
@@ -104,6 +99,7 @@ namespace RobotArmUR2.VisionProcessing{
 			}
 		}
 
+		private UMat cannyEdges = new UMat();
 		private Image<Gray, byte> cannyImage = new Image<Gray, byte>(1, 1); //Canny edges detected from ThresholdImage
 		public Image<Gray, byte> CannyImage {
 			get {
@@ -111,7 +107,7 @@ namespace RobotArmUR2.VisionProcessing{
 			}
 			private set {
 				lock (visionLock) {
-					if (value == null) cannyImage = new Image<Gray, byte>(1, 1);
+					if (value == null)cannyImage = new Image<Gray, byte>(1, 1);
 					else cannyImage = value;
 				}
 			}
@@ -127,14 +123,15 @@ namespace RobotArmUR2.VisionProcessing{
 		public PaperCalibration PaperCalibration {
 			get {
 				lock (calibrationLock) {
-					return new PaperCalibration(paperCalibration);
+					//return new PaperCalibration(paperCalibration);
+					return paperCalibration;
 				}
 			}
 			set {
 				lock (calibrationLock) {
 					if (value != null) {
 						paperCalibration = value;
-						paperCalibration.SortPointOrder();
+						paperCalibration.SortPointOrder(); //TODO this causes problems
 					}
 				}
 			}
@@ -162,6 +159,7 @@ namespace RobotArmUR2.VisionProcessing{
 		}
 
 		public void Dispose() {
+			//TODO dispose
 			//if(inputStream != null) inputStream.Dispose();
 			//if(origImage != null) origImage.Dispose();
 			//if (imageProc != null) imageProc.Dispose();
@@ -227,10 +225,62 @@ namespace RobotArmUR2.VisionProcessing{
 			GrayscaleImage = InputImage.Convert<Gray, byte>(); //Convert to black/white image since it is all we care about.
 			ThresholdImage = grayscaleImage.ThresholdBinary(new Gray(255d / 2), new Gray(255));
 			warpImage();
+			cannyEdgeDetection(warpedImage);
+			DetectShapes();
+		}
 
-			//imageProc.MaskInputImage(origImage);
-			//imageProc.FindShapesInMaskedImage();
-			//imageProc.DrawFoundShapes(origImage);
+		private void DetectShapes() {
+			triangleList = new List<Triangle2DF>();
+			squareList = new List<RotatedRect>();
+			//Image<Bgr, byte> triangleRectImage = origImage.CopyBlank();
+			VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
+			CvInvoke.FindContours(cannyEdges, contours, null, Emgu.CV.CvEnum.RetrType.List, Emgu.CV.CvEnum.ChainApproxMethod.ChainApproxSimple);
+			int count = contours.Size;
+			for (int i = 0; i < count; i++) {
+				VectorOfPoint contour = contours[i];
+				VectorOfPoint approxContour = new VectorOfPoint();
+				CvInvoke.ApproxPolyDP(contour, approxContour, CvInvoke.ArcLength(contour, true) * 0.05, true);
+				if (CvInvoke.ContourArea(approxContour, false) > 250) { //only consider areas that are large enough.
+					if (approxContour.Size == 3) { //Three vertices, must be a triangle!
+						Point[] pts = approxContour.ToArray();
+						triangleList.Add(new Triangle2DF(pts[0], pts[1], pts[2]));
+					} else if (approxContour.Size == 4) { //Four vertices, must be a square!
+						#region Determine if all angles are within 80-100 degrees
+						bool isRectangle = true;
+						Point[] pts = approxContour.ToArray();
+						LineSegment2D[] edges = PointCollection.PolyLine(pts, true);
+						for (int j = 0; j < edges.Length; j++) {
+							double dAngle = Math.Abs(edges[(j + 1) % edges.Length].GetExteriorAngleDegree(edges[j]));
+							/*if (dAngle < RectangleMinimumAngle || dAngle > RectangleMaximumAngle) {
+								isRectangle = false;
+								break;
+							}*/
+						}
+						#endregion
+
+						if (isRectangle) {
+							squareList.Add(CvInvoke.MinAreaRect(approxContour));
+						}
+					}
+				}
+			}
+		}
+
+		//Finds edges in an image.
+		private void cannyEdgeDetection(Image<Gray, byte> inputImage) {
+			//UMat cannyEdges = new UMat();
+			//LineSegment2D[] lines;
+			CvInvoke.Canny(inputImage, cannyEdges, 180.0, 120.0);
+			cannyImage = inputImage.CopyBlank();
+			LineSegment2D[] lines = CvInvoke.HoughLinesP(cannyEdges,
+				1, //Distance resolution in pixel-related units
+				Math.PI / 45.0, //Angle resolution measured in radians
+				20, //threshold
+				30, //min line width
+				10); //gap between lines
+			foreach (LineSegment2D line in lines) {
+				cannyImage.Draw(line, new Gray(255), 2);
+			}
 		}
 
 		//Warps the ThresholdImage so the calibrated corners take up the entire image.
@@ -250,70 +300,42 @@ namespace RobotArmUR2.VisionProcessing{
 			}
 		}
 
-		/*public bool AutoDetectPaper() {
-			return imageProc.AutoDetectPaper(origImage);
-		}
-		*/
+		public RotatedRect? AutoDetectPaper() {
+			GrayscaleImage = InputImage.Convert<Gray, byte>(); //Convert to black/white image since it is all we care about.
+			ThresholdImage = grayscaleImage.ThresholdBinary(new Gray(255d / 2), new Gray(255));
+			cannyEdgeDetection(warpedImage);
+			DetectShapes();
 
+			if (squareList.Count == 0) return null;
 
-		/*
-		private void processVision() {
-			if (origImage == null || origImage.Width < 1 || origImage.Height < 1) return;
-			imageProc.MaskInputImage(origImage);
-			imageProc.FindShapesInMaskedImage();
-			imageProc.DrawFoundShapes(origImage);
-		}*/
-		/*
-		private void displayImages() {
-			uiListener.Invoke_DisplayImage(origImage, PictureId.Original);
-			uiListener.Invoke_DisplayImage(imageProc.grayImage, PictureId.Gray);
-			uiListener.Invoke_DisplayImage(imageProc.cannyImage, PictureId.Canny);
+			//Find largest rectangle
+			float largestSize = 0;
+			RotatedRect? largest = null;
+			foreach(RotatedRect square in squareList) {
+				float area = square.Size.Width * square.Size.Height;
+				if(area > largestSize) {
+					largest = square;
+					largestSize = area;
+				}
+			}
+
+			return largest;
 		}
-		*/
-		/*
-		public void getShapeLists(out List<Triangle2DF> triangles, out List<RotatedRect> boxes) {
-			lock (visionLock) {
-				triangles = new List<Triangle2DF>(imageProc.triangleList);
-				boxes = new List<RotatedRect>(imageProc.boxList);
+
+		public void DrawTriangles(Image<Bgr, byte> image, List<Triangle2DF> shapes, Bgr color, int thickness) {
+			foreach(Triangle2DF triangle in shapes) {
+				image.Draw(triangle, color, thickness);
+				image.Draw(new CircleF(triangle.Centeroid, 2), color, thickness);
 			}
 		}
-		*/
-		/*
-		public void setPaperMaskPoints(PaperCalibration paper) {
-			lock (visionLock) {
-				paper.SortPointOrder();
-				imageProc.paperMaskPoints = paper;
-				imageProc.paperMaskDirty = true;
-			}
-		}
-		*/
-		/*
-		public PaperCalibration getPaperMaskPoints() {
-			return new PaperCalibration(imageProc.paperMaskPoints);
-		}
-		*/
-		/*
-		private void calibratePaper() {
-			Image<Bgr, byte> rect = origImage.CopyBlank();
-			Point[] points = new Point[4];
-			//for(int i = 0; i < points.Length; i++) {
-			//	points[i] = new Point((int)(imageProc.paperMaskPoints[i].X * origImage.Width), (int)(imageProc.paperMaskPoints[i].Y * origImage.Height));
-			//}
-			points[0] = new Point((int)(imageProc.paperMaskPoints.BL.X * origImage.Width), (int)(imageProc.paperMaskPoints.BL.Y * origImage.Height));
-			points[1] = new Point((int)(imageProc.paperMaskPoints.TL.X * origImage.Width), (int)(imageProc.paperMaskPoints.TL.Y * origImage.Height));
-			points[2] = new Point((int)(imageProc.paperMaskPoints.TR.X * origImage.Width), (int)(imageProc.paperMaskPoints.TR.Y * origImage.Height));
-			points[3] = new Point((int)(imageProc.paperMaskPoints.BR.X * origImage.Width), (int)(imageProc.paperMaskPoints.BR.Y * origImage.Height));
-			//rect.DrawPolyline(points, true, new Bgr(42, 240, 247), 0);
-			rect.FillConvexPoly(points, new Bgr(42, 240, 247));
-			CvInvoke.AddWeighted(origImage, 0.8, rect, 0.2, 0, origImage);
 
-			foreach(Point point in points) {
-				origImage.Draw(new CircleF(point, 10), new Bgr(42, 240, 247), 3);
+		public void DrawSquares(Image<Bgr, byte> image, List<RotatedRect> shapes, Bgr color, int thickness) {
+			foreach(RotatedRect square in shapes) {
+				image.Draw(square, color, thickness);
+				image.Draw(new CircleF(square.Center, 2), color, thickness);
 			}
-			
-			paperCalibrater.displayImage(origImage);
 		}
-		*/
+
 		public void start() { if(!captureThread.IsAlive) captureThread.Start(); }
 
 		public void stop() {

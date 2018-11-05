@@ -1,10 +1,6 @@
 ﻿using Emgu.CV;
 using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace RobotArmUR2 {
@@ -16,11 +12,9 @@ namespace RobotArmUR2 {
 
 		private Image<TColor, TDepth> image;
 		public Image<TColor, TDepth> Image {
-			get {
-				lock (pictureLock) { return image; }
-			}
+			get => image;
 			set {
-				lock (pictureLock) {
+				//lock (pictureLock) {
 					image = value;
 
 					if (invoker.IsHandleCreated) {
@@ -32,7 +26,7 @@ namespace RobotArmUR2 {
 						if (value == null) picture.Image = null;
 						else picture.Image = value.Bitmap;
 					}
-				}
+				//}
 			}
 		}
 
@@ -43,11 +37,17 @@ namespace RobotArmUR2 {
 		}
 
 		public PointF? GetRelativeImagePoint(Point MousePoint) {
-			lock (pictureLock) {
-				if (image == null) return null;
+			return GetRelativeImagePoint(image, MousePoint);
+		}
+
+		public PointF? GetRelativeImagePoint(Image<TColor, TDepth> img, Point MousePoint) {
+			//TODO clean if works
+			//lock (pictureLock) {
+			//Image<TColor, TDepth> img = image;
+				if (img == null) return null;
 
 				float PictureAspect = (float)picture.Width / picture.Height;
-				float ImgAspect = (float)image.Width / image.Height;
+				float ImgAspect = (float)img.Width / img.Height;
 				if (ImgAspect > PictureAspect) {
 					int scaledHeight = (int)(picture.Width / ImgAspect);
 					int yPos = (picture.Height - scaledHeight) / 2;
@@ -61,16 +61,17 @@ namespace RobotArmUR2 {
 					if ((pos.X < 0) || (pos.Y < 0) || (pos.X >= scaledWidth) || (pos.Y >= picture.Height)) return null;
 					return new PointF((float)pos.X /scaledWidth, (float)pos.Y / picture.Height); ;
 				}
-			}
+			//}
 		}
 
 		public Point? GetImagePoint(Point MousePoint) {
-			lock (pictureLock) {
-				PointF? hit = GetRelativeImagePoint(MousePoint);
+			//lock (pictureLock) {
+			Image<TColor, TDepth> img = image;
+				PointF? hit = GetRelativeImagePoint(img, MousePoint);
 				if (hit == null) return null;
 				PointF pos = (PointF)hit;
-				return new Point((int)(pos.X * image.Width), (int)(pos.Y * image.Height));
-			}
+				return new Point((int)(pos.X * img.Width), (int)(pos.Y * img.Height));
+			//}
 		}
 
 	}

@@ -1,10 +1,4 @@
-﻿using Emgu.CV.Structure;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Drawing;
 
 namespace RobotArmUR2.VisionProcessing {
 	public class PaperCalibration {
@@ -80,6 +74,29 @@ namespace RobotArmUR2.VisionProcessing {
 			}
 		}
 
+		public void SaveSettings() {
+			Properties.Settings.Default.PaperPoint0X = BL.X;
+			Properties.Settings.Default.PaperPoint0Y = BL.Y;
+			Properties.Settings.Default.PaperPoint1X = TL.X;
+			Properties.Settings.Default.PaperPoint1Y = TL.Y;
+			Properties.Settings.Default.PaperPoint2X = TR.X;
+			Properties.Settings.Default.PaperPoint2Y = TR.Y;
+			Properties.Settings.Default.PaperPoint3X = BR.X;
+			Properties.Settings.Default.PaperPoint3Y = BR.Y;
+			Properties.Settings.Default.Save();
+		}
+
+		public void LoadSettings() {
+			ptBL.X = Properties.Settings.Default.PaperPoint0X;
+			ptBL.Y = Properties.Settings.Default.PaperPoint0Y;
+			ptTL.X = Properties.Settings.Default.PaperPoint1X;
+			ptTL.Y = Properties.Settings.Default.PaperPoint1Y;
+			ptTR.X = Properties.Settings.Default.PaperPoint2X;
+			ptTR.Y = Properties.Settings.Default.PaperPoint2Y;
+			ptBR.X = Properties.Settings.Default.PaperPoint3X;
+			ptBR.Y = Properties.Settings.Default.PaperPoint3Y;
+		}
+
 		public void SortPointOrder() {
 			PointF center = calculateCenter();
 			PointF temp;
@@ -148,33 +165,6 @@ namespace RobotArmUR2.VisionProcessing {
 			float d2 = (b.X - center.X) * (b.X - center.X) + (b.Y - center.Y) * (b.Y - center.Y);
 			return d1 < d2;
 		}
-
-		/*
-		private static bool isPointLess(PointF center, PointF a, PointF b) {
-			if (a.X - center.X >= 0 && b.X - center.X < 0)
-				return true;
-			if (a.X - center.X < 0 && b.X - center.X >= 0)
-				return false;
-			if (a.X - center.X == 0 && b.X - center.X == 0) {
-				if (a.Y - center.Y >= 0 || b.Y - center.Y >= 0)
-					return a.Y > b.Y;
-				return b.Y > a.Y;
-			}
-
-			// compute the cross product of vectors (center -> a) x (center -> b)
-			float det = (a.X - center.X) * (b.Y - center.Y) - (b.X - center.X) * (a.Y - center.Y);
-			if (det < 0)
-				return true;
-			if (det > 0)
-				return false;
-
-			// points a and b are on the same line from the center
-			// check which point is closer to the center
-			float d1 = (a.X - center.X) * (a.X - center.X) + (a.Y - center.Y) * (a.Y - center.Y);
-			float d2 = (b.X - center.X) * (b.X - center.X) + (b.Y - center.Y) * (b.Y - center.Y);
-			return d1 > d2;
-		}
-		*/
 	}
 
 	public enum CalibrationPoint {

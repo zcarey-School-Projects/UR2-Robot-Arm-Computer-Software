@@ -78,12 +78,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EmguPictureBox.cs" />
-    <Compile Include="OptionsForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="OptionsForm.Designer.cs">
-      <DependentUpon>OptionsForm.cs</DependentUpon>
-    </Compile>
     <Compile Include="Robot Commands\EndMoveCommand.cs" />
     <Compile Include="Robot Commands\GetExtensionCommand.cs" />
     <Compile Include="Robot Commands\GetRotationCommand.cs" />
@@ -97,6 +91,9 @@
     <Compile Include="Robot Commands\SetTargetDistanceCommand.cs" />
     <Compile Include="Robot Commands\StartMoveCommand.cs" />
     <Compile Include="Robot Commands\UpdateSpeedCommand.cs" />
+    <Compile Include="Robot Programs\CalibrationProgram.cs" />
+    <Compile Include="Robot Programs\MoveToPosProgram.cs" />
+    <Compile Include="Robot Programs\ReturnHomeProgram.cs" />
     <Compile Include="Robot Programs\StackingProgram.cs" />
     <Compile Include="RobotCalibrater.cs">
       <SubType>Form</SubType>
@@ -104,13 +101,13 @@
     <Compile Include="RobotCalibrater.Designer.cs">
       <DependentUpon>RobotCalibrater.cs</DependentUpon>
     </Compile>
-    <Compile Include="RobotHelpers\ControlHelper.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
+    <Compile Include="RobotCalibration.cs" />
     <Compile Include="RobotHelpers\FPSCounter.cs" />
     <Compile Include="RobotHelpers\InputHandling\CameraInput.cs" />
     <Compile Include="RobotHelpers\InputHandling\FileInput.cs" />
@@ -130,7 +127,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Robot.cs" />
     <Compile Include="RobotHelpers\Serial\SerialCommunicator.cs" />
-    <Compile Include="VisionProcessing\ImageProcessing.cs" />
+    <Compile Include="RobotInterface.cs" />
+    <Compile Include="RobotProgram.cs" />
+    <Compile Include="RobotUI.cs" />
     <Compile Include="VisionProcessing\PaperCalibration.cs" />
     <Compile Include="VisionProcessing\Vision.cs" />
     <Compile Include="VisionProcessing\VisionUI.cs" />
@@ -192,10 +191,6 @@
     <Content Include="Resources\Arrows\RotateRightOff.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <None Include="Resources\OpenHand.png" />
-    <None Include="Resources\ClosedHandIcon.ico" />
-    <None Include="Resources\ClosedHand.png" />
-    <None Include="Resources\ClosedHand.ico" />
     <Content Include="License-LGPL.txt" />
     <Content Include="DebugImages\Test Table.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

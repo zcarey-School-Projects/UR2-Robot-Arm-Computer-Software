@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Emgu.CV;
+﻿using Emgu.CV;
 using Emgu.CV.Structure;
 
 namespace RobotHelpers.InputHandling {
@@ -31,17 +26,13 @@ namespace RobotHelpers.InputHandling {
 			return captureDevice.IsOpened;
 		}
 
-		protected override Image<Bgr, byte> readFrame() {
-			//try {
-				if (isNextFrameAvailable()) {
-					Mat rawFormat = captureDevice.QueryFrame();
-					if (rawFormat != null) {
-						return rawFormat.ToImage<Bgr, byte>();
-					}
+		protected override Image<Bgr, byte> readFrame() {		
+			if (isNextFrameAvailable()) {
+				Mat rawFormat = captureDevice.QueryFrame();
+				if (rawFormat != null) {
+					return rawFormat.ToImage<Bgr, byte>();
 				}
-			//} catch {
-			//	Dispose();
-			//}
+			}
 
 			return null;
 		}

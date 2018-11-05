@@ -62,6 +62,8 @@
 			this.Image3 = new System.Windows.Forms.PictureBox();
 			this.Image2 = new System.Windows.Forms.PictureBox();
 			this.Image1 = new System.Windows.Forms.PictureBox();
+			this.TriangleCount = new System.Windows.Forms.Label();
+			this.SquareCount = new System.Windows.Forms.Label();
 			this.menuStrip1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.RobotSpeedSlider)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.PrescaleSlider)).BeginInit();
@@ -389,11 +391,31 @@
 			this.Image1.TabStop = false;
 			this.Image1.MouseClick += new System.Windows.Forms.MouseEventHandler(this.OriginalImage_MouseClick);
 			// 
+			// TriangleCount
+			// 
+			this.TriangleCount.AutoSize = true;
+			this.TriangleCount.Location = new System.Drawing.Point(563, 365);
+			this.TriangleCount.Name = "TriangleCount";
+			this.TriangleCount.Size = new System.Drawing.Size(83, 17);
+			this.TriangleCount.TabIndex = 26;
+			this.TriangleCount.Text = "Triangles: 0";
+			// 
+			// SquareCount
+			// 
+			this.SquareCount.AutoSize = true;
+			this.SquareCount.Location = new System.Drawing.Point(563, 382);
+			this.SquareCount.Name = "SquareCount";
+			this.SquareCount.Size = new System.Drawing.Size(77, 17);
+			this.SquareCount.TabIndex = 27;
+			this.SquareCount.Text = "Squares: 0";
+			// 
 			// Form1
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(1005, 474);
+			this.Controls.Add(this.SquareCount);
+			this.Controls.Add(this.TriangleCount);
 			this.Controls.Add(this.statusStrip1);
 			this.Controls.Add(this.PrescaleLabel);
 			this.Controls.Add(this.PrescaleSlider);
@@ -477,6 +499,8 @@
 		private System.Windows.Forms.StatusStrip statusStrip1;
 		private System.Windows.Forms.ToolStripStatusLabel FpsStatusLabel;
 		private System.Windows.Forms.PictureBox Image1;
+		private System.Windows.Forms.Label TriangleCount;
+		private System.Windows.Forms.Label SquareCount;
 	}
 }
 

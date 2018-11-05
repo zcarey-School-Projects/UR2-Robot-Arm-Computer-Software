@@ -1,380 +1,184 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.IO.Ports;
-using System.IO;
 using System.Threading;
 using RobotHelpers.Serial;
 using System.Windows.Forms;
-using System.Collections.Concurrent;
 using RobotArmUR2.Robot_Commands;
-using Emgu.CV.Structure;
 using RobotArmUR2.Robot_Programs;
 using RobotArmUR2.VisionProcessing;
 
+//NOTE setting speed only works in manual moves
+//TODO fix manual control stuff
 namespace RobotArmUR2 {
 	public class Robot {
-		private static readonly object stackingProgramLock = new object();
 		private static readonly object settingsLock = new object();
-		private static readonly object homeLock = new object();
-		private SerialCommunicator serial;
-		private RobotUIListener listener;
+		private static readonly object programLock = new object();
 
-		private Rotation manualRotate = Rotation.None;
-		private Extension manualExtension = Extension.None;
-		private bool up = false;
-		private bool down = false;
-		private bool left = false;
-		private bool right = false;
-		private bool wasMoving = false;
-		private System.Windows.Forms.Timer RobotComTimer = new System.Windows.Forms.Timer(); //RobotComTimer = Robot Communiation Timer
-
-		private int robotSpeed = 100;
-		private bool robotSpeedDirty = false;
-
-		private byte robotPrescale = 0;
-		private bool robotPrescaleDirty = false;
-
+		public IRobotUI UIListener { get => uiListener.Listener; set { uiListener.Listener = value; serial.setSerialUIListener(value); } }
+		public RobotCalibration Calibration { get; private set; } = new RobotCalibration();
+		
+		
+		private SerialCommunicator serial = new SerialCommunicator();
+		private RobotInterface serialInterface;
+		private RobotUIInvoker uiListener = new RobotUIInvoker();
+		private System.Windows.Forms.Timer manualTimer = new System.Windows.Forms.Timer();
 
 		private volatile Thread programThread;
-		private volatile bool endProgram = false;
-		//private float temp = Properties.Settings.Default.BLRobotRotation;
+		private volatile bool endProgram;
 
-
-		public static float Angle1Default { get; private set; } = float.Parse((string)Properties.Settings.Default.Properties["BLRobotRotation"].DefaultValue);
-		public static float Angle2Default { get; private set; } = float.Parse((string)Properties.Settings.Default.Properties["TLRobotRotation"].DefaultValue);
-		public static float Angle3Default { get; private set; } = float.Parse((string)Properties.Settings.Default.Properties["TRRobotRotation"].DefaultValue);
-		public static float Angle4Default { get; private set; } = float.Parse((string)Properties.Settings.Default.Properties["BRRobotRotation"].DefaultValue);
-
-		public static float Distance1Default { get; private set; } = float.Parse((string)Properties.Settings.Default.Properties["BLRobotDistance"].DefaultValue);
-		public static float Distance2Default { get; private set; } = float.Parse((string)Properties.Settings.Default.Properties["TLRobotDistance"].DefaultValue);
-		public static float Distance3Default { get; private set; } = float.Parse((string)Properties.Settings.Default.Properties["TRRobotDistance"].DefaultValue);
-		public static float Distance4Default { get; private set; } = float.Parse((string)Properties.Settings.Default.Properties["BRRobotDistance"].DefaultValue);
-
-		public static float TriangleStackAngleDefault { get; private set; } = float.Parse((string)Properties.Settings.Default.Properties["TrianglePileAngle"].DefaultValue);
-		public static float TriangleStackDistanceDefault { get; private set; } = float.Parse((string)Properties.Settings.Default.Properties["TrianglePileDistance"].DefaultValue);
-
-		public static float SquareStackAngleDefault { get; private set; } = float.Parse((string)Properties.Settings.Default.Properties["SquarePileAngle"].DefaultValue);
-		public static float SquareStackDistanceDefault { get; private set; } = float.Parse((string)Properties.Settings.Default.Properties["SquarePileDistance"].DefaultValue);
-
-		public float Angle1 { get; set; }
-		public float Angle2 { get; set; }
-		public float Angle3 { get; set; }
-		public float Angle4 { get; set; }
-
-		public float Distance1 { get; set; }
-		public float Distance2 { get; set; }
-		public float Distance3 { get; set; }
-		public float Distance4 { get; set; }
-
-		public float TriangleStackAngle { get; set; }
-		public float TriangleStackDistance { get; set; }
-
-		public float SquareStackAngle { get; set; }
-		public float SquareStackDistance { get; set; }
+		private bool? setMagnetState = null;
+		private bool? setServoState = null;
+		private byte? setPrescale = null;
+		private byte? setSpeed = null;
+		private Rotation? setRotation = null;
+		private Extension? setExtension = null;
 
 		public Robot() {
-			serial = new SerialCommunicator();
-			loadSettings();
-			setTimerSettings();
-		}
-
-		public Robot(RobotUIListener listener) {
-			this.listener = listener;
-			serial = new SerialCommunicator(listener);
-			loadSettings();
-			setTimerSettings();
-		}
-
-		private void loadSettings() {
-			Angle1 = Properties.Settings.Default.BLRobotRotation;
-			Angle2 = Properties.Settings.Default.TLRobotRotation;
-			Angle3 = Properties.Settings.Default.TRRobotRotation;
-			Angle4 = Properties.Settings.Default.BRRobotRotation;
-
-			Distance1 = Properties.Settings.Default.BLRobotDistance;
-			Distance2 = Properties.Settings.Default.TLRobotDistance;
-			Distance3 = Properties.Settings.Default.TRRobotDistance;
-			Distance4 = Properties.Settings.Default.BRRobotDistance;
-
-			TriangleStackAngle = Properties.Settings.Default.TrianglePileAngle;
-			TriangleStackDistance = Properties.Settings.Default.TrianglePileDistance;
-
-			SquareStackAngle = Properties.Settings.Default.SquarePileAngle;
-			SquareStackDistance = Properties.Settings.Default.SquarePileDistance;
-		}
-
-		private void setTimerSettings() {
-			RobotComTimer.Interval = 50;
-			RobotComTimer.Tick += manualControlTick;
-			RobotComTimer.Start();
-		}
-
-		public void saveSettings() {
-			Properties.Settings.Default.BLRobotRotation = Angle1;
-			Properties.Settings.Default.TLRobotRotation = Angle2;
-			Properties.Settings.Default.TRRobotRotation = Angle3;
-			Properties.Settings.Default.BRRobotRotation = Angle4;
-
-			Properties.Settings.Default.BLRobotDistance = Distance1;
-			Properties.Settings.Default.TLRobotDistance = Distance2;
-			Properties.Settings.Default.TRRobotDistance = Distance3;
-			Properties.Settings.Default.BRRobotDistance = Distance4;
-
-			Properties.Settings.Default.Save();
-		}
-
-		private void markAllDirty() {
-			lock (settingsLock) {
-				robotSpeedDirty = true;
-				robotPrescaleDirty = true;
-			}
-		}
-
-		private void manualControlTick(object sender, EventArgs e) {
-			lock (settingsLock) {
-				if (manualRotate == Rotation.None && manualExtension == Extension.None) {
-					if (wasMoving) {
-						wasMoving = false;
-						SendCommand(new EndMoveCommand());
-					}
-				} else {
-					wasMoving = true;
-					SendCommand(new StartMoveCommand(manualRotate, manualExtension));
-				}
-
-				if (robotSpeedDirty) {
-					SendCommand(new UpdateSpeedCommand(robotSpeed));
-					robotSpeedDirty = false;
-				}
-
-				if (robotPrescaleDirty) {
-					SendCommand(new SetPrescaleCommand(robotPrescale));
-					robotPrescaleDirty = false;
-				}
-
-			}
-		}
-
-		public bool runStackingProgram(Vision vision, PaperCalibrater paper) { //Returns true if a new thread was started
-			lock (stackingProgramLock) {
-				if (programThread != null /*|| !serial.isOpen()*/) return false;
-				endProgram = false;
-				programThread = new Thread(() => StackingProgram(vision, paper));
-				programThread.IsBackground = true;
-				programThread.Name = "Stacking Program";
-				programThread.Start();
-
-				return true;
-			}
-		}
-
-		public void cancelStackingProgram() {
-			lock (stackingProgramLock) {
-				if(programThread != null) {
-					endProgram = true;
-					programThread.Join();
-					endProgram = false;
-					if (listener != null) listener.ProgramStateChanged(false);
-					programThread = null;
-				}
-			}
-		}
-
-		private void StackingProgram(Vision vision, PaperCalibrater paper) {
-			//Before we start, inform the listener that the program is running
-			if (listener != null) listener.ProgramStateChanged(true);
-			//Disable timer wait for finish
-			RobotComTimer.Enabled = false;
-			lock (settingsLock) {
-				//Timer is finished, reset manual move stuff
-				up = false;
-				down = false;
-				left = false;
-				right = false;
-				manualRotate = Rotation.None;
-				manualExtension = Extension.None;
-				wasMoving = false;
-			}
-
-			//Reset manual control, stop all moves
-			SendCommand(new EndMoveCommand());
-			Thread.Sleep(500);
-
-			StackingProgram program = new StackingProgram(this, vision, paper);
-			while (!endProgram) {
-				if (!program.programStep()) {
-					break;
-				}
-			}
-
-			SendCommand(new EndMoveCommand());
-
-			//Before we end the thread, let the listener know we are done
-			if (listener != null) listener.ProgramStateChanged(false);
-
-			lock (stackingProgramLock) {
-				programThread = null; //Let the program know we are finished.
-			}
-		}
-
-		public void raiseServo() {
-			SendCommand(new MoveServoCommand(true));
-		}
-
-		public void lowerServo() {
-			SendCommand(new MoveServoCommand(false));
-		}
-
-		public void magnetOn() {
-			SendCommand(new SetMagnetCommand(true));
-		}
-
-		public void magnetOff() {
-			SendCommand(new SetMagnetCommand(false));
-		}
-
-		public void setUIListener(RobotUIListener listener) {
-			this.listener = listener;
-			serial.setSerialUIListener(listener);
-		}
-
-		private object SendCommand(SerialCommand command) {
-			if (serial.isOpen()) {
-				return serial.sendCommand(command);
-			} else {
-				return null;
-			}
+			serialInterface = new RobotInterface(serial);
+			manualTimer.Interval = 50;
+			manualTimer.Tick += onTimerTick;
+			manualTimer.Start();
 		}
 
 		public void ConnectToRobot() {
 			if (serial.autoConnect()) {
-				markAllDirty();
-				manualControlTick(null, null);
-				//GoToHome();
-			} else {
-				MessageBox.Show("Device not found.");
+				lock (settingsLock) {
+					setMagnetState = false;
+					setServoState = true;
+					//TODO speed settings
+					//setPrescale = null;
+					//setSpeed = null;
+					setRotation = Rotation.None;
+					setExtension = Extension.None;
+					//GoToHome()
+				}
+			} else MessageBox.Show("Device not found.");
+		}
+		
+		//Returns if program was started
+		public bool RunProgram(RobotProgram program) {
+			if (programThread != null) return false;
+			lock (programLock) {
+				endProgram = false;
+				programThread = new Thread(() => ProgramLoop(program));
+				programThread.IsBackground = true;
+				programThread.Name = "Robot Program";
+				programThread.Start();
+				uiListener.ProgramStateChanged(true);
+				return true;
 			}
 		}
 
-		public void GoToHome() {
-			lock (homeLock) {
-				lock (settingsLock) {
-					RobotComTimer.Stop();
+		private void ProgramLoop(RobotProgram program) {
+			//Prepare robot for program
+			lock (settingsLock) { manualTimer.Stop(); }
+			serialInterface.EndMove();
+			serialInterface.MagnetOff();
+			serialInterface.RaiseServo();
+			Thread.Sleep(500); //Give system some settling time
+
+			program.Initialize(serialInterface);
+			bool forceCancel = false;
+			while (true) {
+				lock (programLock) {
+					if (endProgram) forceCancel = true;
 				}
-				SendCommand(new GoToHomeCommand()); //Blocks until an error occurs or the robot has reached the home position.
-				RobotComTimer.Start();
+				if (forceCancel) {
+					program.ProgramCancelled(serialInterface);
+					break;
+				} else if (!program.ProgramStep(serialInterface)) break;
+			}
+
+			//End program
+			uiListener.ProgramStateChanged(false);
+			lock (settingsLock) {
+				manualTimer.Start();
+				programThread = null;
 			}
 		}
+
+		public void CancelProgram() {
+			if (programThread == null) return;
+			lock (programLock) {
+				endProgram = true;
+			}
+			//programThread.Join();
+		}
+
+		public void SetPrescale(byte prescale) { lock (settingsLock) { if (programThread == null) setPrescale = prescale; } }
+		public void SetSpeed(byte speed) {
+			if (speed < 5 || speed > 235) return;
+			lock (settingsLock) {
+				if (programThread == null) setSpeed = speed;
+			}
+		}
+
+		bool keyCCWPressed = false;
+		bool keyCWPressed = false;
+		bool keyExtendPressed = false;
+		bool keyContractPressed = false;
 
 		public void ManualControlKeyEvent(Key key, bool pressed) {
 			lock (settingsLock) {
-				if (key == Key.Left) {
-					left = pressed;
-					if (left) {
-						manualRotate = Rotation.CCW;
-					} else if (right) {
-						manualRotate = Rotation.CW;
-					} else {
-						manualRotate = Rotation.None;
-					}
-				} else if (key == Key.Right) {
-					right = pressed;
-					if (right) {
-						manualRotate = Rotation.CW;
-					} else if (left) {
-						manualRotate = Rotation.CCW;
-					} else {
-						manualRotate = Rotation.None;
-					}
-				} else if (key == Key.Up) {
-					up = pressed;
-					if (up) {
-						manualExtension = Extension.Outward;
-					} else if (down) {
-						manualExtension = Extension.Inward;
-					} else {
-						manualExtension = Extension.None;
-					}
-				} else if (key == Key.Down) {
-					down = pressed;
-					if (down) {
-						manualExtension = Extension.Inward;
-					} else if (up) {
-						manualExtension = Extension.Outward;
-					} else {
-						manualExtension = Extension.None;
-					}
+				if (key == Key.MagnetOn) {
+					setMagnetState = true;
+				} else if (key == Key.MagnetOff) {
+					setMagnetState = false;
+				}else if(key == Key.RaiseServo) {
+					setServoState = true;
+				}else if(key == Key.LowerServo) {
+					setServoState = false;
 				} else {
-					return;
-				}
-			}
+					if (key == Key.RotateCCW) {
+						keyCCWPressed = pressed;
+						if (keyCCWPressed) setRotation = Rotation.CCW;
+						else if (keyCWPressed) setRotation = Rotation.CW;
+						else setRotation = Rotation.None;
+					} else if (key == Key.RotateCCW) {
+						keyCWPressed = pressed;
+						if (keyCWPressed) setRotation = Rotation.CW;
+						else if (keyCCWPressed) setRotation = Rotation.CCW;
+						else setRotation = Rotation.None;
+					} else if (key == Key.ExtendOutward) {
+						keyExtendPressed = pressed;
+						if (keyExtendPressed) setExtension = Extension.Outward;
+						else if (keyContractPressed) setExtension = Extension.Inward;
+						else setExtension = Extension.None;
+					} else if (key == Key.ExtendInward) {
+						keyContractPressed = pressed;
+						if (keyContractPressed) setExtension = Extension.Inward;
+						else if (keyExtendPressed) setExtension = Extension.Outward;
+						else setExtension = Extension.None;
+					}
 
-			if (listener != null) {
-				listener.ChangeManualRotateImage(manualRotate);
-				listener.ChangeManualExtensionImage(manualExtension);
+					if(setRotation != null) uiListener.ChangeManualRotateImage((Rotation)setRotation);
+					if(setExtension != null) uiListener.ChangeManualExtensionImage((Extension)setExtension);
+				}
 			}
 		}
 
-		public void changeRobotSpeed(int newSpeed) {
-			if (newSpeed < 5 || newSpeed > 235) newSpeed = 100;
+		private void onTimerTick(object sender, EventArgs e) {
 			lock (settingsLock) {
-				if (newSpeed != robotSpeed) {
-					robotSpeed = newSpeed;
-					robotSpeedDirty = true;
-				}
-			}
-		}
-
-		public bool requestRotation(ref float rotationResponse) {
-			lock (homeLock) {
-				object response = serial.sendCommand(new GetRotationCommand());
-				if (response == null) {
-					return false;
+				if (setRotation == null) setRotation = Rotation.None;
+				if (setExtension == null) setExtension = Extension.None;
+				if((setRotation == Rotation.None) && (setExtension == Extension.None)) {
+					serial.sendCommand(new EndMoveCommand());
 				} else {
-					if (response is float) {
-						rotationResponse = (float)response;
-						return true;
-					} else {
-						return false;
-					}
+					serial.sendCommand(new StartMoveCommand((Rotation)setRotation, (Extension)setExtension));
 				}
-			}
-		}
+				setRotation = null;
+				setExtension = null;
 
-		public bool requestExtension(ref float extensionResponse) {
-			lock (homeLock) {
-				object response = SendCommand(new GetExtensionCommand());
-				if (response == null) {
-					return false;
-				} else {
-					if (response is float) {
-						extensionResponse = (float)response;
-						return true;
-					} else {
-						return false;
-					}
-				}
-			}
-		}
+				if (setMagnetState != null) serial.sendCommand(new SetMagnetCommand((bool)setMagnetState));
+				setMagnetState = null;
 
-		public void changeRobotPrescale(int prescale) {
-			if (prescale < 0) prescale = 0;
-			if (prescale > 255) prescale = 255;
-			robotPrescale = (byte)prescale;
-			robotPrescaleDirty = true;
-		}
+				if (setServoState != null) serial.sendCommand(new MoveServoCommand((bool)setServoState));
+				setServoState = null;
 
-		public void moveTo(float angle, float distance) {
-			lock (homeLock) {
-				SendCommand(new MoveToCommand(angle, distance));
-			}
-		}
+				if (setPrescale != null) serial.sendCommand(new SetPrescaleCommand((byte)setPrescale));
+				setPrescale = null;
 
-		public void moveToAndWait(float angle, float distance) {
-			lock (homeLock) {
-				SendCommand(new MoveToWaitCommand(angle, distance));
+				if (setSpeed != null) serial.sendCommand(new UpdateSpeedCommand((byte)setSpeed));
+				setSpeed = null;
 			}
 		}
 
@@ -391,22 +195,15 @@ namespace RobotArmUR2 {
 		}
 
 		public enum Key {
-			Left,
-			Right, 
-			Up,
-			Down
+			RotateCCW,
+			RotateCW,
+			ExtendOutward,
+			ExtendInward,
+			RaiseServo,
+			LowerServo,
+			MagnetOn,
+			MagnetOff
 		}
 
 	}
-
-	public interface RobotUIListener : SerialUIListener {
-
-		void ChangeManualRotateImage(Robot.Rotation state);
-
-		void ChangeManualExtensionImage(Robot.Extension state);
-
-		void ProgramStateChanged(bool running);
-
-	}
-
 }

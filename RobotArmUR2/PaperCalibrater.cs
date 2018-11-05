@@ -1,34 +1,21 @@
 ﻿using Emgu.CV;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using RobotHelpers;
 using RobotArmUR2.VisionProcessing;
 using Emgu.CV.Structure;
 
 namespace RobotArmUR2 {
 	public partial class PaperCalibrater : Form {
 
-		//private Form1 UI;
 		private Vision vision;
-		///*private*/public /*PointF[]*/PaperCalibration paperPoints;
-		private /*int*/ CalibrationPoint draggingPoint = CalibrationPoint.BottomLeft;
-		private bool dragging = false;
-		//private Cursor OpenHandCursor = new Cursor(Properties.Resources.OpenHand.Handle);
-		//private Cursor ClosedHandCursor = new Cursor(Properties.Resources.ClosedHand.Handle);
+		private CalibrationPoint draggingPoint = CalibrationPoint.BottomLeft;
+		private bool dragging = false; //TODO can combine in DraggingPoint by making it a nullable type
 		private EmguPictureBox<Bgr, byte> picture;
 
-		public PaperCalibrater(/*Vision vision*/) {
+		public PaperCalibrater() {
 			InitializeComponent();
 			picture = new EmguPictureBox<Bgr, byte>(this, PaperPicture);
-			//this.UI = UI;
-			//this.vision = vision;
 		}
 
 		private void PaperCalibrater_Load(object sender, EventArgs e) {
@@ -36,18 +23,7 @@ namespace RobotArmUR2 {
 		}
 
 		private void PaperCalibrater_FormClosing(object sender, FormClosingEventArgs e) {
-			//TODO
-			/*
-			Properties.Settings.Default.PaperPoint0X = paperPoints.BL.X;
-			Properties.Settings.Default.PaperPoint0Y = paperPoints.BL.Y;
-			Properties.Settings.Default.PaperPoint1X = paperPoints.TL.X;
-			Properties.Settings.Default.PaperPoint1Y = paperPoints.TL.Y;
-			Properties.Settings.Default.PaperPoint2X = paperPoints.TR.X;
-			Properties.Settings.Default.PaperPoint2Y = paperPoints.TR.Y;
-			Properties.Settings.Default.PaperPoint3X = paperPoints.BR.X;
-			Properties.Settings.Default.PaperPoint3Y = paperPoints.BR.Y;
-			Properties.Settings.Default.Save();*/
-			//UI.defaultMode();
+			vision.PaperCalibration.SaveSettings();
 		}
 
 		public void NewFrameFinished(Vision vision) {
@@ -70,42 +46,8 @@ namespace RobotArmUR2 {
 			picture.Image = img;
 		}
 
-		public void displayImage<TColor>(Image<TColor, byte> image) where TColor : struct, IColor {
-			//if (image == null) return;
-			//PaperPicture.InvokeIfRequired(pictureBox => { pictureBox.Image = image.Resize(pictureBox.Width, pictureBox.Height, Emgu.CV.CvEnum.Inter.Linear).ToBitmap(); });
-		}
-		/*
-		private void calculatePaperCoords(float px, float py) {
-			double p1x = paperPoints.BL.X;// * PaperPicture.Width;
-			double p1y = paperPoints.BL.Y;// * PaperPicture.Height;
-
-			double x = px / PaperPicture.Width;//px * PaperPicture.Width;
-			double y = py / PaperPicture.Height;//py * PaperPicture.Height;
-
-			double dx1 = paperPoints.TL.X - p1x;
-			double dx2 = paperPoints.TR.X - paperPoints.BR.X;
-			double dy1 = paperPoints.BR.Y - p1y;
-			double dy2 = paperPoints.TR.Y - paperPoints.TL.Y;
-
-			double D = dx2 - dx1;
-			double E = paperPoints.BR.X - p1x;
-			double F = dy2 - dy1;
-			double G = paperPoints.TL.Y - p1y;
-
-			double alpha = (-E * F) + (D * dy1);
-			double hat = (F * x) - (E * G) - (p1x * F) + (D * p1y) + (dx1 * dy1) - (y * D);
-			double e = (G * x) - (p1x * G) + (dx1 * p1y) - (y * dx1);
-			double b = (-hat + Math.Sqrt(Math.Pow(hat, 2) - 4 * alpha * e)) / (2 * alpha);
-			//double b2 = (-hat - Math.Sqrt(Math.Pow(hat, 2) - 4 * alpha * e)) / (2 * alpha);
-
-			double a = (x - E * b - p1x) / (D * b + dx1);
-			//double a2 = (x - E * b2 - H) / (D * b2 + dx1);
-
-			PaperCoords.InvokeIfRequired(label => { label.Text = "(" + a.ToString("N2") + ", " + b.ToString("N2") + ")"; });
-		}*/
-
 		private void PaperPicture_MouseMove(object sender, MouseEventArgs e) {
-			if (/*paperPoints == null ||*/ vision == null) {
+			if (vision == null) {
 				PaperPicture.Cursor = Cursors.Default;
 				return;
 			}
@@ -117,26 +59,7 @@ namespace RobotArmUR2 {
 
 				PaperCalibration calibration = vision.PaperCalibration;
 				calibration.SetPoint(draggingPoint, relative);
-				/*int position = (Bx - Ax) * (Y - Ay) - (By - Ay) * (X - Ax); <0 is below, >0 is above, 0 = on line
-				
-				if (draggingPoint == 0) {
-					point.X = Math.Min(point.X, paperPoints[1].X);
-					point.Y = Math.Min(point.Y, paperPoints[3].Y);
-				}else if(draggingPoint == 1) {
-					point.X = Math.Max(point.X, paperPoints[0].X);
-					point.Y = Math.Min(point.Y, paperPoints[2].Y);
-				}else if(draggingPoint == 2) {
-					point.X = Math.Max(point.X, paperPoints[3].X);
-					point.Y = Math.Max(point.Y, paperPoints[1].Y);
-				}else if(draggingPoint == 3) {
-					point.X = Math.Min(point.X, paperPoints[2].X);
-					point.Y = Math.Max(point.Y, paperPoints[0].Y);
-				}
-				*/
-				//TODO: constrain points
-				//vision.setPaperMaskPoints(paperPoints.BL, paperPoints.TL, paperPoints.TR, paperPoints.BR);
-				//vision.setPaperMaskPoints(paperPoints);
-				vision.PaperCalibration = calibration;
+				//vision.PaperCalibration = calibration;
 			} else {
 				bool showHand = false;
 				PaperCalibration calibration = vision.PaperCalibration;
@@ -151,10 +74,8 @@ namespace RobotArmUR2 {
 						}
 					}
 				}
-				//PaperPicture.Cursor = (showHand ? OpenHandCursor : Cursors.Default);
-				PaperPicture.Cursor = (showHand ? Cursors.Hand : Cursors.Default);
 
-				//calculatePaperCoords(e.X, e.Y);
+				PaperPicture.Cursor = (showHand ? Cursors.Hand : Cursors.Default);
 			}
 		}
 
@@ -185,7 +106,6 @@ namespace RobotArmUR2 {
 				}
 				
 				if (found) {
-					//PaperPicture.Cursor = ClosedHandCursor;
 					PaperPicture.Cursor = Cursors.Default;
 					dragging = true;
 				}
@@ -199,23 +119,24 @@ namespace RobotArmUR2 {
 		}
 
 		private void ResetBounds_Click(object sender, EventArgs e) {
-			/*paperPoints[0] = new PointF(0, 0);
-			paperPoints[1] = new PointF(1, 0);
-			paperPoints[2] = new PointF(1, 1);
-			paperPoints[3] = new PointF(0, 1);
-			*/
-			//paperPoints = new PaperCalibration();
-			//vision.setPaperMaskPoints(paperPoints[0], paperPoints[1], paperPoints[2], paperPoints[3]);
-			//vision.setPaperMaskPoints(paperPoints);
 			if (vision == null) return;
 			vision.PaperCalibration = new PaperCalibration();
 		}
 
 		private void AutoDetect_Click(object sender, EventArgs e) {
-			//if (!vision.AutoDetectPaper()) {
-			//	MessageBox.Show("Could not find the paper.", "Error", MessageBoxButtons.OK);
-			//}
-			Console.WriteLine("Non-Implemented feature!");
+			RotatedRect? auto = vision.AutoDetectPaper();
+			if (auto == null) {
+				MessageBox.Show("Could not find the paper.", "Error", MessageBoxButtons.OK);
+			} else {
+				RotatedRect bounds = (RotatedRect)auto;
+				PaperCalibration calibrate = new PaperCalibration();
+				PointF[] verts = bounds.GetVertices();
+				calibrate.TL = verts[0];
+				calibrate.TR = verts[1];
+				calibrate.BL = verts[2];
+				calibrate.BR = verts[3];
+				vision.PaperCalibration = calibrate;
+			}
 		}
 	}
 

@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Diagnostics;
 using Emgu.CV;
 using Emgu.CV.Structure;
@@ -12,7 +8,7 @@ using System.Drawing.Imaging;
 
 namespace RobotHelpers.InputHandling {
 
-	public abstract class InputHandler {
+	public abstract class InputHandler : IDisposable {
 
 		protected static readonly object inputLock = new object();
 		protected static readonly object screenshotLock = new object();
@@ -176,26 +172,9 @@ namespace RobotHelpers.InputHandling {
 					screenshot = frameBuffer.Copy();
 				}
 				if (screenshot == null) return;
+				
 				if (saveDialog.ShowDialog() == DialogResult.OK) {
-					string filename = saveDialog.FileName;
-					ImageFormat format = null;
-					
-
-					switch (System.IO.Path.GetExtension(filename)) {
-						case ".bmp": format = ImageFormat.Bmp; break;
-						case ".emf": format = ImageFormat.Emf; break;
-						case ".exif": format = ImageFormat.Exif; break;
-						case ".gif": format = ImageFormat.Gif; break;
-						case ".ico": format = ImageFormat.Icon; break;
-						case ".jpeg": format = ImageFormat.Jpeg; break;
-						case ".png": format = ImageFormat.Png; break;
-						case ".tiff": format = ImageFormat.Tiff; break;
-						case ".wmf": format = ImageFormat.Wmf; break;
-					}
-
-					if(format != null) {
-						screenshot.Bitmap.Save(filename, format);
-					}
+					screenshot.Save(saveDialog.FileName);
 				}
 			}
 		}
