@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.IO;
 using System.IO.Ports;
 using System.Management;
+using System.Threading;
 
 namespace RobotHelpers.Serial {
 	public class SerialCommunicator {
@@ -55,7 +56,13 @@ namespace RobotHelpers.Serial {
 					if (!serial.IsOpen) {
 						return false;
 					}
-					serial.Write(new byte[10] { NewLineByte, NewLineByte , NewLineByte , NewLineByte , NewLineByte , NewLineByte , NewLineByte , NewLineByte , NewLineByte , NewLineByte }, 0, 10); //Flush out any residue
+					serial.Write(new byte[] { NewLineByte }, 0, 1); //Flush out any residue
+					Thread.Sleep(500);
+					while (serial.BytesToRead > 0 || serial.BytesToWrite > 0) {
+						serial.DiscardInBuffer();
+						serial.DiscardOutBuffer();
+						Thread.Sleep(100);
+					}
 					invokeConnected(true, portName);
 					return true;
 				} catch (Exception) {

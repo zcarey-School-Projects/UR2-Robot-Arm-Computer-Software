@@ -49,7 +49,6 @@
 			this.RobotSpeedLabel = new System.Windows.Forms.Label();
 			this.RobotConnected = new System.Windows.Forms.CheckBox();
 			this.RobotPort = new System.Windows.Forms.Label();
-			this.GotoHomePos = new System.Windows.Forms.Button();
 			this.Stack = new System.Windows.Forms.Button();
 			this.PrescaleSlider = new System.Windows.Forms.TrackBar();
 			this.PrescaleLabel = new System.Windows.Forms.Label();
@@ -268,16 +267,6 @@
 			this.RobotPort.TabIndex = 16;
 			this.RobotPort.Text = "Port: ";
 			// 
-			// GotoHomePos
-			// 
-			this.GotoHomePos.Location = new System.Drawing.Point(869, 375);
-			this.GotoHomePos.Name = "GotoHomePos";
-			this.GotoHomePos.Size = new System.Drawing.Size(115, 23);
-			this.GotoHomePos.TabIndex = 21;
-			this.GotoHomePos.Text = "Home Position";
-			this.GotoHomePos.UseVisualStyleBackColor = true;
-			this.GotoHomePos.Click += new System.EventHandler(this.GotoHomePos_Click);
-			// 
 			// Stack
 			// 
 			this.Stack.Location = new System.Drawing.Point(909, 415);
@@ -420,7 +409,6 @@
 			this.Controls.Add(this.PrescaleLabel);
 			this.Controls.Add(this.PrescaleSlider);
 			this.Controls.Add(this.Stack);
-			this.Controls.Add(this.GotoHomePos);
 			this.Controls.Add(this.RotateRightVisual);
 			this.Controls.Add(this.RotateLeftVisual);
 			this.Controls.Add(this.RetractVisual);
@@ -492,7 +480,6 @@
 		private System.Windows.Forms.PictureBox RetractVisual;
 		private System.Windows.Forms.PictureBox RotateLeftVisual;
 		private System.Windows.Forms.PictureBox RotateRightVisual;
-		private System.Windows.Forms.Button GotoHomePos;
 		private System.Windows.Forms.Button Stack;
 		private System.Windows.Forms.TrackBar PrescaleSlider;
 		private System.Windows.Forms.Label PrescaleLabel;

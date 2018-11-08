@@ -5,6 +5,7 @@ using System.Windows.Forms;
 using RobotArmUR2.Robot_Commands;
 using RobotArmUR2.Robot_Programs;
 using RobotArmUR2.VisionProcessing;
+using System.Windows.Input;
 
 //NOTE setting speed only works in manual moves
 //TODO fix manual control stuff
@@ -20,7 +21,7 @@ namespace RobotArmUR2 {
 		private SerialCommunicator serial = new SerialCommunicator();
 		private RobotInterface serialInterface;
 		private RobotUIInvoker uiListener = new RobotUIInvoker();
-		private System.Windows.Forms.Timer manualTimer = new System.Windows.Forms.Timer();
+		private System.Timers.Timer manualTimer = new System.Timers.Timer(50);
 
 		private volatile Thread programThread;
 		private volatile bool endProgram;
@@ -29,13 +30,15 @@ namespace RobotArmUR2 {
 		private bool? setServoState = null;
 		private byte? setPrescale = null;
 		private byte? setSpeed = null;
-		private Rotation? setRotation = null;
-		private Extension? setExtension = null;
+		private volatile Rotation setRotation = Rotation.None;
+		private volatile Extension setExtension = Extension.None;
+		private volatile bool wasMoving = false;
 
 		public Robot() {
 			serialInterface = new RobotInterface(serial);
-			manualTimer.Interval = 50;
-			manualTimer.Tick += onTimerTick;
+			manualTimer.Elapsed += onTimerTick;
+			manualTimer.AutoReset = true;
+			manualTimer.Enabled = true;
 			manualTimer.Start();
 		}
 
@@ -76,17 +79,21 @@ namespace RobotArmUR2 {
 			serialInterface.RaiseServo();
 			Thread.Sleep(500); //Give system some settling time
 
+			Console.WriteLine("Initializing...");
 			program.Initialize(serialInterface);
+			Console.WriteLine("Initialize Finished.\nRunning program...");
 			bool forceCancel = false;
 			while (true) {
 				lock (programLock) {
 					if (endProgram) forceCancel = true;
 				}
 				if (forceCancel) {
+					Console.WriteLine("Force exiting...");
 					program.ProgramCancelled(serialInterface);
 					break;
 				} else if (!program.ProgramStep(serialInterface)) break;
 			}
+			Console.WriteLine("Program finished. \nExiting...");
 
 			//End program
 			uiListener.ProgramStateChanged(false);
@@ -94,6 +101,7 @@ namespace RobotArmUR2 {
 				manualTimer.Start();
 				programThread = null;
 			}
+			Console.WriteLine("Exited successfully.");
 		}
 
 		public void CancelProgram() {
@@ -133,7 +141,7 @@ namespace RobotArmUR2 {
 						if (keyCCWPressed) setRotation = Rotation.CCW;
 						else if (keyCWPressed) setRotation = Rotation.CW;
 						else setRotation = Rotation.None;
-					} else if (key == Key.RotateCCW) {
+					} else if (key == Key.RotateCW) {
 						keyCWPressed = pressed;
 						if (keyCWPressed) setRotation = Rotation.CW;
 						else if (keyCCWPressed) setRotation = Rotation.CCW;
@@ -158,16 +166,16 @@ namespace RobotArmUR2 {
 
 		private void onTimerTick(object sender, EventArgs e) {
 			lock (settingsLock) {
-				if (setRotation == null) setRotation = Rotation.None;
-				if (setExtension == null) setExtension = Extension.None;
-				if((setRotation == Rotation.None) && (setExtension == Extension.None)) {
-					serial.sendCommand(new EndMoveCommand());
-				} else {
+				if ((setRotation != Rotation.None) || (setExtension != Extension.None)){
+					wasMoving = true;
 					serial.sendCommand(new StartMoveCommand((Rotation)setRotation, (Extension)setExtension));
+					Console.WriteLine("Move");
+				}else if (wasMoving) {
+					wasMoving = false;
+					serial.sendCommand(new EndMoveCommand());
 				}
-				setRotation = null;
-				setExtension = null;
 
+	
 				if (setMagnetState != null) serial.sendCommand(new SetMagnetCommand((bool)setMagnetState));
 				setMagnetState = null;
 

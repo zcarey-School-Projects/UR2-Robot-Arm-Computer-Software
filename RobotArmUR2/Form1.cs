@@ -176,7 +176,7 @@ namespace RobotArmUR2
 			if ((key == Keys.A)/* || (key == Keys.Left)*/) {
 				robot.ManualControlKeyEvent(Robot.Key.RotateCCW, pressed);
 			}else if ((key == Keys.D)/* || (key == Keys.Right)*/) {
-				robot.ManualControlKeyEvent(Robot.Key.RotateCCW, pressed);
+				robot.ManualControlKeyEvent(Robot.Key.RotateCW, pressed);
 			}else if((key == Keys.W)/* || (key == Keys.Up)*/) {
 				robot.ManualControlKeyEvent(Robot.Key.ExtendOutward, pressed);
 			}else if ((key == Keys.S)/* || (key == Keys.Down)*/) {
@@ -253,7 +253,6 @@ namespace RobotArmUR2
 
 		public void ProgramStateChanged(bool running) {
 			BeginInvoke(new Action(() => {
-				GotoHomePos.Enabled = !running;
 				RobotSpeedSlider.Enabled = !running;
 				AutoConnect.Enabled = !running;
 				menuStrip1.Enabled = !running;
