@@ -17,11 +17,11 @@ namespace RobotArmUR2.Robot_Commands {
 		}
 
 		public override string getCommand() {
-			return "MoveTo";
+			return "MoveTo;";
 		}
 
 		public override byte[] GetData() {
-			return GetBytes(angle.ToString("N2") + ":" + distance.ToString("N2"));
+			return GetBytes("R" + angle.ToString("N2") + ":E" + distance.ToString("N2") + ":");
 		}
 
 		public override string GetName() {
@@ -29,6 +29,9 @@ namespace RobotArmUR2.Robot_Commands {
 		}
 
 		public override object OnSerialResponse(SerialCommunicator serial, SerialResponse response) {
+			if ((response == null) || (response.ToString() != "MoveTo")) {
+				serial.close(); //This should be in a parent class
+			}
 			return null;
 		}
 	}

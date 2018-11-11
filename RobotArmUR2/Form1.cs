@@ -284,6 +284,9 @@ namespace RobotArmUR2
 			}));
 		}
 
+		private void button1_Click(object sender, EventArgs e) {
+			robot.RunProgram(new MoveToWaitProgram(robot, robot.Calibration.SquareStackAngle, robot.Calibration.SquareStackDistance));
+		}
 	}
 
 }

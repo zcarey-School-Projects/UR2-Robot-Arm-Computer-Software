@@ -13,7 +13,7 @@ namespace RobotArmUR2.Robot_Commands {
 		}
 
 		public override string getCommand() {
-			return "Stop";
+			return "Stop;";
 		}
 
 		public override byte[] GetData() {
@@ -21,6 +21,10 @@ namespace RobotArmUR2.Robot_Commands {
 		}
 
 		public override object OnSerialResponse(SerialCommunicator serial, SerialResponse response) {
+			if (response.ToString() != "Stop") {
+				serial.close();
+			}
+
 			return null;
 		}
 	}

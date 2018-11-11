@@ -17,11 +17,11 @@ namespace RobotArmUR2.Robot_Commands {
 		}
 
 		public override string getCommand() {
-			return "MoveToW";
+			return "MoveToWait;";
 		}
 
 		public override byte[] GetData() {
-			return GetBytes(angle.ToString("N2") + ":" + distance.ToString("N2"));
+			return GetBytes("R" + angle.ToString("N2") + ":E" + distance.ToString("N2") + ":");
 		}
 
 		public override string GetName() {
@@ -30,9 +30,18 @@ namespace RobotArmUR2.Robot_Commands {
 
 		public override object OnSerialResponse(SerialCommunicator serial, SerialResponse response) {
 			while (response != null) {
-				if (response.Data.Length < 1) break;
-				if (response.Data[0] == 1) break;
-				response = serial.ReadBytes(1);
+				if (response.ToString() == "MoveToWait") {
+					return null; //Exit with a happy face
+				}
+				if (response.Data.Length != 1) {
+					Console.WriteLine("Wrong data length.");
+					break; //Exit with frowny face
+				}
+				if (response.Data[0] != 'W') {
+					Console.WriteLine("Wrong data recieved.");
+					break; //Exit with ANGRY face.
+				}
+				response = serial.ReadLine(); //We need MMOORREE
 			}
 
 			return null;

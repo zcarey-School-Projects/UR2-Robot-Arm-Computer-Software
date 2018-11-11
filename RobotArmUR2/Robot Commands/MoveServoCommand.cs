@@ -15,11 +15,11 @@ namespace RobotArmUR2.Robot_Commands {
 		}
 
 		public override string getCommand() {
-			return (raiseServo ? "ServoR" : "ServoL");
+			return "Servo;";
 		}
 
 		public override byte[] GetData() {
-			return null;
+			return GetBytes((raiseServo ? "R" : "L") + ":");
 		}
 
 		public override string GetName() {
@@ -27,6 +27,10 @@ namespace RobotArmUR2.Robot_Commands {
 		}
 
 		public override object OnSerialResponse(SerialCommunicator serial, SerialResponse response) {
+			if (response.ToString() != "Servo") {
+				serial.close();
+			}
+
 			return null;
 		}
 	}

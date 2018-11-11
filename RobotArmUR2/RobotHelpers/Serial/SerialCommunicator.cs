@@ -56,7 +56,7 @@ namespace RobotHelpers.Serial {
 					if (!serial.IsOpen) {
 						return false;
 					}
-					serial.Write(new byte[] { NewLineByte }, 0, 1); //Flush out any residue
+					serial.Write(new byte[] { NewLineByte, NewLineByte, NewLineByte, NewLineByte, NewLineByte }, 0, 5); //Flush out any residue
 					Thread.Sleep(500);
 					while (serial.BytesToRead > 0 || serial.BytesToWrite > 0) {
 						serial.DiscardInBuffer();
@@ -130,11 +130,17 @@ namespace RobotHelpers.Serial {
 					//serial.Write(messageSize, 0, 1);
 					serial.Write(message, 0, message.Length);
 					serial.Write(new byte[] { (byte)'\n' }, 0, 1);
-
+					/*
 					int numBytes = serial.ReadByte();
 					byte[] bytes = new byte[numBytes];
 					if (numBytes > 0) {
 						serial.Read(bytes, 0, numBytes);
+					}*/ //TODO return a string
+					string data = serial.ReadLine();
+					char[] chars = data.ToCharArray();
+					byte[] bytes = new byte[chars.Length];
+					for(int i = 0; i < chars.Length; i++) {
+						bytes[i] = (byte)chars[i];
 					}
 
 					return cmd.OnSerialResponse(this, new SerialResponse(ref bytes));
@@ -172,6 +178,28 @@ namespace RobotHelpers.Serial {
 					lock (serialLock) {
 						serial.Read(bytes, 0, numBytes);
 					}
+				}
+
+				return new SerialResponse(ref bytes);
+			} catch (Exception e) {
+				Console.WriteLine("Serial Read Error: " + e.Message);
+				close();
+				return null;
+			}
+		}
+
+		public SerialResponse ReadLine() {
+			if (!serial.IsOpen) return null;
+			try {
+				string response = null;
+				lock (serialLock) {
+					response = serial.ReadLine();
+				}
+				if (response == null) return null;
+				char[] chars = response.ToCharArray();
+				byte[] bytes = new byte[chars.Length];
+				for(int i = 0; i < chars.Length; i++) {
+					bytes[i] = (byte)chars[i];
 				}
 
 				return new SerialResponse(ref bytes);

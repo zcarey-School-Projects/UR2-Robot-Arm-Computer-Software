@@ -45,8 +45,8 @@ namespace RobotArmUR2 {
 		public void ConnectToRobot() {
 			if (serial.autoConnect()) {
 				lock (settingsLock) {
-					setMagnetState = false;
-					setServoState = true;
+					//setMagnetState = false;
+					//setServoState = true;
 					//TODO speed settings
 					//setPrescale = null;
 					//setSpeed = null;
@@ -168,8 +168,7 @@ namespace RobotArmUR2 {
 			lock (settingsLock) {
 				if ((setRotation != Rotation.None) || (setExtension != Extension.None)){
 					wasMoving = true;
-					serial.sendCommand(new StartMoveCommand((Rotation)setRotation, (Extension)setExtension));
-					Console.WriteLine("Move");
+					serial.sendCommand(new ManualMoveCommand((Rotation)setRotation, (Extension)setExtension));
 				}else if (wasMoving) {
 					wasMoving = false;
 					serial.sendCommand(new EndMoveCommand());
@@ -181,12 +180,12 @@ namespace RobotArmUR2 {
 
 				if (setServoState != null) serial.sendCommand(new MoveServoCommand((bool)setServoState));
 				setServoState = null;
-
+				/*
 				if (setPrescale != null) serial.sendCommand(new SetPrescaleCommand((byte)setPrescale));
 				setPrescale = null;
 
 				if (setSpeed != null) serial.sendCommand(new UpdateSpeedCommand((byte)setSpeed));
-				setSpeed = null;
+				setSpeed = null;*/
 			}
 		}
 

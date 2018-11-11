@@ -9,11 +9,11 @@ namespace RobotArmUR2.Robot_Commands {
 	class GetExtensionCommand : SerialCommand{
 
 		public override string getCommand() {
-			return "GetDist";
+			return "GetPos;";
 		}
 
 		public override byte[] GetData() {
-			return null;
+			return GetBytes("E:"); ;
 		}
 
 		public override string GetName() {
@@ -21,16 +21,18 @@ namespace RobotArmUR2.Robot_Commands {
 		}
 
 		public override object OnSerialResponse(SerialCommunicator serial, SerialResponse response) {
-			if (response == null) {
-				return null;
-			} else {
-				float value;
-				if (response.ParseFloat(out value)) {
-					return value;
-				} else {
-					return null;
-				}
+			if (response != null) {
+				string str = response.ToString();
+				int start = str.IndexOf('{');
+				int stop = str.IndexOf('}');
+				if (start < 0 || stop < 0) return null;
+				string value = str.Substring(start + 1, stop - start - 1);
+				float ext;
+				if (!float.TryParse(value, out ext)) return null;
+				return ext;
 			}
+
+			return null;
 		}
 	}
 }

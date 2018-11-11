@@ -37,6 +37,14 @@ namespace RobotArmUR2 {
 				robot.ManualControlKeyEvent(Robot.Key.ExtendOutward, pressed);
 			} else if ((key == Keys.S) || (key == Keys.Down)) {
 				robot.ManualControlKeyEvent(Robot.Key.ExtendInward, pressed);
+			}else if((key == Keys.E)) {
+				robot.ManualControlKeyEvent(Robot.Key.RaiseServo, pressed);
+			}else if(key == Keys.Q) {
+				robot.ManualControlKeyEvent(Robot.Key.LowerServo, pressed);
+			}else if(key == Keys.M) {
+				robot.ManualControlKeyEvent(Robot.Key.MagnetOn, pressed);
+			}else if(key == Keys.N) {
+				robot.ManualControlKeyEvent(Robot.Key.MagnetOff, pressed);
 			}
 		}
 

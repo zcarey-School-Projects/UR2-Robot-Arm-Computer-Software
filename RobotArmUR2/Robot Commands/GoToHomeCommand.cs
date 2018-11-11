@@ -8,14 +8,12 @@ using RobotHelpers.Serial;
 namespace RobotArmUR2.Robot_Commands {
 	class GoToHomeCommand : SerialCommand {
 
-		private bool foundStart = false;
-
 		public override string GetName() {
-			return "Go To Home";
+			return "Return Home";
 		}
 
 		public override string getCommand() {
-			return "ReturnHome";
+			return "ReturnHome;";
 		}
 
 		public override byte[] GetData() {
@@ -24,36 +22,25 @@ namespace RobotArmUR2.Robot_Commands {
 
 		public override object OnSerialResponse(SerialCommunicator serial, SerialResponse response) {
 			while(response != null) {
-				if (response.Data.Length > 0) {
-					if (!foundStart) {
-						if (response.Data[0] == '1') {
-							foundStart = true;
-							Console.WriteLine("Found it!");
-						} else {
-							Console.WriteLine("Data: " + printData(response.Data));
-						}
-					} else {
-						Console.WriteLine("Exit: " + printData(response.Data));
-						if (response.Data[0] == '0') break;
-					}
+				if (response.ToString() == "ReturnHome") {
+					return null; //Exit happily
 				}
-				response = serial.ReadBytes(1);
+				if(response.Data.Length != 1) {
+					Console.WriteLine("Wrong data length.");
+					break; //Exit angrily
+				}
+				if(response.Data[0] !='0'){
+					Console.WriteLine("Wrong data received.");
+					break; //Exit VERY angrily
+				}
+
+				response = serial.ReadLine(); //MORE DATA
 			}
+
+			Console.WriteLine("Error returning home.");
+			serial.close();
 
 			return null;
-		}
-
-		private static string printData(byte[] data) {
-			string s = "{";
-			bool first = true;
-			foreach(byte b in data) {
-				if (!first) {
-					s += ", ";
-				}
-				s += b;
-				first = false;
-			}
-			return s + "}";
 		}
 	}
 }

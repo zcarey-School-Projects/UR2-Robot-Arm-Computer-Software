@@ -15,11 +15,11 @@ namespace RobotArmUR2.Robot_Commands {
 		}
 
 		public override string getCommand() {
-			return "Mag" + (isOn ? "1" : "0");
+			return "Magnet;";
 		}
 
 		public override byte[] GetData() {
-			return null;
+			return GetBytes((isOn ? "1" : "0") + ":");
 		}
 
 		public override string GetName() {
@@ -27,6 +27,12 @@ namespace RobotArmUR2.Robot_Commands {
 		}
 
 		public override object OnSerialResponse(SerialCommunicator serial, SerialResponse response) {
+			string res = response.ToString();
+			if (res != "Magnet") {
+				Console.WriteLine(res);
+				serial.close();
+			}
+
 			return null;
 		}
 	}

@@ -1,6 +1,9 @@
-﻿using Emgu.CV.Structure;
+﻿using Emgu.CV;
+using Emgu.CV.Structure;
 using RobotArmUR2.VisionProcessing;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Threading;
 
 namespace RobotArmUR2.Robot_Programs {
 	public class StackingProgram : RobotProgram {
@@ -19,20 +22,31 @@ namespace RobotArmUR2.Robot_Programs {
 		}
 
 		public override void Initialize(RobotInterface serial) {
-			serial.MoveToAndWait(5, 0);
+			//serial.MoveToAndWait(5, 0);
+			serial.GoToHome();
+			serial.RaiseServo();
+			serial.MagnetOff();
+			Thread.Sleep(1000);
 		}
 
 		public override bool ProgramStep(RobotInterface serial) {
 			//vision.getShapeLists(out triangles, out boxes);
 			triangles = vision.Triangles;
 			squares = vision.Squares;
+			Image<Gray, byte> temp = vision.WarpedImage;
+			int width = temp.Width;
+			int height = temp.Height;
 			if (triangles.Count > 0) {
-				base.moveToPoint(serial, triangles[0].Centeroid);
+				PointF center = triangles[0].Centeroid;
+				PointF pt = new PointF((float)center.X / width, (float)center.Y / height);
+				base.moveToPoint(serial, pt);
 				pickUpShape(serial, true);
 				base.moveToTriangleStack(serial);
 				pickUpShape(serial, false);
 			} else if (squares.Count > 0) {
-				moveToPoint(serial, squares[0].Center); //TODO need to rename function to something more fitting
+				PointF center = squares[0].Center;
+				PointF pt = new PointF((float)center.X / width, (float)center.Y / height);
+				moveToPoint(serial, pt); //TODO need to rename function to something more fitting
 				pickUpShape(serial, true);
 				base.moveToSquareStack(serial);
 				pickUpShape(serial, false);
@@ -44,15 +58,17 @@ namespace RobotArmUR2.Robot_Programs {
 		}
 
 		private void pickUpShape(RobotInterface serial, bool magnetOn) {
+			Thread.Sleep(1000);
 			serial.LowerServo();
-			serial.SetMagnetState(magnetOn);
+			Thread.Sleep(1000);
+			serial.SetMagnetState(magnetOn); 
+			Thread.Sleep(1000);
 			serial.RaiseServo();
+			Thread.Sleep(1000);
 		}
 
 		public override void ProgramCancelled(RobotInterface serial) {
-			serial.LowerServo();
-			serial.MagnetOff();
-			serial.RaiseServo();
+			pickUpShape(serial, false);
 		}
 
 	}
