@@ -137,6 +137,20 @@ namespace RobotArmUR2.VisionProcessing{
 			}
 		}
 
+		private bool rotateImage180 = false;
+		public bool RotateImage180 {
+			get {
+				lock (inputLock) {
+					return rotateImage180;
+				}
+			}
+			set {
+				lock (inputLock) {
+					rotateImage180 = value;
+				}
+			}
+		}
+
 
 		private volatile bool exitThread = false;
 		private Thread captureThread;
@@ -212,6 +226,12 @@ namespace RobotArmUR2.VisionProcessing{
 						//TODO change so height os 480
 						//Scale image so Height = 640, but still keeps aspect ratio.
 						inputImage = input.Resize(640d / input.Height, Emgu.CV.CvEnum.Inter.Cubic);
+
+						if (rotateImage180) {
+							inputImage._Flip(Emgu.CV.CvEnum.FlipType.Horizontal);
+							inputImage._Flip(Emgu.CV.CvEnum.FlipType.Vertical);
+						}
+
 						return true;
 					}
 

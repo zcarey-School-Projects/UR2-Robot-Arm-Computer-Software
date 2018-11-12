@@ -50,8 +50,6 @@
 			this.RobotConnected = new System.Windows.Forms.CheckBox();
 			this.RobotPort = new System.Windows.Forms.Label();
 			this.Stack = new System.Windows.Forms.Button();
-			this.PrescaleSlider = new System.Windows.Forms.TrackBar();
-			this.PrescaleLabel = new System.Windows.Forms.Label();
 			this.statusStrip1 = new System.Windows.Forms.StatusStrip();
 			this.FpsStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
 			this.RotateRightVisual = new System.Windows.Forms.PictureBox();
@@ -64,9 +62,10 @@
 			this.TriangleCount = new System.Windows.Forms.Label();
 			this.SquareCount = new System.Windows.Forms.Label();
 			this.button1 = new System.Windows.Forms.Button();
+			this.Rotate180Checkbox = new System.Windows.Forms.CheckBox();
+			this.TargetCoords = new System.Windows.Forms.Label();
 			this.menuStrip1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.RobotSpeedSlider)).BeginInit();
-			((System.ComponentModel.ISupportInitialize)(this.PrescaleSlider)).BeginInit();
 			this.statusStrip1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.RotateRightVisual)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.RotateLeftVisual)).BeginInit();
@@ -278,24 +277,6 @@
 			this.Stack.UseVisualStyleBackColor = true;
 			this.Stack.Click += new System.EventHandler(this.Stack_Click);
 			// 
-			// PrescaleSlider
-			// 
-			this.PrescaleSlider.Location = new System.Drawing.Point(338, 317);
-			this.PrescaleSlider.Maximum = 255;
-			this.PrescaleSlider.Name = "PrescaleSlider";
-			this.PrescaleSlider.Size = new System.Drawing.Size(426, 56);
-			this.PrescaleSlider.TabIndex = 23;
-			this.PrescaleSlider.Scroll += new System.EventHandler(this.PrescaleSlider_Scroll);
-			// 
-			// PrescaleLabel
-			// 
-			this.PrescaleLabel.AutoSize = true;
-			this.PrescaleLabel.Location = new System.Drawing.Point(770, 332);
-			this.PrescaleLabel.Name = "PrescaleLabel";
-			this.PrescaleLabel.Size = new System.Drawing.Size(79, 17);
-			this.PrescaleLabel.TabIndex = 24;
-			this.PrescaleLabel.Text = "Prescale: 0";
-			// 
 			// statusStrip1
 			// 
 			this.statusStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
@@ -409,17 +390,37 @@
 			this.button1.UseVisualStyleBackColor = true;
 			this.button1.Click += new System.EventHandler(this.button1_Click);
 			// 
+			// Rotate180Checkbox
+			// 
+			this.Rotate180Checkbox.AutoSize = true;
+			this.Rotate180Checkbox.Location = new System.Drawing.Point(414, 358);
+			this.Rotate180Checkbox.Name = "Rotate180Checkbox";
+			this.Rotate180Checkbox.Size = new System.Drawing.Size(100, 21);
+			this.Rotate180Checkbox.TabIndex = 29;
+			this.Rotate180Checkbox.Text = "Rotate 180";
+			this.Rotate180Checkbox.UseVisualStyleBackColor = true;
+			this.Rotate180Checkbox.CheckedChanged += new System.EventHandler(this.Rotate180Checkbox_CheckedChanged);
+			// 
+			// TargetCoords
+			// 
+			this.TargetCoords.AutoSize = true;
+			this.TargetCoords.Location = new System.Drawing.Point(411, 415);
+			this.TargetCoords.Name = "TargetCoords";
+			this.TargetCoords.Size = new System.Drawing.Size(54, 17);
+			this.TargetCoords.TabIndex = 30;
+			this.TargetCoords.Text = "Target:";
+			// 
 			// Form1
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(1005, 474);
+			this.Controls.Add(this.TargetCoords);
+			this.Controls.Add(this.Rotate180Checkbox);
 			this.Controls.Add(this.button1);
 			this.Controls.Add(this.SquareCount);
 			this.Controls.Add(this.TriangleCount);
 			this.Controls.Add(this.statusStrip1);
-			this.Controls.Add(this.PrescaleLabel);
-			this.Controls.Add(this.PrescaleSlider);
 			this.Controls.Add(this.Stack);
 			this.Controls.Add(this.RotateRightVisual);
 			this.Controls.Add(this.RotateLeftVisual);
@@ -448,7 +449,6 @@
 			this.menuStrip1.ResumeLayout(false);
 			this.menuStrip1.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this.RobotSpeedSlider)).EndInit();
-			((System.ComponentModel.ISupportInitialize)(this.PrescaleSlider)).EndInit();
 			this.statusStrip1.ResumeLayout(false);
 			this.statusStrip1.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this.RotateRightVisual)).EndInit();
@@ -493,14 +493,14 @@
 		private System.Windows.Forms.PictureBox RotateLeftVisual;
 		private System.Windows.Forms.PictureBox RotateRightVisual;
 		private System.Windows.Forms.Button Stack;
-		private System.Windows.Forms.TrackBar PrescaleSlider;
-		private System.Windows.Forms.Label PrescaleLabel;
 		private System.Windows.Forms.StatusStrip statusStrip1;
 		private System.Windows.Forms.ToolStripStatusLabel FpsStatusLabel;
 		private System.Windows.Forms.PictureBox Image1;
 		private System.Windows.Forms.Label TriangleCount;
 		private System.Windows.Forms.Label SquareCount;
 		private System.Windows.Forms.Button button1;
+		private System.Windows.Forms.CheckBox Rotate180Checkbox;
+		private System.Windows.Forms.Label TargetCoords;
 	}
 }
 

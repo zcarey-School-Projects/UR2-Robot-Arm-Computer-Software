@@ -25,6 +25,9 @@ namespace RobotArmUR2
 		private EmguPictureBox<Gray, byte> threshImage;
 		private EmguPictureBox<Bgr, byte> warpedImage;
 
+		private Bgr SquareHighlightColor = new Bgr(Color.Red);
+		private Bgr TriangleHighlightColor = new Bgr(Color.Yellow);
+
 		private volatile bool manualMoveEnabled = true;
 
 		public Form1()
@@ -58,9 +61,9 @@ namespace RobotArmUR2
 
 			RobotSpeedSlider.Value = Properties.Settings.Default.RobotSpeed;
 			RobotSpeedSlider_Scroll(null, null);
-
+			/*
 			PrescaleSlider.Value = Properties.Settings.Default.RobotPrescale;
-			PrescaleSlider_Scroll(null, null);
+			PrescaleSlider_Scroll(null, null);*/
 		}
 
 		private void Form1_Load(object sender, EventArgs e) {
@@ -70,7 +73,7 @@ namespace RobotArmUR2
 
 		private void Form1_FormClosing(object sender, FormClosingEventArgs e) {
 			Properties.Settings.Default.RobotSpeed = RobotSpeedSlider.Value;
-			Properties.Settings.Default.RobotPrescale = PrescaleSlider.Value;
+			//Properties.Settings.Default.RobotPrescale = PrescaleSlider.Value;
 			Properties.Settings.Default.Save();
 			vision.stop();
 		}
@@ -83,13 +86,28 @@ namespace RobotArmUR2
 			Image<Bgr, byte> warped = vision.WarpedImage.Convert<Bgr, byte>();
 			List<Triangle2DF> trigs = vision.Triangles;
 			List<RotatedRect> squares = vision.Squares;
-			vision.DrawTriangles(warped, vision.Triangles, new Bgr(Color.Yellow), 3);
-			vision.DrawSquares(warped, vision.Squares, new Bgr(Color.Red), 3);
+			vision.DrawTriangles(warped, vision.Triangles, TriangleHighlightColor, 3);
+			vision.DrawSquares(warped, vision.Squares, SquareHighlightColor, 3);
 			warpedImage.Image = warped;
+
+			PointF? robotCoords = null;
+			if(trigs.Count > 0) {
+				PointF pt = trigs[0].Centeroid;
+				PointF rel = new PointF(pt.X / warped.Width, pt.Y / warped.Height);
+				robotCoords = RobotProgram.CalculateRobotCoordinates(robot.Calibration, rel);
+			}else if(squares.Count > 0) {
+				PointF pt = squares[0].Center;
+				PointF rel = new PointF(pt.X / warped.Width, pt.Y / warped.Height);
+				robotCoords = RobotProgram.CalculateRobotCoordinates(robot.Calibration, rel);
+			}
 
 			BeginInvoke(new Action(() => {
 				TriangleCount.Text = "Triangles: " + trigs.Count;
 				SquareCount.Text = "Squares: " + squares.Count;
+				if (robotCoords != null) {
+					PointF coord = (PointF)robotCoords;
+					TargetCoords.Text = "Target: (" + coord.X.ToString("N2").PadLeft(4) + "°, " + coord.Y.ToString("N2").PadLeft(5) +" mm)";
+				}
 			}));
 
 			paperCalibrater.NewFrameFinished(vision);
@@ -267,11 +285,6 @@ namespace RobotArmUR2
 			}
 		}
 
-		private void PrescaleSlider_Scroll(object sender, EventArgs e) {
-			PrescaleLabel.Text = "Prescale: " + PrescaleSlider.Value;
-			robot.SetPrescale((byte)PrescaleSlider.Value);
-		}
-
 		public void VisionUI_SetFPSCounter(float fps) {
 			BeginInvoke(new Action(() => { //Thread safe, baby
 				FpsStatusLabel.Text = fps.ToString("N2").PadLeft(6); //Converts FPS to a string with 2 decimals, with at most 3 digits
@@ -286,6 +299,10 @@ namespace RobotArmUR2
 
 		private void button1_Click(object sender, EventArgs e) {
 			robot.RunProgram(new MoveToWaitProgram(robot, robot.Calibration.SquareStackAngle, robot.Calibration.SquareStackDistance));
+		}
+
+		private void Rotate180Checkbox_CheckedChanged(object sender, EventArgs e) {
+			vision.RotateImage180 = Rotate180Checkbox.Checked;
 		}
 	}
 

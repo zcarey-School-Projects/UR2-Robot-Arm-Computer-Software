@@ -19,17 +19,7 @@ namespace RobotArmUR2 {
 		//Called if the program is forcfully cancelled.
 		public abstract void ProgramCancelled(RobotInterface serial);
 
-		protected void moveToPoint(RobotInterface serial, PointF relativePaperCoords) {
-			/*
-			float percentA1 = (1f - relativePaperCoords.X) * Robot.Calibration.Angle2 + relativePaperCoords.X * Robot.Calibration.Angle3;
-			float percentA2 = (1f - relativePaperCoords.X) * Robot.Calibration.Angle1 + relativePaperCoords.X * Robot.Calibration.Angle4;
-			float targetAngle = (1f - relativePaperCoords.Y) * percentA1 + relativePaperCoords.Y * percentA2;
-
-			float percentD1 = (1f - relativePaperCoords.X) * Robot.Calibration.Distance2 + relativePaperCoords.X * Robot.Calibration.Distance3;
-			float percentD2 = (1f - relativePaperCoords.X) * Robot.Calibration.Distance1 + relativePaperCoords.X * Robot.Calibration.Distance4;
-			float targetDistance = (1f - relativePaperCoords.Y) * percentD1 + relativePaperCoords.Y * percentD2;
-			*/
-			RobotCalibration calib = Robot.Calibration;
+		public static PointF CalculateRobotCoordinates(RobotCalibration calib, PointF relativePaperCoords) {
 			double x1 = calib.Distance1 * Math.Cos((180 - calib.Angle1) * Math.PI / 180);
 			double x2 = calib.Distance2 * Math.Cos((180 - calib.Angle2) * Math.PI / 180);
 			double x3 = calib.Distance3 * Math.Cos((180 - calib.Angle3) * Math.PI / 180);
@@ -45,14 +35,20 @@ namespace RobotArmUR2 {
 
 			double x = alpha * (x3 - x2) + beta * (x1 - x2) + alpha * beta * (x4 + x2 - x1 - x3) + x2;
 			double y = alpha * (y3 - y2) + beta * (y1 - y2) + alpha * beta * (y4 + y2 - y1 - y3) + y2;
-			Console.WriteLine("Relative: [{0}, {1}]", x, y); //TODO remove
+			//Console.WriteLine("Relative: [{0}, {1}]", x, y); //TODO remove
 
 			double targetAngle = 180 - (Math.Atan2(y, x) * 180 / Math.PI);
 			double targetDistance = Math.Sqrt(x * x + y * y);
-			Console.WriteLine("Target: [{0}, {1}mm]\n", targetAngle, targetDistance);
+
+			return new PointF((float)targetAngle, (float)targetDistance);
+		}
+
+		protected void moveToPoint(RobotInterface serial, PointF relativePaperCoords) {
+			PointF targetCoords = CalculateRobotCoordinates(Robot.Calibration, relativePaperCoords);
+			Console.WriteLine("Target: [{0}°, {1}mm]\n", targetCoords.X, targetCoords.Y);
 
 			//Console.WriteLine("[{0}, {1}]", targetAngle, targetDistance);
-			serial.MoveToAndWait((float)targetAngle, (float)targetDistance);
+			serial.MoveToAndWait(targetCoords.X, targetCoords.Y);
 		}
 		//TODO whenever a command fails, we need to cancel the program.
 		protected void moveToTriangleStack(RobotInterface serial) {
