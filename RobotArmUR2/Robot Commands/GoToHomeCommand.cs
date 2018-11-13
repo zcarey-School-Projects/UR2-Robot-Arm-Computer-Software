@@ -16,7 +16,7 @@ namespace RobotArmUR2.Robot_Commands {
 			return "ReturnHome;";
 		}
 
-		public override byte[] GetData() {
+		public override string GetData() {
 			return null;
 		}
 

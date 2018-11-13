@@ -20,8 +20,8 @@ namespace RobotArmUR2.Robot_Commands {
 			return "MoveToWait;";
 		}
 
-		public override byte[] GetData() {
-			return GetBytes("R" + angle.ToString("N2") + ":E" + distance.ToString("N2") + ":");
+		public override string GetData() {
+			return "R" + angle.ToString("N2") + ":E" + distance.ToString("N2") + ":";
 		}
 
 		public override string GetName() {

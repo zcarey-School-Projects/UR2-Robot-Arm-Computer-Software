@@ -67,7 +67,7 @@ namespace RobotHelpers.Serial {
 		/// Returns the data to be sent appended to the command.
 		/// </summary>
 		/// <returns></returns>
-		public abstract byte[] GetData();
+		public abstract string GetData();
 
 		/// <summary>
 		/// Returns the name of the command for debugging purposes.

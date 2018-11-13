@@ -21,7 +21,7 @@ namespace RobotArmUR2 {
 		private SerialCommunicator serial = new SerialCommunicator();
 		private RobotInterface serialInterface;
 		private RobotUIInvoker uiListener = new RobotUIInvoker();
-		private System.Timers.Timer manualTimer = new System.Timers.Timer(50);
+		private System.Timers.Timer manualTimer = new System.Timers.Timer(1000/20); //1000 / 20;
 
 		private volatile Thread programThread;
 		private volatile bool endProgram;

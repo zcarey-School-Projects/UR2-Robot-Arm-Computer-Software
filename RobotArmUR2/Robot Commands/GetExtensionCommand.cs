@@ -12,8 +12,8 @@ namespace RobotArmUR2.Robot_Commands {
 			return "GetPos;";
 		}
 
-		public override byte[] GetData() {
-			return GetBytes("E:"); ;
+		public override string GetData() {
+			return "E:";
 		}
 
 		public override string GetName() {

@@ -18,8 +18,8 @@ namespace RobotArmUR2.Robot_Commands {
 			return "Servo;";
 		}
 
-		public override byte[] GetData() {
-			return GetBytes((raiseServo ? "R" : "L") + ":");
+		public override string GetData() {
+			return (raiseServo ? "R" : "L") + ":";
 		}
 
 		public override string GetName() {

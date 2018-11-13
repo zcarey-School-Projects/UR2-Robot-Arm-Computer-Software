@@ -18,8 +18,8 @@ namespace RobotArmUR2.Robot_Commands {
 			return "Magnet;";
 		}
 
-		public override byte[] GetData() {
-			return GetBytes((isOn ? "1" : "0") + ":");
+		public override string GetData() {
+			return (isOn ? "1" : "0") + ":";
 		}
 
 		public override string GetName() {

@@ -14,12 +14,12 @@ namespace RobotHelpers.Serial {
 		private static readonly object serialLock = new object();
 		private SerialPort serial;
 		private SerialUIListener UIListener = null;
-		private const byte NewLineByte = (byte)'\n';
 
 		public SerialCommunicator() {
 			serial = new SerialPort("null", 57600, Parity.None, 8, StopBits.One);
-			serial.ReadTimeout = 5000;
-			serial.WriteTimeout = 5000;
+			serial.NewLine = "\n";
+			serial.ReadTimeout = 1000;
+			serial.WriteTimeout = 1000;
 		}
 
 		public SerialCommunicator(SerialUIListener UI) : this() {
@@ -56,13 +56,14 @@ namespace RobotHelpers.Serial {
 					if (!serial.IsOpen) {
 						return false;
 					}
-					serial.Write(new byte[] { NewLineByte, NewLineByte, NewLineByte, NewLineByte, NewLineByte }, 0, 5); //Flush out any residue
+					serial.WriteLine(""); //Let the robot know to cancel whatever it's doing
 					Thread.Sleep(500);
 					while (serial.BytesToRead > 0 || serial.BytesToWrite > 0) {
 						serial.DiscardInBuffer();
 						serial.DiscardOutBuffer();
 						Thread.Sleep(100);
 					}
+					serial.WriteLine("");
 					invokeConnected(true, portName);
 					return true;
 				} catch (Exception) {
@@ -109,43 +110,45 @@ namespace RobotHelpers.Serial {
 		public object sendCommand(SerialCommand cmd) {
 			if (!serial.IsOpen) return null;
 			string command = cmd.getCommand();
-			byte[] message = cmd.GetData();
-			if (message == null) message = new byte[0];
-			if ((message.Length + command.Length) > 255) {
+			string data = cmd.GetData();
+			string message = (command != null ? command : "") + (data != null ? data : "");
+/*			if (message.Length > 255) {
 				Console.WriteLine("WARNING: Command length exceeds 255 bytes, not sending command: " + cmd.GetName());
+				message = message.Substring(0, 255);
 				return null;
-			}
+			}*/
 
 			lock (serialLock) {
 				try {
-					byte[] cmdBytes = new byte[command.Length];
-					for(int i = 0; i < command.Length; i++) {
-						cmdBytes[i] = (byte)command[i];
-					}
-
-					serial.Write(cmdBytes, 0, cmdBytes.Length);
+					Console.WriteLine("Writing: " + "/n" + message + "!");
+					serial.Write("\n" + message + "!");
 					//serial.Write(new byte[] { (byte)'\n' }, 0, 1);
 
 					//byte[] messageSize = new byte[1] { (byte)message.Length };
 					//serial.Write(messageSize, 0, 1);
-					serial.Write(message, 0, message.Length);
-					serial.Write(new byte[] { (byte)'\n' }, 0, 1);
 					/*
 					int numBytes = serial.ReadByte();
 					byte[] bytes = new byte[numBytes];
 					if (numBytes > 0) {
 						serial.Read(bytes, 0, numBytes);
 					}*/ //TODO return a string
-					string data = serial.ReadLine();
-					char[] chars = data.ToCharArray();
+					Console.WriteLine("Reading...");
+					string response = serial.ReadLine();
+					char[] chars = response.ToCharArray();
 					byte[] bytes = new byte[chars.Length];
 					for(int i = 0; i < chars.Length; i++) {
 						bytes[i] = (byte)chars[i];
 					}
-
+					Console.WriteLine("Responding");
 					return cmd.OnSerialResponse(this, new SerialResponse(ref bytes));
 				} catch (Exception) {
 					Console.WriteLine("Serial Error: " + cmd.GetName());
+					Console.WriteLine("Remaining bytes: " + serial.BytesToRead);
+					Console.Write("Remaining Data: ");
+					while(serial.BytesToRead > 0) {
+						Console.Write((char)serial.ReadChar());
+					}
+					Console.WriteLine();
 					close();
 					return null;
 				}

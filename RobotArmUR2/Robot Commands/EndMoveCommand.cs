@@ -16,12 +16,13 @@ namespace RobotArmUR2.Robot_Commands {
 			return "Stop;";
 		}
 
-		public override byte[] GetData() {
+		public override string GetData() {
 			return null;
 		}
 
 		public override object OnSerialResponse(SerialCommunicator serial, SerialResponse response) {
 			if (response.ToString() != "Stop") {
+				//Attempt a resend. If unsuccessfull, we have an issue,
 				serial.close();
 			}
 

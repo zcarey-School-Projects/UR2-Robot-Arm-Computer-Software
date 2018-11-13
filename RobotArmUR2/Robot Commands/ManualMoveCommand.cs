@@ -24,8 +24,8 @@ namespace RobotArmUR2.Robot_Commands {
 			return "ManualMove;";
 		}
 
-		public override byte[] GetData() {
-			return GetBytes(getRotationValue() + ":" + getExtensionValue() + ":");
+		public override string GetData() {
+			return getRotationValue() + ":" + getExtensionValue() + ":";
 		}
 
 		private string getRotationValue() {
