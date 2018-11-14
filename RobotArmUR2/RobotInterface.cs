@@ -70,5 +70,9 @@ namespace RobotArmUR2 {
 			}
 		}
 
+		public void Lab(float x, float y) {
+			serial.sendCommand(new LabCommand(x, y));
+		}
+
 	}
 }

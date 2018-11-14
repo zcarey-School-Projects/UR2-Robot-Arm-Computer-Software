@@ -18,8 +18,8 @@ namespace RobotHelpers.Serial {
 		public SerialCommunicator() {
 			serial = new SerialPort("null", 57600, Parity.None, 8, StopBits.One);
 			serial.NewLine = "\n";
-			serial.ReadTimeout = 1000;
-			serial.WriteTimeout = 1000;
+			serial.ReadTimeout = 5000;
+			serial.WriteTimeout = 5000;
 		}
 
 		public SerialCommunicator(SerialUIListener UI) : this() {
