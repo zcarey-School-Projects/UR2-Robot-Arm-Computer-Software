@@ -26,7 +26,7 @@ namespace RobotArmUR2 {
 						if (value == null) picture.Image = null;
 						else picture.Image = value.Bitmap;
 					}
-				//}
+				///}
 			}
 		}
 
