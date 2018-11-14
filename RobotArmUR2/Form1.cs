@@ -276,7 +276,6 @@ namespace RobotArmUR2
 				menuStrip1.Enabled = !running;
 				//manualMoveEnabled = !running; //TODO
 				Stack.Text = (running ? "Cancel" : "Stack!");
-				LabBtn.Enabled = !running;
 			}));
 		}
 		//TODO put text next to paper clibration points
@@ -302,15 +301,6 @@ namespace RobotArmUR2
 			vision.RotateImage180 = Rotate180Checkbox.Checked;
 		}
 
-		private void LabBtn_Click(object sender, EventArgs e) {
-			float xCoord;
-			float yCoord;
-			if (float.TryParse(xBox.Text, out xCoord) && float.TryParse(yBox.Text, out yCoord)) {
-				robot.RunProgram(new LabProgram(robot, xCoord, yCoord));
-			} else {
-				MessageBox.Show("Invalid Input");
-			}
-		}
 	}
 
 }

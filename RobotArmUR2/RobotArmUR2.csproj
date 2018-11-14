@@ -82,14 +82,12 @@
     <Compile Include="Robot Commands\GetExtensionCommand.cs" />
     <Compile Include="Robot Commands\GetRotationCommand.cs" />
     <Compile Include="Robot Commands\GoToHomeCommand.cs" />
-    <Compile Include="Robot Commands\LabCommand.cs" />
     <Compile Include="Robot Commands\MoveServoCommand.cs" />
     <Compile Include="Robot Commands\MoveToCommand.cs" />
     <Compile Include="Robot Commands\MoveToWaitCommand.cs" />
     <Compile Include="Robot Commands\SetMagnetCommand.cs" />
     <Compile Include="Robot Commands\ManualMoveCommand.cs" />
     <Compile Include="Robot Programs\CalibrationProgram.cs" />
-    <Compile Include="Robot Programs\LabProgram.cs" />
     <Compile Include="Robot Programs\MoveToWait.cs" />
     <Compile Include="Robot Programs\MoveToPosProgram.cs" />
     <Compile Include="Robot Programs\ReturnHomeProgram.cs" />

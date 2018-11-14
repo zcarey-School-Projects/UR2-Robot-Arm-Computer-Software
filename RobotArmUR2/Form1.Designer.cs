@@ -63,11 +63,6 @@
 			this.SquareCount = new System.Windows.Forms.Label();
 			this.Rotate180Checkbox = new System.Windows.Forms.CheckBox();
 			this.TargetCoords = new System.Windows.Forms.Label();
-			this.xBox = new System.Windows.Forms.TextBox();
-			this.yBox = new System.Windows.Forms.TextBox();
-			this.label1 = new System.Windows.Forms.Label();
-			this.label2 = new System.Windows.Forms.Label();
-			this.LabBtn = new System.Windows.Forms.Button();
 			this.menuStrip1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.RobotSpeedSlider)).BeginInit();
 			this.statusStrip1.SuspendLayout();
@@ -404,58 +399,11 @@
 			this.TargetCoords.TabIndex = 30;
 			this.TargetCoords.Text = "Target:";
 			// 
-			// xBox
-			// 
-			this.xBox.Location = new System.Drawing.Point(713, 336);
-			this.xBox.Name = "xBox";
-			this.xBox.Size = new System.Drawing.Size(100, 22);
-			this.xBox.TabIndex = 31;
-			// 
-			// yBox
-			// 
-			this.yBox.Location = new System.Drawing.Point(713, 365);
-			this.yBox.Name = "yBox";
-			this.yBox.Size = new System.Drawing.Size(100, 22);
-			this.yBox.TabIndex = 32;
-			// 
-			// label1
-			// 
-			this.label1.AutoSize = true;
-			this.label1.Location = new System.Drawing.Point(819, 339);
-			this.label1.Name = "label1";
-			this.label1.Size = new System.Drawing.Size(17, 17);
-			this.label1.TabIndex = 33;
-			this.label1.Text = "X";
-			// 
-			// label2
-			// 
-			this.label2.AutoSize = true;
-			this.label2.Location = new System.Drawing.Point(819, 365);
-			this.label2.Name = "label2";
-			this.label2.Size = new System.Drawing.Size(17, 17);
-			this.label2.TabIndex = 34;
-			this.label2.Text = "Y";
-			// 
-			// LabBtn
-			// 
-			this.LabBtn.Location = new System.Drawing.Point(713, 393);
-			this.LabBtn.Name = "LabBtn";
-			this.LabBtn.Size = new System.Drawing.Size(75, 23);
-			this.LabBtn.TabIndex = 35;
-			this.LabBtn.Text = "Send";
-			this.LabBtn.UseVisualStyleBackColor = true;
-			this.LabBtn.Click += new System.EventHandler(this.LabBtn_Click);
-			// 
 			// Form1
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(1005, 474);
-			this.Controls.Add(this.LabBtn);
-			this.Controls.Add(this.label2);
-			this.Controls.Add(this.label1);
-			this.Controls.Add(this.yBox);
-			this.Controls.Add(this.xBox);
 			this.Controls.Add(this.TargetCoords);
 			this.Controls.Add(this.Rotate180Checkbox);
 			this.Controls.Add(this.SquareCount);
@@ -540,11 +488,6 @@
 		private System.Windows.Forms.Label SquareCount;
 		private System.Windows.Forms.CheckBox Rotate180Checkbox;
 		private System.Windows.Forms.Label TargetCoords;
-		private System.Windows.Forms.TextBox xBox;
-		private System.Windows.Forms.TextBox yBox;
-		private System.Windows.Forms.Label label1;
-		private System.Windows.Forms.Label label2;
-		private System.Windows.Forms.Button LabBtn;
 	}
 }
 
