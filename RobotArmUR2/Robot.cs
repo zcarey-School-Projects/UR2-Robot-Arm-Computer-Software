@@ -7,8 +7,6 @@ using RobotArmUR2.Robot_Programs;
 using RobotArmUR2.VisionProcessing;
 using System.Windows.Input;
 
-//NOTE setting speed only works in manual moves
-//TODO fix manual control stuff
 namespace RobotArmUR2 {
 	public class Robot {
 		private static readonly object settingsLock = new object();
@@ -45,6 +43,7 @@ namespace RobotArmUR2 {
 		public void ConnectToRobot() {
 			if (serial.autoConnect()) {
 				lock (settingsLock) {
+					//TODO send robot "onConnect" command, which enables fan, steppers, etc
 					//setMagnetState = false;
 					//setServoState = true;
 					//TODO speed settings
@@ -125,33 +124,33 @@ namespace RobotArmUR2 {
 		bool keyExtendPressed = false;
 		bool keyContractPressed = false;
 
-		public void ManualControlKeyEvent(Key key, bool pressed) {
+		public void ManualControlKeyEvent(Keys key, bool pressed) {
 			lock (settingsLock) {
-				if (key == Key.MagnetOn) {
+				if (key == ApplicationSettings.Key_MagnetOn) {
 					setMagnetState = true;
-				} else if (key == Key.MagnetOff) {
+				} else if (key == ApplicationSettings.Key_MagnetOff) {
 					setMagnetState = false;
-				}else if(key == Key.RaiseServo) {
+				}else if(key == ApplicationSettings.Key_RaiseServo) {
 					setServoState = true;
-				}else if(key == Key.LowerServo) {
+				}else if(key == ApplicationSettings.Key_LowerServo) {
 					setServoState = false;
 				} else {
-					if (key == Key.RotateCCW) {
+					if (key == ApplicationSettings.Key_RotateCCW) {
 						keyCCWPressed = pressed;
 						if (keyCCWPressed) setRotation = Rotation.CCW;
 						else if (keyCWPressed) setRotation = Rotation.CW;
 						else setRotation = Rotation.None;
-					} else if (key == Key.RotateCW) {
+					} else if (key == ApplicationSettings.Key_RotateCW) {
 						keyCWPressed = pressed;
 						if (keyCWPressed) setRotation = Rotation.CW;
 						else if (keyCCWPressed) setRotation = Rotation.CCW;
 						else setRotation = Rotation.None;
-					} else if (key == Key.ExtendOutward) {
+					} else if (key == ApplicationSettings.Key_ExtendOutward) {
 						keyExtendPressed = pressed;
 						if (keyExtendPressed) setExtension = Extension.Outward;
 						else if (keyContractPressed) setExtension = Extension.Inward;
 						else setExtension = Extension.None;
-					} else if (key == Key.ExtendInward) {
+					} else if (key == ApplicationSettings.Key_ExtendInward) {
 						keyContractPressed = pressed;
 						if (keyContractPressed) setExtension = Extension.Inward;
 						else if (keyExtendPressed) setExtension = Extension.Outward;
@@ -200,7 +199,7 @@ namespace RobotArmUR2 {
 			Outward,
 			Inward
 		}
-
+	/*
 		public enum Key {
 			RotateCCW,
 			RotateCW,
@@ -211,6 +210,6 @@ namespace RobotArmUR2 {
 			MagnetOn,
 			MagnetOff
 		}
-
+		*/
 	}
 }

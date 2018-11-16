@@ -2,6 +2,8 @@
 
 namespace RobotArmUR2.VisionProcessing {
 	public class PaperCalibration {
+		//TODO put text next to paper clibration points
+		//TODO remove point sorting
 
 		private PointF ptBL;
 		private PointF ptBR;

@@ -20,15 +20,15 @@ namespace RobotArmUR2 {
 		public abstract void ProgramCancelled(RobotInterface serial);
 
 		public static PointF CalculateRobotCoordinates(RobotCalibration calib, PointF relativePaperCoords) {
-			double x1 = calib.Distance1 * Math.Cos((180 - calib.Angle1) * Math.PI / 180);
-			double x2 = calib.Distance2 * Math.Cos((180 - calib.Angle2) * Math.PI / 180);
-			double x3 = calib.Distance3 * Math.Cos((180 - calib.Angle3) * Math.PI / 180);
-			double x4 = calib.Distance4 * Math.Cos((180 - calib.Angle4) * Math.PI / 180);
+			double x1 = calib.BottomLeft.Extension * Math.Cos((180 - calib.BottomLeft.Rotation) * Math.PI / 180);
+			double x2 = calib.TopLeft.Extension * Math.Cos((180 - calib.TopLeft.Rotation) * Math.PI / 180);
+			double x3 = calib.TopRight.Extension * Math.Cos((180 - calib.TopRight.Rotation) * Math.PI / 180);
+			double x4 = calib.BottomRight.Extension * Math.Cos((180 - calib.BottomRight.Rotation) * Math.PI / 180);
 
-			double y1 = calib.Distance1 * Math.Sin((180 - calib.Angle1) * Math.PI / 180);
-			double y2 = calib.Distance2 * Math.Sin((180 - calib.Angle2) * Math.PI / 180);
-			double y3 = calib.Distance3 * Math.Sin((180 - calib.Angle3) * Math.PI / 180);
-			double y4 = calib.Distance4 * Math.Sin((180 - calib.Angle4) * Math.PI / 180);
+			double y1 = calib.BottomLeft.Extension * Math.Sin((180 - calib.BottomLeft.Rotation) * Math.PI / 180);
+			double y2 = calib.TopLeft.Extension * Math.Sin((180 - calib.TopLeft.Rotation) * Math.PI / 180);
+			double y3 = calib.TopRight.Extension * Math.Sin((180 - calib.TopRight.Rotation) * Math.PI / 180);
+			double y4 = calib.BottomRight.Extension * Math.Sin((180 - calib.BottomRight.Rotation) * Math.PI / 180);
 
 			double alpha = relativePaperCoords.X;
 			double beta = relativePaperCoords.Y;
@@ -52,11 +52,11 @@ namespace RobotArmUR2 {
 		}
 		//TODO whenever a command fails, we need to cancel the program.
 		protected void moveToTriangleStack(RobotInterface serial) {
-			serial.MoveToAndWait(Robot.Calibration.TriangleStackAngle, Robot.Calibration.TriangleStackDistance);
+			serial.MoveToAndWait(Robot.Calibration.TriangleStack.Rotation, Robot.Calibration.TriangleStack.Extension); //TODO take rbot point
 		}
 
 		protected void moveToSquareStack(RobotInterface serial) {
-			serial.MoveToAndWait(Robot.Calibration.SquareStackAngle, Robot.Calibration.SquareStackDistance);
+			serial.MoveToAndWait(Robot.Calibration.SquareStack.Rotation, Robot.Calibration.SquareStack.Extension);
 		}
 
 	}

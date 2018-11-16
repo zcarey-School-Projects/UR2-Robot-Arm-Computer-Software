@@ -21,62 +21,42 @@ namespace RobotArmUR2 {
 		}
 
 		private void RobotCalibrater_KeyDown(object sender, KeyEventArgs e) {
-			formKeyEvent(e.KeyCode, true);
+			robot.ManualControlKeyEvent(e.KeyCode, true);
 		}
 
 		private void RobotCalibrater_KeyUp(object sender, KeyEventArgs e) {
-			formKeyEvent(e.KeyCode, false);
+			robot.ManualControlKeyEvent(e.KeyCode, false);
 		}
-
-		public void formKeyEvent(Keys key, bool pressed) {
-			if ((key == Keys.A) || (key == Keys.Left)) {
-				robot.ManualControlKeyEvent(Robot.Key.RotateCCW, pressed);
-			} else if ((key == Keys.D) || (key == Keys.Right)) {
-				robot.ManualControlKeyEvent(Robot.Key.RotateCW, pressed);
-			} else if ((key == Keys.W) || (key == Keys.Up)) {
-				robot.ManualControlKeyEvent(Robot.Key.ExtendOutward, pressed);
-			} else if ((key == Keys.S) || (key == Keys.Down)) {
-				robot.ManualControlKeyEvent(Robot.Key.ExtendInward, pressed);
-			}else if((key == Keys.E)) {
-				robot.ManualControlKeyEvent(Robot.Key.RaiseServo, pressed);
-			}else if(key == Keys.Q) {
-				robot.ManualControlKeyEvent(Robot.Key.LowerServo, pressed);
-			}else if(key == Keys.M) {
-				robot.ManualControlKeyEvent(Robot.Key.MagnetOn, pressed);
-			}else if(key == Keys.N) {
-				robot.ManualControlKeyEvent(Robot.Key.MagnetOff, pressed);
-			}
-		}
-
+		
 		private void BLMoveTo_Click(object sender, EventArgs e) {
 			//TODO make a new "RobotPosition" class in Calibration that consists of the angle, and distance.
-			robot.RunProgram(new MoveToPosProgram(robot, robot.Calibration.Angle1, robot.Calibration.Distance1));
+			robot.RunProgram(new MoveToPosProgram(robot, robot.Calibration.BottomLeft.Rotation, robot.Calibration.BottomLeft.Extension)); //TODO change parameter to accept class
 		}
 
 		private void TLMoveTo_Click(object sender, EventArgs e) {
-			robot.RunProgram(new MoveToPosProgram(robot, robot.Calibration.Angle2, robot.Calibration.Distance2));
+			robot.RunProgram(new MoveToPosProgram(robot, robot.Calibration.TopLeft.Rotation, robot.Calibration.TopLeft.Extension));
 		}
 
 		private void TRMoveTo_Click(object sender, EventArgs e) {
-			robot.RunProgram(new MoveToPosProgram(robot, robot.Calibration.Angle3, robot.Calibration.Distance3));
+			robot.RunProgram(new MoveToPosProgram(robot, robot.Calibration.TopRight.Rotation, robot.Calibration.TopRight.Extension));
 		}
 
 		private void BRMoveTo_Click(object sender, EventArgs e) {
-			robot.RunProgram(new MoveToPosProgram(robot, robot.Calibration.Angle4, robot.Calibration.Distance4));
+			robot.RunProgram(new MoveToPosProgram(robot, robot.Calibration.BottomRight.Rotation, robot.Calibration.BottomRight.Extension));
 		}
 
 		public void OnCalibrationChanged() {
-			updateLabel(BLLabel, robot.Calibration.Angle1, robot.Calibration.Distance1);
-			updateLabel(TLLabel, robot.Calibration.Angle2, robot.Calibration.Distance2);
-			updateLabel(TRLabel, robot.Calibration.Angle3, robot.Calibration.Distance3);
-			updateLabel(BRLabel, robot.Calibration.Angle4, robot.Calibration.Distance4);
-			updateLabel(TriangleLabel, robot.Calibration.TriangleStackAngle, robot.Calibration.TriangleStackDistance);
-			updateLabel(SquareLabel, robot.Calibration.SquareStackAngle, robot.Calibration.SquareStackDistance);
+			updateLabel(BLLabel, robot.Calibration.BottomLeft);
+			updateLabel(TLLabel, robot.Calibration.TopLeft);
+			updateLabel(TRLabel, robot.Calibration.TopRight);
+			updateLabel(BRLabel, robot.Calibration.BottomRight);
+			updateLabel(TriangleLabel, robot.Calibration.TriangleStack);
+			updateLabel(SquareLabel, robot.Calibration.SquareStack);
 		}
 
-		private void updateLabel(Label label, float angle, float distance) {
+		private void updateLabel(Label label, RobotPoint pos) {
 			BeginInvoke(new Action(() => {
-				label.Text = "(" + angle.ToString("N2") + (char)248 + ", " + distance.ToString("N2") + "mm)";
+				label.Text = "(" + pos.Rotation.ToString("N2") + (char)248 + ", " + pos.Extension.ToString("N2") + "mm)";
 			}));
 		}
 
@@ -105,33 +85,27 @@ namespace RobotArmUR2 {
 		}
 
 		private void resetPoint1() {
-			robot.Calibration.Angle1 = RobotCalibration.Angle1Default;
-			robot.Calibration.Distance1 = RobotCalibration.Distance1Default;
+			robot.Calibration.BottomLeft.ResetToDefault();
 		}
 
 		private void resetPoint2() {
-			robot.Calibration.Angle2 = RobotCalibration.Angle2Default;
-			robot.Calibration.Distance2 = RobotCalibration.Distance2Default;
+			robot.Calibration.TopLeft.ResetToDefault();
 		}
 
 		private void resetPoint3() {
-			robot.Calibration.Angle3 = RobotCalibration.Angle3Default;
-			robot.Calibration.Distance3 = RobotCalibration.Distance3Default;
+			robot.Calibration.TopRight.ResetToDefault();
 		}
 
 		private void resetPoint4() {
-			robot.Calibration.Angle4 = RobotCalibration.Angle4Default;
-			robot.Calibration.Distance4 = RobotCalibration.Distance4Default;
+			robot.Calibration.BottomRight.ResetToDefault();
 		}
 
 		private void resetTriangle() {
-			robot.Calibration.TriangleStackAngle = RobotCalibration.TriangleStackAngleDefault;
-			robot.Calibration.TriangleStackDistance = RobotCalibration.TriangleStackDistanceDefault;
+			robot.Calibration.TriangleStack.ResetToDefault();
 		}
 
 		private void resetSquare() {
-			robot.Calibration.SquareStackAngle = RobotCalibration.SquareStackAngleDefault;
-			robot.Calibration.SquareStackDistance = RobotCalibration.SquareStackDistanceDefault;
+			robot.Calibration.SquareStack.ResetToDefault();
 		}
 
 		private void ResetBL_Click(object sender, EventArgs e) {
@@ -175,11 +149,11 @@ namespace RobotArmUR2 {
 		}
 
 		private void TriangleMoveTo_Click(object sender, EventArgs e) {
-			robot.RunProgram(new MoveToPosProgram(robot, robot.Calibration.TriangleStackAngle, robot.Calibration.TriangleStackDistance));
+			robot.RunProgram(new MoveToPosProgram(robot, robot.Calibration.TriangleStack.Rotation, robot.Calibration.TriangleStack.Extension));
 		}
 
 		private void SquareMoveTo_Click(object sender, EventArgs e) {
-			robot.RunProgram(new MoveToPosProgram(robot, robot.Calibration.SquareStackAngle, robot.Calibration.SquareStackDistance));
+			robot.RunProgram(new MoveToPosProgram(robot, robot.Calibration.SquareStack.Rotation, robot.Calibration.SquareStack.Extension));
 		}
 
 		private void TriangleCalibrate_Click(object sender, EventArgs e) {

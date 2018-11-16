@@ -45,23 +45,38 @@ namespace RobotArmUR2 {
 			//lock (pictureLock) {
 			//Image<TColor, TDepth> img = image;
 				if (img == null) return null;
+				if (picture.Width == 0 || picture.Height == 0 || img.Width == 0 || img.Height == 0) return null;
 
 				float PictureAspect = (float)picture.Width / picture.Height;
 				float ImgAspect = (float)img.Width / img.Height;
-				if (ImgAspect > PictureAspect) {
-					int scaledHeight = (int)(picture.Width / ImgAspect);
-					int yPos = (picture.Height - scaledHeight) / 2;
-					Point pos = new Point(MousePoint.X, MousePoint.Y - yPos);
-					if ((pos.X < 0) || (pos.Y < 0) || (pos.X >= picture.Width) || (pos.Y >= scaledHeight)) return null;
-					return new PointF((float)pos.X / picture.Width, (float)pos.Y / scaledHeight);
-				} else {
-					int scaledWidth = (int)(ImgAspect * picture.Height);
-					int xPos = (picture.Width - scaledWidth) / 2;
-					Point pos = new Point(MousePoint.X - xPos, MousePoint.Y);
-					if ((pos.X < 0) || (pos.Y < 0) || (pos.X >= scaledWidth) || (pos.Y >= picture.Height)) return null;
-					return new PointF((float)pos.X /scaledWidth, (float)pos.Y / picture.Height); ;
-				}
+			/*if (ImgAspect > PictureAspect) {
+				int scaledHeight = (int)(picture.Width / ImgAspect);
+				int yPos = (picture.Height - scaledHeight) / 2;
+				Point pos = new Point(MousePoint.X, MousePoint.Y - yPos);
+				if ((pos.X < 0) || (pos.Y < 0) || (pos.X >= picture.Width) || (pos.Y >= scaledHeight)) return null;
+				return new PointF((float)pos.X / picture.Width, (float)pos.Y / scaledHeight);
+			} else {
+				int scaledWidth = (int)(ImgAspect * picture.Height);
+				int xPos = (picture.Width - scaledWidth) / 2;
+				Point pos = new Point(MousePoint.X - xPos, MousePoint.Y);
+				if ((pos.X < 0) || (pos.Y < 0) || (pos.X >= scaledWidth) || (pos.Y >= picture.Height)) return null;
+				return new PointF((float)pos.X /scaledWidth, (float)pos.Y / picture.Height); ;
+			}*/
 			//}
+			//does not check if point is out of bounds
+			lock (pictureLock) { //make sure sizes dont change while we are doing the calculation
+				int scaledWidth = picture.Width;
+				int scaledHeight = picture.Height;
+
+				if (ImgAspect > PictureAspect) scaledHeight = (int)(picture.Width / ImgAspect);
+				else scaledWidth = (int)(picture.Height * ImgAspect);
+
+				Size relativePos = new Size((picture.Width - scaledWidth) / 2, (picture.Height - scaledHeight) / 2);
+				Point pos = Point.Subtract(MousePoint, relativePos);
+
+				return new PointF((float)pos.X / scaledWidth, (float)pos.Y / scaledHeight);
+			}
+
 		}
 
 		public Point? GetImagePoint(Point MousePoint) {

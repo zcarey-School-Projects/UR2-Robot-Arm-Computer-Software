@@ -14,21 +14,17 @@ namespace RobotArmUR2
 	{
 
 		private Vision vision;
-		private SaveFileDialog saveDialog;
 
-		private const int Default_Camera_Index = 0;
 		private Robot robot;
 		private PaperCalibrater paperCalibrater;
 		private RobotCalibrater robotCalibrater;
-
+		
+		//Custom PictureBox wrappers that make using them simpler
 		private EmguPictureBox<Bgr, byte> origImage;
 		private EmguPictureBox<Gray, byte> threshImage;
 		private EmguPictureBox<Bgr, byte> warpedImage;
 
-		private Bgr SquareHighlightColor = new Bgr(Color.Red);
-		private Bgr TriangleHighlightColor = new Bgr(Color.Yellow);
-
-		private volatile bool manualMoveEnabled = true;
+		//private volatile bool manualMoveEnabled = true;
 
 		public Form1()
 		{
@@ -48,9 +44,6 @@ namespace RobotArmUR2
 			vision.UIListener = this;
 
 			paperCalibrater = new PaperCalibrater(/*this, vision*/);
-
-			saveDialog = new SaveFileDialog();
-			saveDialog.RestoreDirectory = true;
 
 			vision.PaperCalibration = new PaperCalibration(
 				new PointF(Properties.Settings.Default.PaperPoint0X, Properties.Settings.Default.PaperPoint0Y),
@@ -76,6 +69,9 @@ namespace RobotArmUR2
 			//Properties.Settings.Default.RobotPrescale = PrescaleSlider.Value;
 			Properties.Settings.Default.Save();
 			vision.stop();
+
+			//TODO do save stuff
+			//Properties.Settings.Default.Save();
 		}
 
 		public void VisionUI_NewFrameFinished(Vision vision) {
@@ -86,8 +82,8 @@ namespace RobotArmUR2
 			Image<Bgr, byte> warped = vision.WarpedImage.Convert<Bgr, byte>();
 			List<Triangle2DF> trigs = vision.Triangles;
 			List<RotatedRect> squares = vision.Squares;
-			vision.DrawTriangles(warped, vision.Triangles, TriangleHighlightColor, 3);
-			vision.DrawSquares(warped, vision.Squares, SquareHighlightColor, 3);
+			vision.DrawTriangles(warped, vision.Triangles, ApplicationSettings.TriangleHighlightColor, ApplicationSettings.TriangleHighlightThickness);
+			vision.DrawSquares(warped, vision.Squares, ApplicationSettings.SquareHighlightColor, ApplicationSettings.SquareHighlightThickness);
 			warpedImage.Image = warped;
 
 			PointF? robotCoords = null;
@@ -120,8 +116,6 @@ namespace RobotArmUR2
 			}
 		}
 
-		//TODO remove region
-		#region Input Method Changers 
 		private void imageToolStripMenuItem_Click(object sender, EventArgs e) {
 			ImageInput newInput = new ImageInput();
 			if (newInput.PromptUserToLoadFile()) {
@@ -136,7 +130,6 @@ namespace RobotArmUR2
 		private void CameraMenu1_Click(object sender, EventArgs e) { changeCamera(1); }
 
 		private void Camera2Menu_Click(object sender, EventArgs e) { changeCamera(2); }
-		#endregion
 
 		private void AutoConnect_Click(object sender, EventArgs e) {
 			robot.ConnectToRobot();
@@ -182,34 +175,13 @@ namespace RobotArmUR2
 		}
 
 		private void Form1_KeyDown(object sender, KeyEventArgs e) {
-			formKeyEvent(e.KeyCode, true);
+			robot.ManualControlKeyEvent(e.KeyCode, true);
 		}
 
 		private void Form1_KeyUp(object sender, KeyEventArgs e) {
-			formKeyEvent(e.KeyCode, false);
+			robot.ManualControlKeyEvent(e.KeyCode, false);
 		}
-
-		public void formKeyEvent(Keys key, bool pressed) { //TODO make robot calibrater use this
-			if (!manualMoveEnabled) return;
-			if ((key == Keys.A)/* || (key == Keys.Left)*/) {
-				robot.ManualControlKeyEvent(Robot.Key.RotateCCW, pressed);
-			}else if ((key == Keys.D)/* || (key == Keys.Right)*/) {
-				robot.ManualControlKeyEvent(Robot.Key.RotateCW, pressed);
-			}else if((key == Keys.W)/* || (key == Keys.Up)*/) {
-				robot.ManualControlKeyEvent(Robot.Key.ExtendOutward, pressed);
-			}else if ((key == Keys.S)/* || (key == Keys.Down)*/) {
-				robot.ManualControlKeyEvent(Robot.Key.ExtendInward, pressed);
-			}else if((key == Keys.E)) {
-				robot.ManualControlKeyEvent(Robot.Key.RaiseServo, pressed);
-			}else if((key == Keys.Q)) {
-				robot.ManualControlKeyEvent(Robot.Key.LowerServo, pressed);
-			}else if((key == Keys.M)) {
-				robot.ManualControlKeyEvent(Robot.Key.MagnetOn, pressed);
-			}else if((key == Keys.N)) {
-				robot.ManualControlKeyEvent(Robot.Key.MagnetOff, pressed);
-			}
-		}
-
+		
 		public void ChangeManualRotateImage(Robot.Rotation state) {
 			BeginInvoke(new Action(() => {
 				RotateLeftVisual.Image = ((state == Robot.Rotation.CCW) ? Properties.Resources.RotateLeft : Properties.Resources.RotateLeftOff);
@@ -222,30 +194,6 @@ namespace RobotArmUR2
 				ExtendVisual.Image = ((state == Robot.Extension.Outward) ? Properties.Resources.Extend : Properties.Resources.ExtendOff);
 				RetractVisual.Image = ((state == Robot.Extension.Inward) ? Properties.Resources.Retract : Properties.Resources.RetractOff);
 			}));
-		}
-
-		private void button1_MouseDown(object sender, MouseEventArgs e) {
-			formKeyEvent(Keys.Left, true);
-		}
-
-		private void button1_MouseUp(object sender, MouseEventArgs e) {
-			formKeyEvent(Keys.Left, false);
-		}
-
-		private void button1_MouseLeave(object sender, EventArgs e) {
-			formKeyEvent(Keys.Left, false);
-		}
-
-		private void button2_MouseDown(object sender, MouseEventArgs e) {
-			formKeyEvent(Keys.Right, true);
-		}
-
-		private void button2_MouseUp(object sender, MouseEventArgs e) {
-			formKeyEvent(Keys.Right, false);
-		}
-
-		private void button2_MouseLeave(object sender, EventArgs e) {
-			formKeyEvent(Keys.Right, false);
 		}
 
 		private void RobotSpeedSlider_Scroll(object sender, EventArgs e) {
@@ -278,7 +226,7 @@ namespace RobotArmUR2
 				Stack.Text = (running ? "Cancel" : "Stack!");
 			}));
 		}
-		//TODO put text next to paper clibration points
+		
 		private void Stack_Click(object sender, EventArgs e) {
 			if(!robot.RunProgram(new StackingProgram(robot, vision, paperCalibrater))) {
 				robot.CancelProgram();

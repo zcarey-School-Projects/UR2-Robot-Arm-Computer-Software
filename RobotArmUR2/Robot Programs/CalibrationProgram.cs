@@ -23,12 +23,12 @@ namespace RobotArmUR2.Robot_Programs {
 				MessageBox.Show("Error", "Could not retrieve data.", MessageBoxButtons.OK);
 			} else {
 				switch (pointNumber) {
-					case 1: Robot.Calibration.Angle1 = rotation; Robot.Calibration.Distance1 = distance; break;
-					case 2: Robot.Calibration.Angle2 = rotation; Robot.Calibration.Distance2 = distance; break;
-					case 3: Robot.Calibration.Angle3 = rotation; Robot.Calibration.Distance3 = distance; break;
-					case 4: Robot.Calibration.Angle4 = rotation; Robot.Calibration.Distance4 = distance; break;
-					case 5: Robot.Calibration.TriangleStackAngle = rotation; Robot.Calibration.TriangleStackDistance = distance; break;
-					case 6: Robot.Calibration.SquareStackAngle = rotation; Robot.Calibration.SquareStackDistance = distance; break;
+					case 1: Robot.Calibration.BottomLeft.Rotation = rotation; Robot.Calibration.BottomLeft.Extension = distance; break;
+					case 2: Robot.Calibration.TopLeft.Rotation = rotation; Robot.Calibration.TopLeft.Extension = distance; break;
+					case 3: Robot.Calibration.TopRight.Rotation = rotation; Robot.Calibration.TopRight.Extension = distance; break;
+					case 4: Robot.Calibration.BottomRight.Rotation = rotation; Robot.Calibration.BottomRight.Extension = distance; break;
+					case 5: Robot.Calibration.TriangleStack.Rotation = rotation; Robot.Calibration.TriangleStack.Extension = distance; break;
+					case 6: Robot.Calibration.SquareStack.Rotation = rotation; Robot.Calibration.SquareStack.Extension = distance; break;
 					default:
 						Console.WriteLine("Internal Error: Point does not exist: " + pointNumber);
 						return;
