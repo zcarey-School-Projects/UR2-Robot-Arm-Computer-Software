@@ -134,12 +134,12 @@ namespace RobotArmUR2.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("241.38356")]
-        public float BLRobotDistance {
+        public float BLRobotExtension {
             get {
-                return ((float)(this["BLRobotDistance"]));
+                return ((float)(this["BLRobotExtension"]));
             }
             set {
-                this["BLRobotDistance"] = value;
+                this["BLRobotExtension"] = value;
             }
         }
         
@@ -158,12 +158,12 @@ namespace RobotArmUR2.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("435.7497")]
-        public float TLRobotDistance {
+        public float TLRobotExtension {
             get {
-                return ((float)(this["TLRobotDistance"]));
+                return ((float)(this["TLRobotExtension"]));
             }
             set {
-                this["TLRobotDistance"] = value;
+                this["TLRobotExtension"] = value;
             }
         }
         
@@ -182,12 +182,12 @@ namespace RobotArmUR2.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("435.7497")]
-        public float TRRobotDistance {
+        public float TRRobotExtension {
             get {
-                return ((float)(this["TRRobotDistance"]));
+                return ((float)(this["TRRobotExtension"]));
             }
             set {
-                this["TRRobotDistance"] = value;
+                this["TRRobotExtension"] = value;
             }
         }
         
@@ -206,60 +206,60 @@ namespace RobotArmUR2.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("241.38356")]
-        public float BRRobotDistance {
+        public float BRRobotExtension {
             get {
-                return ((float)(this["BRRobotDistance"]));
+                return ((float)(this["BRRobotExtension"]));
             }
             set {
-                this["BRRobotDistance"] = value;
+                this["BRRobotExtension"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public float TrianglePileAngle {
+        public float TriangleStackRotation {
             get {
-                return ((float)(this["TrianglePileAngle"]));
+                return ((float)(this["TriangleStackRotation"]));
             }
             set {
-                this["TrianglePileAngle"] = value;
+                this["TriangleStackRotation"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("304.8")]
-        public float TrianglePileDistance {
+        public float TriangleStackExtension {
             get {
-                return ((float)(this["TrianglePileDistance"]));
+                return ((float)(this["TriangleStackExtension"]));
             }
             set {
-                this["TrianglePileDistance"] = value;
+                this["TriangleStackExtension"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("180")]
-        public float SquarePileAngle {
+        public float SquareStackRotation {
             get {
-                return ((float)(this["SquarePileAngle"]));
+                return ((float)(this["SquareStackRotation"]));
             }
             set {
-                this["SquarePileAngle"] = value;
+                this["SquareStackRotation"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("304.8")]
-        public float SquarePileDistance {
+        public float SquareStackExtension {
             get {
-                return ((float)(this["SquarePileDistance"]));
+                return ((float)(this["SquareStackExtension"]));
             }
             set {
-                this["SquarePileDistance"] = value;
+                this["SquareStackExtension"] = value;
             }
         }
         

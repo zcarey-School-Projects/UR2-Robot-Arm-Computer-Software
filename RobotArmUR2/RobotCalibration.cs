@@ -7,39 +7,37 @@ using System.Threading.Tasks;
 namespace RobotArmUR2 {
 	public class RobotCalibration {
 		
-		//TODO make calibration property naming consistant
-		public RobotCalibrationPoint BottomLeft { get; private set; } = new RobotCalibrationPoint(nameof(Properties.Settings.Default.BLRobotRotation), nameof(Properties.Settings.Default.BLRobotDistance));
-		public RobotCalibrationPoint TopLeft { get; private set; } = new RobotCalibrationPoint(nameof(Properties.Settings.Default.TLRobotRotation), nameof(Properties.Settings.Default.TLRobotDistance));
-		public RobotCalibrationPoint TopRight { get; private set; } = new RobotCalibrationPoint(nameof(Properties.Settings.Default.TRRobotRotation), nameof(Properties.Settings.Default.TRRobotDistance));
-		public RobotCalibrationPoint BottomRight { get; private set; } = new RobotCalibrationPoint(nameof(Properties.Settings.Default.BRRobotRotation), nameof(Properties.Settings.Default.BRRobotDistance));
+		//TODO make calibrationPoint an abstract class that can be used for other properties
+		public RobotCalibrationPoint BottomLeft { get; private set; } = new RobotCalibrationPoint(nameof(Properties.Settings.Default.BLRobotRotation), nameof(Properties.Settings.Default.BLRobotExtension));
+		public RobotCalibrationPoint TopLeft { get; private set; } = new RobotCalibrationPoint(nameof(Properties.Settings.Default.TLRobotRotation), nameof(Properties.Settings.Default.TLRobotExtension));
+		public RobotCalibrationPoint TopRight { get; private set; } = new RobotCalibrationPoint(nameof(Properties.Settings.Default.TRRobotRotation), nameof(Properties.Settings.Default.TRRobotExtension));
+		public RobotCalibrationPoint BottomRight { get; private set; } = new RobotCalibrationPoint(nameof(Properties.Settings.Default.BRRobotRotation), nameof(Properties.Settings.Default.BRRobotExtension));
 
-		public RobotCalibrationPoint TriangleStack { get; private set; } = new RobotCalibrationPoint(nameof(Properties.Settings.Default.TrianglePileAngle), nameof(Properties.Settings.Default.TrianglePileDistance));
-		public RobotCalibrationPoint SquareStack { get; private set; } = new RobotCalibrationPoint(nameof(Properties.Settings.Default.SquarePileAngle), nameof(Properties.Settings.Default.SquarePileDistance));
+		public RobotCalibrationPoint TriangleStack { get; private set; } = new RobotCalibrationPoint(nameof(Properties.Settings.Default.TriangleStackRotation), nameof(Properties.Settings.Default.TriangleStackExtension));
+		public RobotCalibrationPoint SquareStack { get; private set; } = new RobotCalibrationPoint(nameof(Properties.Settings.Default.SquareStackRotation), nameof(Properties.Settings.Default.SquareStackExtension));
 
 		public RobotCalibration() {
 			
 		}
 
-		public void SaveSettings() { //TODO put inside CalibrationPoint
-			Properties.Settings.Default.BLRobotRotation = BottomLeft.Rotation;
-			Properties.Settings.Default.BLRobotDistance = BottomLeft.Extension;
-
-			Properties.Settings.Default.TLRobotRotation = TopLeft.Rotation;
-			Properties.Settings.Default.TLRobotDistance = TopLeft.Extension;
-
-			Properties.Settings.Default.TRRobotRotation = TopRight.Rotation;
-			Properties.Settings.Default.TRRobotDistance = TopRight.Extension;
-
-			Properties.Settings.Default.BRRobotRotation = BottomRight.Rotation;
-			Properties.Settings.Default.BRRobotDistance = BottomRight.Extension;
-
-			Properties.Settings.Default.TrianglePileAngle = TriangleStack.Rotation;
-			Properties.Settings.Default.TrianglePileDistance = TriangleStack.Extension;
-
-			Properties.Settings.Default.SquarePileAngle = SquareStack.Rotation;
-			Properties.Settings.Default.SquarePileDistance = SquareStack.Extension;
+		public void SaveSettings() { 
+			BottomLeft.Save();
+			TopLeft.Save();
+			TopRight.Save();
+			BottomRight.Save();
+			TriangleStack.Save();
+			SquareStack.Save();
 
 			Properties.Settings.Default.Save();
+		}
+
+		public void ResetToDefault() {
+			BottomLeft.ResetToDefault();
+			TopLeft.ResetToDefault();
+			TopRight.ResetToDefault();
+			BottomRight.ResetToDefault();
+			TriangleStack.ResetToDefault();
+			SquareStack.ResetToDefault();
 		}
 
 	}
