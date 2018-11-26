@@ -19,7 +19,7 @@ namespace RobotArmUR2 {
 		//Called if the program is forcfully cancelled.
 		public abstract void ProgramCancelled(RobotInterface serial);
 
-		public static PointF CalculateRobotCoordinates(RobotCalibration calib, PointF relativePaperCoords) {
+		public static RobotPoint CalculateRobotCoordinates(RobotCalibration calib, PointF relativePaperCoords) { //TODO simplify with points?
 			double x1 = calib.BottomLeft.Extension * Math.Cos((180 - calib.BottomLeft.Rotation) * Math.PI / 180);
 			double x2 = calib.TopLeft.Extension * Math.Cos((180 - calib.TopLeft.Rotation) * Math.PI / 180);
 			double x3 = calib.TopRight.Extension * Math.Cos((180 - calib.TopRight.Rotation) * Math.PI / 180);
@@ -40,23 +40,23 @@ namespace RobotArmUR2 {
 			double targetAngle = 180 - (Math.Atan2(y, x) * 180 / Math.PI);
 			double targetDistance = Math.Sqrt(x * x + y * y);
 
-			return new PointF((float)targetAngle, (float)targetDistance);
+			return new RobotPoint((float)targetAngle, (float)targetDistance);
 		}
 
 		protected void moveToPoint(RobotInterface serial, PointF relativePaperCoords) {
-			PointF targetCoords = CalculateRobotCoordinates(Robot.Calibration, relativePaperCoords);
-			Console.WriteLine("Target: [{0}°, {1}mm]\n", targetCoords.X, targetCoords.Y);
+			RobotPoint targetCoords = CalculateRobotCoordinates(Robot.Calibration, relativePaperCoords);
+			Console.WriteLine("Target: [{0}°, {1}mm]\n", targetCoords.Rotation, targetCoords.Extension);
 
 			//Console.WriteLine("[{0}, {1}]", targetAngle, targetDistance);
-			serial.MoveToAndWait(targetCoords.X, targetCoords.Y);
+			serial.MoveToAndWait(targetCoords);
 		}
 		//TODO whenever a command fails, we need to cancel the program.
 		protected void moveToTriangleStack(RobotInterface serial) {
-			serial.MoveToAndWait(Robot.Calibration.TriangleStack.Rotation, Robot.Calibration.TriangleStack.Extension); //TODO take rbot point
+			serial.MoveToAndWait(Robot.Calibration.TriangleStack);
 		}
 
 		protected void moveToSquareStack(RobotInterface serial) {
-			serial.MoveToAndWait(Robot.Calibration.SquareStack.Rotation, Robot.Calibration.SquareStack.Extension);
+			serial.MoveToAndWait(Robot.Calibration.SquareStack);
 		}
 
 	}

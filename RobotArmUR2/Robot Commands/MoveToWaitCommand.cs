@@ -8,12 +8,10 @@ using System.Threading.Tasks;
 namespace RobotArmUR2.Robot_Commands {
 	class MoveToWaitCommand : SerialCommand {
 
-		private float angle;
-		private float distance;
+		private RobotPoint pos;
 
-		public MoveToWaitCommand(float angle, float distance) {
-			this.angle = angle;
-			this.distance = distance;
+		public MoveToWaitCommand(RobotPoint pos) {
+			this.pos = new RobotPoint(pos);
 		}
 
 		public override string getCommand() {
@@ -21,7 +19,7 @@ namespace RobotArmUR2.Robot_Commands {
 		}
 
 		public override string GetData() {
-			return "R" + angle.ToString("N2") + ":E" + distance.ToString("N2") + ":";
+			return "R" + pos.Rotation.ToString("N2") + ":E" + pos.Extension.ToString("N2") + ":";
 		}
 
 		public override string GetName() {

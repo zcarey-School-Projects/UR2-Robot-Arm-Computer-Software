@@ -35,13 +35,13 @@ namespace RobotArmUR2 {
 			serial.sendCommand(new EndMoveCommand());
 		}
 
-		public void MoveTo(float angle, float distance) {
-			serial.sendCommand(new MoveToCommand(angle, distance));
+		public void MoveTo(RobotPoint pos) {
+			serial.sendCommand(new MoveToCommand(pos)); //TODO remove robotinterface
 		}
 
-		public void MoveToAndWait(float angle, float distance) {
+		public void MoveToAndWait(RobotPoint pos) {
 			//TODO put inside "MoveTo" command, take bool as parameter, bool WaitForFinish = false
-			serial.sendCommand(new MoveToWaitCommand(angle, distance));
+			serial.sendCommand(new MoveToWaitCommand(pos));
 		}
 
 		public bool RequestRotation(ref float rotationResponse) {

@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 namespace RobotArmUR2 {
 	public class RobotPoint {
 
-		public float Rotation;
-		public float Extension;
+		public float Rotation { get; set; }
+		public float Extension { get; set; }
 
 		public RobotPoint() : this(0, 0) { }
 

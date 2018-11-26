@@ -29,20 +29,19 @@ namespace RobotArmUR2 {
 		}
 		
 		private void BLMoveTo_Click(object sender, EventArgs e) {
-			//TODO make a new "RobotPosition" class in Calibration that consists of the angle, and distance.
-			robot.RunProgram(new MoveToPosProgram(robot, robot.Calibration.BottomLeft.Rotation, robot.Calibration.BottomLeft.Extension)); //TODO change parameter to accept class
+			robot.RunProgram(new MoveToPosProgram(robot, robot.Calibration.BottomLeft)); //TODO change parameter to accept class
 		}
 
 		private void TLMoveTo_Click(object sender, EventArgs e) {
-			robot.RunProgram(new MoveToPosProgram(robot, robot.Calibration.TopLeft.Rotation, robot.Calibration.TopLeft.Extension));
+			robot.RunProgram(new MoveToPosProgram(robot, robot.Calibration.TopLeft));
 		}
 
 		private void TRMoveTo_Click(object sender, EventArgs e) {
-			robot.RunProgram(new MoveToPosProgram(robot, robot.Calibration.TopRight.Rotation, robot.Calibration.TopRight.Extension));
+			robot.RunProgram(new MoveToPosProgram(robot, robot.Calibration.TopRight));
 		}
 
 		private void BRMoveTo_Click(object sender, EventArgs e) {
-			robot.RunProgram(new MoveToPosProgram(robot, robot.Calibration.BottomRight.Rotation, robot.Calibration.BottomRight.Extension));
+			robot.RunProgram(new MoveToPosProgram(robot, robot.Calibration.BottomRight));
 		}
 
 		public void OnCalibrationChanged() {
@@ -149,11 +148,11 @@ namespace RobotArmUR2 {
 		}
 
 		private void TriangleMoveTo_Click(object sender, EventArgs e) {
-			robot.RunProgram(new MoveToPosProgram(robot, robot.Calibration.TriangleStack.Rotation, robot.Calibration.TriangleStack.Extension));
+			robot.RunProgram(new MoveToPosProgram(robot, robot.Calibration.TriangleStack));
 		}
 
 		private void SquareMoveTo_Click(object sender, EventArgs e) {
-			robot.RunProgram(new MoveToPosProgram(robot, robot.Calibration.SquareStack.Rotation, robot.Calibration.SquareStack.Extension));
+			robot.RunProgram(new MoveToPosProgram(robot, robot.Calibration.SquareStack));
 		}
 
 		private void TriangleCalibrate_Click(object sender, EventArgs e) {

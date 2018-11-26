@@ -7,16 +7,14 @@ using System.Threading.Tasks;
 namespace RobotArmUR2.Robot_Programs {
 	public class MoveToPosProgram : RobotProgram {
 
-		private float angle;
-		private float distance;
+		private RobotPoint pos;
 
-		public MoveToPosProgram(Robot robot, float angle, float distance) : base(robot) {
-			this.angle = angle;
-			this.distance = distance;
+		public MoveToPosProgram(Robot robot, RobotPoint pos) : base(robot) {
+			this.pos = new RobotPoint(pos); //Ensure our copy can't be modified.
 		}
 
 		public override void Initialize(RobotInterface serial) {
-			serial.MoveTo(angle, distance);
+			serial.MoveTo(pos);
 		}
 
 		public override bool ProgramStep(RobotInterface serial) {

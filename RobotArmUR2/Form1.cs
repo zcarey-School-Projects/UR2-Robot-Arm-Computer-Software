@@ -86,7 +86,7 @@ namespace RobotArmUR2
 			vision.DrawSquares(warped, vision.Squares, ApplicationSettings.SquareHighlightColor, ApplicationSettings.SquareHighlightThickness);
 			warpedImage.Image = warped;
 
-			PointF? robotCoords = null;
+			RobotPoint robotCoords = null;
 			if(trigs.Count > 0) {
 				PointF pt = trigs[0].Centeroid;
 				PointF rel = new PointF(pt.X / warped.Width, pt.Y / warped.Height);
@@ -101,8 +101,7 @@ namespace RobotArmUR2
 				TriangleCount.Text = "Triangles: " + trigs.Count;
 				SquareCount.Text = "Squares: " + squares.Count;
 				if (robotCoords != null) {
-					PointF coord = (PointF)robotCoords;
-					TargetCoords.Text = "Target: (" + coord.X.ToString("N2").PadLeft(4) + "°, " + coord.Y.ToString("N2").PadLeft(5) +" mm)";
+					TargetCoords.Text = "Target: (" + robotCoords.Rotation.ToString("N2").PadLeft(4) + "°, " + robotCoords.Extension.ToString("N2").PadLeft(5) +" mm)";
 				}
 			}));
 
