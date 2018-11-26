@@ -249,6 +249,11 @@ namespace RobotArmUR2
 			vision.RotateImage180 = Rotate180Checkbox.Checked;
 		}
 
+		private void ThresholdValue_Scroll(object sender, EventArgs e) {
+			byte val = (byte)ThresholdValue.Value;
+			vision.GrayscaleThreshold = val;
+			ThresholdValueLabel.Text = "Threshold: " + val.ToString().PadLeft(3); //TODO save threshold
+		}
 	}
 
 }

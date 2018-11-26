@@ -137,19 +137,8 @@ namespace RobotArmUR2.VisionProcessing{
 			}
 		}
 
-		private bool rotateImage180 = false;
-		public bool RotateImage180 {
-			get {
-				lock (inputLock) {
-					return rotateImage180;
-				}
-			}
-			set {
-				lock (inputLock) {
-					rotateImage180 = value;
-				}
-			}
-		}
+		public bool RotateImage180 { get; set; } = false;
+		public byte GrayscaleThreshold { get; set; } = (byte)(255 / 2);
 
 
 		private volatile bool exitThread = false;
@@ -227,7 +216,7 @@ namespace RobotArmUR2.VisionProcessing{
 						//Scale image so Height = 640, but still keeps aspect ratio.
 						inputImage = input.Resize(640d / input.Height, Emgu.CV.CvEnum.Inter.Cubic);
 
-						if (rotateImage180) {
+						if (RotateImage180) {
 							inputImage._Flip(Emgu.CV.CvEnum.FlipType.Horizontal);
 							inputImage._Flip(Emgu.CV.CvEnum.FlipType.Vertical);
 						}
@@ -243,7 +232,7 @@ namespace RobotArmUR2.VisionProcessing{
 		//Does all the necessary processing on images to properly detect shapes.
 		private void processVision() {
 			GrayscaleImage = InputImage.Convert<Gray, byte>(); //Convert to black/white image since it is all we care about.
-			ThresholdImage = grayscaleImage.ThresholdBinary(new Gray(255d / 2), new Gray(255));
+			ThresholdImage = grayscaleImage.ThresholdBinary(new Gray(GrayscaleThreshold), new Gray(255));
 			warpImage();
 			cannyEdgeDetection(warpedImage);
 			DetectShapes();

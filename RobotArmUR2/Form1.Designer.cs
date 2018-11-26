@@ -63,6 +63,8 @@
 			this.SquareCount = new System.Windows.Forms.Label();
 			this.Rotate180Checkbox = new System.Windows.Forms.CheckBox();
 			this.TargetCoords = new System.Windows.Forms.Label();
+			this.ThresholdValue = new System.Windows.Forms.TrackBar();
+			this.ThresholdValueLabel = new System.Windows.Forms.Label();
 			this.menuStrip1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.RobotSpeedSlider)).BeginInit();
 			this.statusStrip1.SuspendLayout();
@@ -73,6 +75,7 @@
 			((System.ComponentModel.ISupportInitialize)(this.Image3)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.Image2)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.Image1)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.ThresholdValue)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// ResolutionText
@@ -180,21 +183,21 @@
 			// goToHomeToolStripMenuItem
 			// 
 			this.goToHomeToolStripMenuItem.Name = "goToHomeToolStripMenuItem";
-			this.goToHomeToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
+			this.goToHomeToolStripMenuItem.Size = new System.Drawing.Size(216, 26);
 			this.goToHomeToolStripMenuItem.Text = "Go To Home";
 			this.goToHomeToolStripMenuItem.Click += new System.EventHandler(this.goToHomeToolStripMenuItem_Click);
 			// 
 			// paperPositionToolStripMenuItem
 			// 
 			this.paperPositionToolStripMenuItem.Name = "paperPositionToolStripMenuItem";
-			this.paperPositionToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
+			this.paperPositionToolStripMenuItem.Size = new System.Drawing.Size(216, 26);
 			this.paperPositionToolStripMenuItem.Text = "Paper Position";
 			this.paperPositionToolStripMenuItem.Click += new System.EventHandler(this.paperPositionToolStripMenuItem_Click);
 			// 
 			// robotPositionToolStripMenuItem
 			// 
 			this.robotPositionToolStripMenuItem.Name = "robotPositionToolStripMenuItem";
-			this.robotPositionToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
+			this.robotPositionToolStripMenuItem.Size = new System.Drawing.Size(216, 26);
 			this.robotPositionToolStripMenuItem.Text = "Robot Position";
 			this.robotPositionToolStripMenuItem.Click += new System.EventHandler(this.robotPositionToolStripMenuItem_Click);
 			// 
@@ -364,7 +367,7 @@
 			// TriangleCount
 			// 
 			this.TriangleCount.AutoSize = true;
-			this.TriangleCount.Location = new System.Drawing.Point(563, 365);
+			this.TriangleCount.Location = new System.Drawing.Point(563, 372);
 			this.TriangleCount.Name = "TriangleCount";
 			this.TriangleCount.Size = new System.Drawing.Size(83, 17);
 			this.TriangleCount.TabIndex = 26;
@@ -373,7 +376,7 @@
 			// SquareCount
 			// 
 			this.SquareCount.AutoSize = true;
-			this.SquareCount.Location = new System.Drawing.Point(563, 382);
+			this.SquareCount.Location = new System.Drawing.Point(563, 389);
 			this.SquareCount.Name = "SquareCount";
 			this.SquareCount.Size = new System.Drawing.Size(77, 17);
 			this.SquareCount.TabIndex = 27;
@@ -382,7 +385,7 @@
 			// Rotate180Checkbox
 			// 
 			this.Rotate180Checkbox.AutoSize = true;
-			this.Rotate180Checkbox.Location = new System.Drawing.Point(414, 358);
+			this.Rotate180Checkbox.Location = new System.Drawing.Point(414, 368);
 			this.Rotate180Checkbox.Name = "Rotate180Checkbox";
 			this.Rotate180Checkbox.Size = new System.Drawing.Size(100, 21);
 			this.Rotate180Checkbox.TabIndex = 29;
@@ -399,11 +402,32 @@
 			this.TargetCoords.TabIndex = 30;
 			this.TargetCoords.Text = "Target:";
 			// 
+			// ThresholdValue
+			// 
+			this.ThresholdValue.Location = new System.Drawing.Point(338, 313);
+			this.ThresholdValue.Maximum = 255;
+			this.ThresholdValue.Name = "ThresholdValue";
+			this.ThresholdValue.Size = new System.Drawing.Size(426, 56);
+			this.ThresholdValue.TabIndex = 31;
+			this.ThresholdValue.Value = 127;
+			this.ThresholdValue.Scroll += new System.EventHandler(this.ThresholdValue_Scroll);
+			// 
+			// ThresholdValueLabel
+			// 
+			this.ThresholdValueLabel.AutoSize = true;
+			this.ThresholdValueLabel.Location = new System.Drawing.Point(770, 323);
+			this.ThresholdValueLabel.Name = "ThresholdValueLabel";
+			this.ThresholdValueLabel.Size = new System.Drawing.Size(80, 17);
+			this.ThresholdValueLabel.TabIndex = 32;
+			this.ThresholdValueLabel.Text = "Threshold: ";
+			// 
 			// Form1
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(1005, 474);
+			this.Controls.Add(this.ThresholdValueLabel);
+			this.Controls.Add(this.ThresholdValue);
 			this.Controls.Add(this.TargetCoords);
 			this.Controls.Add(this.Rotate180Checkbox);
 			this.Controls.Add(this.SquareCount);
@@ -446,6 +470,7 @@
 			((System.ComponentModel.ISupportInitialize)(this.Image3)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.Image2)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.Image1)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.ThresholdValue)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -488,6 +513,8 @@
 		private System.Windows.Forms.Label SquareCount;
 		private System.Windows.Forms.CheckBox Rotate180Checkbox;
 		private System.Windows.Forms.Label TargetCoords;
+		private System.Windows.Forms.TrackBar ThresholdValue;
+		private System.Windows.Forms.Label ThresholdValueLabel;
 	}
 }
 
