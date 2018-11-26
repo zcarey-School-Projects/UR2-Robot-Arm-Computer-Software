@@ -157,8 +157,8 @@ namespace RobotArmUR2 {
 						else setExtension = Extension.None;
 					}
 
-					if(setRotation != null) uiListener.ChangeManualRotateImage((Rotation)setRotation);
-					if(setExtension != null) uiListener.ChangeManualExtensionImage((Extension)setExtension);
+					uiListener.ChangeManualRotateImage((Rotation)setRotation);
+					uiListener.ChangeManualExtensionImage((Extension)setExtension);
 				}
 			}
 		}

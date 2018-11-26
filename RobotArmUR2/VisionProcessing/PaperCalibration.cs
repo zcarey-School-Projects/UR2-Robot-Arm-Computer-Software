@@ -3,7 +3,6 @@
 namespace RobotArmUR2.VisionProcessing {
 	public class PaperCalibration {
 		//TODO put text next to paper clibration points
-		//TODO remove point sorting
 
 		private PointF ptBL;
 		private PointF ptBR;
@@ -97,75 +96,6 @@ namespace RobotArmUR2.VisionProcessing {
 			ptTR.Y = Properties.Settings.Default.PaperPoint2Y;
 			ptBR.X = Properties.Settings.Default.PaperPoint3X;
 			ptBR.Y = Properties.Settings.Default.PaperPoint3Y;
-		}
-
-		public void SortPointOrder() {
-			PointF center = calculateCenter();
-			PointF temp;
-			//We are basically manually bubble sorting the points
-			//TODO this should not be a thing.
-			if (isPointLess(center, TL, BL)) { //If TL is less than BL
-				temp = TL;
-				TL = BL;
-				BL = temp;
-			}
-			if(isPointLess(center, TR, TL)) {
-				temp = TR;
-				TR = TL;
-				TL = temp;
-			}
-			if(isPointLess(center, BR, TR)) {
-				temp = BR;
-				BR = TR;
-				TR = temp;
-			}
-			if (isPointLess(center, TR, TL)) {
-				temp = TR;
-				TR = TL;
-				TL = temp;
-			}
-			if (isPointLess(center, BR, TR)) {
-				temp = BR;
-				BR = TR;
-				TR = temp;
-			}
-			if (isPointLess(center, TR, TL)) {
-				temp = TR;
-				TR = TL;
-				TL = temp;
-			}
-		}
-
-		private PointF calculateCenter() {
-			float x = (BL.X + BR.X + TL.X + TR.X) / 4f;
-			float y = (BL.Y + BR.Y + TL.Y + TR.Y) / 4f;
-
-			return new PointF(x, y);
-		}
-
-		private static bool isPointLess(PointF center, PointF a, PointF b) {
-			if (a.X - center.X <= 0 && b.X - center.X > 0)
-				return true;
-			if (a.X - center.X > 0 && b.X - center.X <= 0)
-				return false;
-			if (a.X - center.X == 0 && b.X - center.X == 0) {
-				if (a.Y - center.Y >= 0 || b.Y - center.Y >= 0)
-					return a.Y < b.Y;
-				return b.Y < a.Y;
-			}
-
-			// compute the cross product of vectors (center -> a) x (center -> b)
-			float det = (a.X - center.X) * (b.Y - center.Y) - (b.X - center.X) * (a.Y - center.Y);
-			if (det > 0)
-				return true;
-			if (det < 0)
-				return false;
-
-			// points a and b are on the same line from the center
-			// check which point is closer to the center
-			float d1 = (a.X - center.X) * (a.X - center.X) + (a.Y - center.Y) * (a.Y - center.Y);
-			float d2 = (b.X - center.X) * (b.X - center.X) + (b.Y - center.Y) * (b.Y - center.Y);
-			return d1 < d2;
 		}
 	}
 

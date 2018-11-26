@@ -197,7 +197,7 @@ namespace RobotArmUR2
 		}
 
 		private void RobotSpeedSlider_Scroll(object sender, EventArgs e) {
-			float ms = RobotSpeedSlider.Value / 10f;
+			float ms = RobotSpeedSlider.Value / 10f; //TODO does speed still work?
 			RobotSpeedLabel.Text = "Carriage Speed: " + ms + "ms";
 			robot.SetSpeed((byte)RobotSpeedSlider.Value);
 		}

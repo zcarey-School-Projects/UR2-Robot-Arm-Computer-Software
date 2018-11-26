@@ -131,7 +131,6 @@ namespace RobotArmUR2.VisionProcessing{
 				lock (calibrationLock) {
 					if (value != null) {
 						paperCalibration = value;
-						paperCalibration.SortPointOrder(); //TODO this causes problems
 					}
 				}
 			}
