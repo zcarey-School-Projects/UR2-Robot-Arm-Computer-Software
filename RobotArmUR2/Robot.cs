@@ -16,21 +16,13 @@ namespace RobotArmUR2 {
 		public RobotCalibration Calibration { get; private set; } = new RobotCalibration();
 		
 		
-		private SerialCommunicator serial = new SerialCommunicator();
+		//private SerialCommunicator serial = new SerialCommunicator();
 		private RobotInterface serialInterface;
 		private RobotUIInvoker uiListener = new RobotUIInvoker();
-		private System.Timers.Timer manualTimer = new System.Timers.Timer(1000/20); //1000 / 20;
+		//private System.Timers.Timer manualTimer = new System.Timers.Timer(1000/20); //1000 / 20;
 
 		private volatile Thread programThread;
 		private volatile bool endProgram;
-
-		private bool? setMagnetState = null;
-		private bool? setServoState = null;
-		private byte? setPrescale = null;
-		private byte? setSpeed = null;
-		private volatile Rotation setRotation = Rotation.None;
-		private volatile Extension setExtension = Extension.None;
-		private volatile bool wasMoving = false;
 
 		public Robot() {
 			serialInterface = new RobotInterface(serial);
@@ -188,28 +180,5 @@ namespace RobotArmUR2 {
 			}
 		}
 
-		public enum Rotation {
-			None,
-			CW,
-			CCW
-		}
-
-		public enum Extension {
-			None,
-			Outward,
-			Inward
-		}
-	/*
-		public enum Key {
-			RotateCCW,
-			RotateCW,
-			ExtendOutward,
-			ExtendInward,
-			RaiseServo,
-			LowerServo,
-			MagnetOn,
-			MagnetOff
-		}
-		*/
 	}
 }

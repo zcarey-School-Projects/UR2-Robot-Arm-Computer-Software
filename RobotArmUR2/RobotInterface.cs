@@ -1,11 +1,24 @@
-﻿using RobotArmUR2.Robot_Commands;
-using RobotHelpers.Serial;
+﻿using RobotHelpers.Serial;
+using System.Timers;
 
 namespace RobotArmUR2 {
 	public class RobotInterface {
 
-		private SerialCommunicator serial;
+		private SerialCommunicator serial = new SerialCommunicator();
+		private Timer manualTimer = new Timer(1000/20); //20 times per second
 
+		private bool? setMagnetState = null;
+		private bool? setServoState = null;
+		//private volatile byte? setSpeed = null;
+		private volatile Rotation setRotation = Rotation.None; //Is volatile needed?
+		private volatile Extension setExtension = Extension.None;
+
+		private volatile bool wasMoving = false;
+
+		
+
+
+		/*
 		public RobotInterface(SerialCommunicator serial) {
 			this.serial = serial;
 		}
@@ -69,6 +82,18 @@ namespace RobotArmUR2 {
 				}
 			}
 		}
+		*/
+	}
 
+	public enum Rotation {
+		None,
+		CW,
+		CCW
+	}
+
+	public enum Extension {
+		None,
+		Outward,
+		Inward
 	}
 }
