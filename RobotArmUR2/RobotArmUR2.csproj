@@ -78,6 +78,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApplicationSettings.cs" />
+    <Compile Include="Setting.cs" />
     <Compile Include="EmguPictureBox.cs" />
     <Compile Include="Robot Commands\EndMoveCommand.cs" />
     <Compile Include="Robot Commands\GetExtensionCommand.cs" />
@@ -128,6 +129,8 @@
     <Compile Include="RobotProgram.cs" />
     <Compile Include="RobotUI.cs" />
     <Compile Include="VisionProcessing\PaperCalibration.cs" />
+    <Compile Include="VisionProcessing\PaperCalibrationPoint.cs" />
+    <Compile Include="VisionProcessing\PaperPoint.cs" />
     <Compile Include="VisionProcessing\Vision.cs" />
     <Compile Include="VisionProcessing\VisionUI.cs" />
     <EmbeddedResource Include="Form1.resx">

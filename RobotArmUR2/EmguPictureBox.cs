@@ -35,36 +35,37 @@ namespace RobotArmUR2 {
 			this.picture = picture;
 			picture.SizeMode = PictureBoxSizeMode.Zoom;
 		}
-
+		
 		public PointF? GetRelativeImagePoint(Point MousePoint) {
-			return GetRelativeImagePoint(image, MousePoint);
-		}
+			//return GetRelativeImagePoint(image, MousePoint);
+			lock (pictureLock) { //make sure sizes dont change while we are doing the calculation
+				if (image == null) return null;
+				if (picture.Width == 0 || picture.Height == 0 || image.Width == 0 || image.Height == 0) return null;
 
+				float PictureAspect = (float)picture.Width / picture.Height;
+				float ImgAspect = (float)image.Width / image.Height;
+
+				int scaledWidth = picture.Width;
+				int scaledHeight = picture.Height;
+
+				if (ImgAspect > PictureAspect) scaledHeight = (int)(picture.Width / ImgAspect);
+				else scaledWidth = (int)(picture.Height * ImgAspect);
+
+				Size relativePos = new Size((picture.Width - scaledWidth) / 2, (picture.Height - scaledHeight) / 2);
+				Point pos = Point.Subtract(MousePoint, relativePos);
+
+				return new PointF((float)pos.X / (scaledWidth - 1), (float)pos.Y / (scaledHeight - 1));
+			}
+		}
+		/*
 		public PointF? GetRelativeImagePoint(Image<TColor, TDepth> img, Point MousePoint) {
-			//TODO clean if works
-			//lock (pictureLock) {
-			//Image<TColor, TDepth> img = image;
+			lock (pictureLock) { //make sure sizes dont change while we are doing the calculation
 				if (img == null) return null;
 				if (picture.Width == 0 || picture.Height == 0 || img.Width == 0 || img.Height == 0) return null;
 
 				float PictureAspect = (float)picture.Width / picture.Height;
 				float ImgAspect = (float)img.Width / img.Height;
-			/*if (ImgAspect > PictureAspect) {
-				int scaledHeight = (int)(picture.Width / ImgAspect);
-				int yPos = (picture.Height - scaledHeight) / 2;
-				Point pos = new Point(MousePoint.X, MousePoint.Y - yPos);
-				if ((pos.X < 0) || (pos.Y < 0) || (pos.X >= picture.Width) || (pos.Y >= scaledHeight)) return null;
-				return new PointF((float)pos.X / picture.Width, (float)pos.Y / scaledHeight);
-			} else {
-				int scaledWidth = (int)(ImgAspect * picture.Height);
-				int xPos = (picture.Width - scaledWidth) / 2;
-				Point pos = new Point(MousePoint.X - xPos, MousePoint.Y);
-				if ((pos.X < 0) || (pos.Y < 0) || (pos.X >= scaledWidth) || (pos.Y >= picture.Height)) return null;
-				return new PointF((float)pos.X /scaledWidth, (float)pos.Y / picture.Height); ;
-			}*/
-			//}
-			//does not check if point is out of bounds
-			lock (pictureLock) { //make sure sizes dont change while we are doing the calculation
+
 				int scaledWidth = picture.Width;
 				int scaledHeight = picture.Height;
 
@@ -76,17 +77,17 @@ namespace RobotArmUR2 {
 
 				return new PointF((float)pos.X / scaledWidth, (float)pos.Y / scaledHeight);
 			}
-
-		}
+		}*/
 
 		public Point? GetImagePoint(Point MousePoint) {
-			//lock (pictureLock) {
-			Image<TColor, TDepth> img = image;
-				PointF? hit = GetRelativeImagePoint(img, MousePoint);
+			lock (pictureLock) {
+			//Image<TColor, TDepth> img = image;
+			//PointF? hit = GetRelativeImagePoint(img, MousePoint);//TODO dirty class
+			PointF? hit = GetRelativeImagePoint(MousePoint);
 				if (hit == null) return null;
 				PointF pos = (PointF)hit;
-				return new Point((int)(pos.X * img.Width), (int)(pos.Y * img.Height));
-			//}
+				return new Point((int)(pos.X * (image.Width - 1)), (int)(pos.Y * (image.Height - 1)));
+			}
 		}
 
 	}

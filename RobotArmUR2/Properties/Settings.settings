@@ -2,28 +2,28 @@
 <SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="RobotArmUR2.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
-    <Setting Name="PaperPoint0X" Type="System.Single" Scope="User">
+    <Setting Name="PaperPointBLX" Type="System.Single" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
-    <Setting Name="PaperPoint0Y" Type="System.Single" Scope="User">
-      <Value Profile="(Default)">0</Value>
-    </Setting>
-    <Setting Name="PaperPoint1X" Type="System.Single" Scope="User">
+    <Setting Name="PaperPointBLY" Type="System.Single" Scope="User">
       <Value Profile="(Default)">1</Value>
     </Setting>
-    <Setting Name="PaperPoint1Y" Type="System.Single" Scope="User">
+    <Setting Name="PaperPointTLX" Type="System.Single" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
-    <Setting Name="PaperPoint2X" Type="System.Single" Scope="User">
-      <Value Profile="(Default)">1</Value>
-    </Setting>
-    <Setting Name="PaperPoint2Y" Type="System.Single" Scope="User">
-      <Value Profile="(Default)">1</Value>
-    </Setting>
-    <Setting Name="PaperPoint3X" Type="System.Single" Scope="User">
+    <Setting Name="PaperPointTLY" Type="System.Single" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
-    <Setting Name="PaperPoint3Y" Type="System.Single" Scope="User">
+    <Setting Name="PaperPointTRX" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">1</Value>
+    </Setting>
+    <Setting Name="PaperPointTRY" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="PaperPointBRX" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">1</Value>
+    </Setting>
+    <Setting Name="PaperPointBRY" Type="System.Single" Scope="User">
       <Value Profile="(Default)">1</Value>
     </Setting>
     <Setting Name="BLRobotRotation" Type="System.Single" Scope="User">

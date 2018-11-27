@@ -8,6 +8,13 @@ using Emgu.CV.Structure;
 namespace RobotArmUR2 {
 	public partial class PaperCalibrater : Form {
 
+		private static readonly Bgr MaskColor = new Bgr(42, 240, 247);
+		private static readonly float MaskTransparency = 0.2f;
+
+		private static readonly Bgr CircleColor = new Bgr(42, 240, 247);
+		private static readonly int CircleThickness = 3;
+		private static readonly int CircleRadius = 10;
+
 		private Vision vision;
 		private CalibrationPoint draggingPoint = CalibrationPoint.BottomLeft;
 		private bool dragging = false; //TODO can combine in DraggingPoint by making it a nullable type
@@ -31,16 +38,17 @@ namespace RobotArmUR2 {
 
 			Image<Bgr, byte> img = vision.InputImage;
 			Image<Bgr, byte> rect = img.CopyBlank();
-			PointF[] points = vision.PaperCalibration.ToArray(rect.Size);
-			Point[] paperPoints = new Point[points.Length];
-			for(int i = 0; i < points.Length; i++) {
-				paperPoints[i] = new Point((int)points[i].X, (int)points[i].Y);
-			}
-			rect.FillConvexPoly(paperPoints, new Bgr(42, 240, 247));
-			CvInvoke.AddWeighted(img, 0.8, rect, 0.2, 0, img);
+			
+			Point[] paperPoints = new Point[4];
+			paperPoints[0] = vision.PaperCalibration.BottomLeft.GetScreenCoord(rect.Size);
+			paperPoints[1] = vision.PaperCalibration.TopLeft.GetScreenCoord(rect.Size);
+			paperPoints[2] = vision.PaperCalibration.TopRight.GetScreenCoord(rect.Size);
+			paperPoints[3] = vision.PaperCalibration.BottomRight.GetScreenCoord(rect.Size);
+			rect.FillConvexPoly(paperPoints, MaskColor);
+			CvInvoke.AddWeighted(img, 1 - MaskTransparency, rect, MaskTransparency, 0, img);
 
-			foreach (PointF point in points) {
-				img.Draw(new CircleF(point, 10), new Bgr(42, 240, 247), 3);
+			foreach (PaperPoint point in vision.PaperCalibration.ToArray()) {
+				img.Draw(new CircleF(point, CircleRadius), CircleColor, CircleThickness);
 			}
 
 			picture.Image = img;

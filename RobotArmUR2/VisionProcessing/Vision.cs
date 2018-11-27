@@ -293,14 +293,16 @@ namespace RobotArmUR2.VisionProcessing{
 
 		//Warps the ThresholdImage so the calibrated corners take up the entire image.
 		private void warpImage() {
-			PointF[] paperPoints;
-			lock (calibrationLock) {
-				paperPoints = paperCalibration.ToArray(thresholdImage.Size);
+			PointF[] paperPoints = new PointF[4];
+			lock (calibrationLock) { //TODO what?
+				paperPoints[0] = paperCalibration.BottomLeft; //Yay implicit operators :)
+				paperPoints[1] = paperCalibration.TopLeft;
+				paperPoints[2] = paperCalibration.TopRight;
+				paperPoints[3] = paperCalibration.BottomRight;
 			}
-			warpedImage = new Image<Gray, byte>(550, 425); //Should be close to aspect ratio of the paper.
-			if (paperPoints == null) return; //Rare, but possible
+			warpedImage = new Image<Gray, byte>(550, 425); //Should be close to aspect ratio of a piece of 8.5 x 11 paper.
 			Size size = warpedImage.Size;
-			PointF[] targetPoints = new PointF[] { new PointF(0, size.Height - 1), new PointF(0, 0), new PointF(size.Width - 1, 0), new PointF(size.Width - 1, size.Height - 1) };
+			PointF[] targetPoints = new PointF[] { new PointF(0, size.Height), new PointF(0, 0), new PointF(size.Width, 0), new PointF(size.Width, size.Height) };
 
 			using (var matrix = CvInvoke.GetPerspectiveTransform(paperPoints, targetPoints)) {
 				warpedImage = new Image<Gray, byte>(550, 425);

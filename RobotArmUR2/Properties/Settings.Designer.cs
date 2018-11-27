@@ -26,96 +26,96 @@ namespace RobotArmUR2.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public float PaperPoint0X {
+        public float PaperPointBLX {
             get {
-                return ((float)(this["PaperPoint0X"]));
+                return ((float)(this["PaperPointBLX"]));
             }
             set {
-                this["PaperPoint0X"] = value;
+                this["PaperPointBLX"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1")]
+        public float PaperPointBLY {
+            get {
+                return ((float)(this["PaperPointBLY"]));
+            }
+            set {
+                this["PaperPointBLY"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public float PaperPoint0Y {
+        public float PaperPointTLX {
             get {
-                return ((float)(this["PaperPoint0Y"]));
+                return ((float)(this["PaperPointTLX"]));
             }
             set {
-                this["PaperPoint0Y"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("1")]
-        public float PaperPoint1X {
-            get {
-                return ((float)(this["PaperPoint1X"]));
-            }
-            set {
-                this["PaperPoint1X"] = value;
+                this["PaperPointTLX"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public float PaperPoint1Y {
+        public float PaperPointTLY {
             get {
-                return ((float)(this["PaperPoint1Y"]));
+                return ((float)(this["PaperPointTLY"]));
             }
             set {
-                this["PaperPoint1Y"] = value;
+                this["PaperPointTLY"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("1")]
-        public float PaperPoint2X {
+        public float PaperPointTRX {
             get {
-                return ((float)(this["PaperPoint2X"]));
+                return ((float)(this["PaperPointTRX"]));
             }
             set {
-                this["PaperPoint2X"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("1")]
-        public float PaperPoint2Y {
-            get {
-                return ((float)(this["PaperPoint2Y"]));
-            }
-            set {
-                this["PaperPoint2Y"] = value;
+                this["PaperPointTRX"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public float PaperPoint3X {
+        public float PaperPointTRY {
             get {
-                return ((float)(this["PaperPoint3X"]));
+                return ((float)(this["PaperPointTRY"]));
             }
             set {
-                this["PaperPoint3X"] = value;
+                this["PaperPointTRY"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("1")]
-        public float PaperPoint3Y {
+        public float PaperPointBRX {
             get {
-                return ((float)(this["PaperPoint3Y"]));
+                return ((float)(this["PaperPointBRX"]));
             }
             set {
-                this["PaperPoint3Y"] = value;
+                this["PaperPointBRX"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1")]
+        public float PaperPointBRY {
+            get {
+                return ((float)(this["PaperPointBRY"]));
+            }
+            set {
+                this["PaperPointBRY"] = value;
             }
         }
         
