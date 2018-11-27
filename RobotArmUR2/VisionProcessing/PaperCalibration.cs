@@ -99,10 +99,4 @@ namespace RobotArmUR2.VisionProcessing {
 		*/
 	}
 
-	public enum CalibrationPoint {
-		BottomLeft,
-		TopLeft,
-		TopRight,
-		BottomRight
-	}
 }

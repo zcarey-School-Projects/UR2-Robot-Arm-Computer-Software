@@ -16,8 +16,7 @@ namespace RobotArmUR2 {
 		private static readonly int CircleRadius = 10;
 
 		private Vision vision;
-		private CalibrationPoint draggingPoint = CalibrationPoint.BottomLeft;
-		private bool dragging = false; //TODO can combine in DraggingPoint by making it a nullable type
+		private PaperPoint draggingPoint = null;
 		private EmguPictureBox<Bgr, byte> picture;
 
 		public PaperCalibrater() {
@@ -60,22 +59,21 @@ namespace RobotArmUR2 {
 				return;
 			}
 
-			if (dragging) {
+			if (draggingPoint != null) {
 				PointF? hit = picture.GetRelativeImagePoint(new Point(e.X, e.Y));
-				if (hit == null) return;
-				PointF relative = (PointF)hit;
-
-				PaperCalibration calibration = vision.PaperCalibration;
-				calibration.SetPoint(draggingPoint, relative);
-				//vision.PaperCalibration = calibration;
+				if(hit != null) {
+					draggingPoint.X = ((PointF)hit).X; //TODO put inside PaperPoint class?
+					draggingPoint.Y = ((PointF)hit).Y;
+				}
 			} else {
 				bool showHand = false;
-				PaperCalibration calibration = vision.PaperCalibration;
-				Point? hit = picture.GetImagePoint(new Point(e.X, e.Y));
+				PaperCalibration calibration = vision.PaperCalibration; //TODO for adaptive circle, use relative points instead
+				Point? hit = picture.GetImagePoint(new Point(e.X, e.Y)); //TODO since other method uses similar code, put in a method?
 				if (hit != null) {
 					Point relative = (Point)hit;
-					foreach (PointF point in calibration.ToArray(picture.Image.Size)) {
-						double distance = Math.Sqrt(Math.Pow(relative.X - point.X, 2) + Math.Pow(relative.Y - point.Y, 2));
+					foreach (PaperPoint point in calibration.ToArray()) {
+						Point imgPos = point.GetScreenCoord(picture.Image.Size);
+						double distance = Math.Sqrt(Math.Pow(relative.X - imgPos.X, 2) + Math.Pow(relative.Y - imgPos.Y, 2));
 						if (distance <= 11) {
 							showHand = true;
 							break;
@@ -93,37 +91,32 @@ namespace RobotArmUR2 {
 
 		private void PaperPicture_MouseDown(object sender, MouseEventArgs e) {
 			if (vision == null) return;
-			if (!dragging) {
+			if (draggingPoint == null) {
 				if (picture.Image == null) return; //TODO With EmguPictureBox, is this needed?
 				PaperCalibration calibration = vision.PaperCalibration;
-				bool found = false;
 				double closest = double.MaxValue;
 				//foreach (PointF point in calibration.ToArray(PaperPicture.Size)) {
 				Point? hit = picture.GetImagePoint(new Point(e.X, e.Y));
 				if (hit == null) return; //TODO instead clip to closest point on image
 				Point relative = (Point)hit;
 				Size imgSize = picture.Image.Size;
-				foreach (CalibrationPoint pos in (CalibrationPoint[]) Enum.GetValues(typeof(CalibrationPoint))) {
-					PointF point = calibration.GetPoint(pos);
-					double distance = Math.Sqrt(Math.Pow(relative.X - point.X * imgSize.Width, 2) + Math.Pow(relative.Y - point.Y * imgSize.Height, 2));
-					if ((distance < closest) && (distance <= 11)) {
-						found = true;
+				foreach(PaperPoint point in vision.PaperCalibration.ToArray()) {
+					Point pos = point.GetScreenCoord(imgSize);
+					double distance = Math.Sqrt(Math.Pow(relative.X - pos.X, 2) + Math.Pow(relative.Y - pos.Y, 2));
+					if((distance < closest) && (distance <= 11)) {
 						closest = distance;
-						draggingPoint = pos;
+						draggingPoint = point;
 					}
 				}
 				
-				if (found) {
-					PaperPicture.Cursor = Cursors.Default;
-					dragging = true;
-				}
+				if (draggingPoint != null) PaperPicture.Cursor = Cursors.Default;
 			}
 		}
 
 		private void PaperPicture_MouseUp(object sender, MouseEventArgs e) {
 			PaperPicture.Cursor = Cursors.Default;
 			Cursor.Current = Cursors.Default;
-			dragging = false;
+			draggingPoint = null;
 		}
 
 		private void ResetBounds_Click(object sender, EventArgs e) {
@@ -131,8 +124,8 @@ namespace RobotArmUR2 {
 			vision.PaperCalibration = new PaperCalibration();
 		}
 
-		private void AutoDetect_Click(object sender, EventArgs e) {
-			RotatedRect? auto = vision.AutoDetectPaper();
+		private void AutoDetect_Click(object sender, EventArgs e) { //TODO auto-detect
+			/*RotatedRect? auto = vision.AutoDetectPaper();
 			if (auto == null) {
 				MessageBox.Show("Could not find the paper.", "Error", MessageBoxButtons.OK);
 			} else {
@@ -144,7 +137,7 @@ namespace RobotArmUR2 {
 				calibrate.BL = verts[2];
 				calibrate.BR = verts[3];
 				vision.PaperCalibration = calibrate;
-			}
+			}*/
 		}
 	}
 
