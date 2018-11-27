@@ -47,7 +47,7 @@ namespace RobotArmUR2 {
 			CvInvoke.AddWeighted(img, 1 - MaskTransparency, rect, MaskTransparency, 0, img);
 
 			foreach (PaperPoint point in vision.PaperCalibration.ToArray()) {
-				img.Draw(new CircleF(point, CircleRadius), CircleColor, CircleThickness);
+				img.Draw(new CircleF(point.GetScreenCoord(rect.Size), CircleRadius), CircleColor, CircleThickness);
 			}
 
 			picture.Image = img;

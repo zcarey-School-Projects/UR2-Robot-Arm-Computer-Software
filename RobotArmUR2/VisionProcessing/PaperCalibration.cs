@@ -29,8 +29,8 @@ namespace RobotArmUR2.VisionProcessing {
 			BottomRight.ResetToDefault();
 		}
 
-		public PointF[] ToArray() {
-			return new PointF[] {
+		public PaperPoint[] ToArray() {
+			return new PaperPoint[] {
 				BottomLeft,
 				TopLeft,
 				TopRight,
