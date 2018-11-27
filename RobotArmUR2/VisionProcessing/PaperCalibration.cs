@@ -74,7 +74,7 @@ namespace RobotArmUR2.VisionProcessing {
 				default: return false; //Should never happen.
 			}
 		}
-
+		//TODO load/save bug. points save in wrong order
 		public void SaveSettings() {
 			Properties.Settings.Default.PaperPoint0X = BL.X;
 			Properties.Settings.Default.PaperPoint0Y = BL.Y;

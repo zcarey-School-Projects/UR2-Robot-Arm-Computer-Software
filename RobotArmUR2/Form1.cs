@@ -181,24 +181,25 @@ namespace RobotArmUR2
 			robot.ManualControlKeyEvent(e.KeyCode, false);
 		}
 		
-		public void ChangeManualRotateImage(Robot.Rotation state) {
+		public void ChangeManualRotateImage(Rotation state) {
 			BeginInvoke(new Action(() => {
-				RotateLeftVisual.Image = ((state == Robot.Rotation.CCW) ? Properties.Resources.RotateLeft : Properties.Resources.RotateLeftOff);
-				RotateRightVisual.Image = ((state == Robot.Rotation.CW) ? Properties.Resources.RotateRight : Properties.Resources.RotateRightOff);
+				RotateLeftVisual.Image = ((state == Rotation.CCW) ? Properties.Resources.RotateLeft : Properties.Resources.RotateLeftOff);
+				RotateRightVisual.Image = ((state == Rotation.CW) ? Properties.Resources.RotateRight : Properties.Resources.RotateRightOff);
 			}));
 		}
 
-		public void ChangeManualExtensionImage(Robot.Extension state) {
+		public void ChangeManualExtensionImage(Extension state) {
 			BeginInvoke(new Action(() => {
-				ExtendVisual.Image = ((state == Robot.Extension.Outward) ? Properties.Resources.Extend : Properties.Resources.ExtendOff);
-				RetractVisual.Image = ((state == Robot.Extension.Inward) ? Properties.Resources.Retract : Properties.Resources.RetractOff);
+				ExtendVisual.Image = ((state == Extension.Outward) ? Properties.Resources.Extend : Properties.Resources.ExtendOff);
+				RetractVisual.Image = ((state == Extension.Inward) ? Properties.Resources.Retract : Properties.Resources.RetractOff);
 			}));
 		}
 
 		private void RobotSpeedSlider_Scroll(object sender, EventArgs e) {
-			float ms = RobotSpeedSlider.Value / 10f; //TODO does speed still work?
+			/*float ms = RobotSpeedSlider.Value / 10f; 
 			RobotSpeedLabel.Text = "Carriage Speed: " + ms + "ms";
-			robot.SetSpeed((byte)RobotSpeedSlider.Value);
+			robot.SetSpeed((byte)RobotSpeedSlider.Value);*/
+			//TODO add speed
 		}
 
 		public void SerialOnConnectionChanged(bool isConnected, string portName) {

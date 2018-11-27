@@ -48,15 +48,15 @@ namespace RobotArmUR2 {
 			Console.WriteLine("Target: [{0}°, {1}mm]\n", targetCoords.Rotation, targetCoords.Extension);
 
 			//Console.WriteLine("[{0}, {1}]", targetAngle, targetDistance);
-			serial.MoveToAndWait(targetCoords);
+			serial.MoveToWait(targetCoords);
 		}
 		//TODO whenever a command fails, we need to cancel the program.
 		protected void moveToTriangleStack(RobotInterface serial) {
-			serial.MoveToAndWait(Robot.Calibration.TriangleStack);
+			serial.MoveToWait(Robot.Calibration.TriangleStack);
 		}
 
 		protected void moveToSquareStack(RobotInterface serial) {
-			serial.MoveToAndWait(Robot.Calibration.SquareStack);
+			serial.MoveToWait(Robot.Calibration.SquareStack);
 		}
 
 	}

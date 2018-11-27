@@ -7,16 +7,14 @@ using System.Threading.Tasks;
 namespace RobotArmUR2.Robot_Programs {
 	public class MoveToWaitProgram : RobotProgram {
 
-		private float angle;
-		private float distance;
+		private RobotPoint pos;
 
-		public MoveToWaitProgram(Robot robot, float angle, float distance) : base(robot) {
-			this.angle = angle;
-			this.distance = distance;
+		public MoveToWaitProgram(Robot robot, RobotPoint pos) : base(robot) {
+			this.pos = pos;
 		}
 
 		public override void Initialize(RobotInterface serial) {
-			serial.MoveToAndWait(angle, distance);
+			serial.MoveToWait(pos);
 		}
 
 		public override bool ProgramStep(RobotInterface serial) {

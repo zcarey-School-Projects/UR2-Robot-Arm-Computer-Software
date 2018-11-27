@@ -13,7 +13,7 @@ namespace RobotArmUR2.Robot_Programs {
 		}
 
 		public override void Initialize(RobotInterface serial) {
-			serial.GoToHome();
+			serial.ReturnHome();
 		}
 
 		public override bool ProgramStep(RobotInterface serial) {

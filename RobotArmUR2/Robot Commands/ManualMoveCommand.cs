@@ -8,10 +8,10 @@ using System.Threading.Tasks;
 namespace RobotArmUR2.Robot_Commands {
 	class ManualMoveCommand : SerialCommand{
 
-		private Robot.Rotation rotationMove;
-		private Robot.Extension extensionMove;
+		private Rotation rotationMove; //TODO move enum to folder
+		private Extension extensionMove;
 
-		public ManualMoveCommand(Robot.Rotation rotation, Robot.Extension extension) {
+		public ManualMoveCommand(Rotation rotation, Extension extension) {
 			rotationMove = rotation;
 			extensionMove = extension;
 		}
@@ -30,18 +30,18 @@ namespace RobotArmUR2.Robot_Commands {
 
 		private string getRotationValue() {
 			switch (rotationMove) {
-				case Robot.Rotation.CCW: return "L";
-				case Robot.Rotation.CW: return "R";
-				case Robot.Rotation.None:
+				case Rotation.CCW: return "L";
+				case Rotation.CW: return "R";
+				case Rotation.None:
 				default: return "N";
 			}
 		}
 
 		private string getExtensionValue() {
 			switch (extensionMove) {
-				case Robot.Extension.Inward: return "I";
-				case Robot.Extension.Outward: return "O";
-				case Robot.Extension.None:
+				case Extension.Inward: return "I";
+				case Extension.Outward: return "O";
+				case Extension.None:
 				default: return "P";
 			}
 		}

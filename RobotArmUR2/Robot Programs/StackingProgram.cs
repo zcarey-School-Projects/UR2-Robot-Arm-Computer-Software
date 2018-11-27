@@ -14,6 +14,8 @@ namespace RobotArmUR2.Robot_Programs {
 
 		private List<Triangle2DF> triangles;
 		private List<RotatedRect> squares;
+		private int emptyFrameCount = 0;
+		private const int EmptyFramesNeeded = 20;
 
 		public StackingProgram(Robot robot, Vision vision, PaperCalibrater paper) : base(robot){
 			this.robot = robot;
@@ -23,9 +25,9 @@ namespace RobotArmUR2.Robot_Programs {
 
 		public override void Initialize(RobotInterface serial) {
 			//serial.MoveToAndWait(5, 0);
-			serial.GoToHome();
+			serial.ReturnHome();
 			serial.RaiseServo();
-			serial.MagnetOff();
+			serial.PowerMagnetOff();
 			Thread.Sleep(1000);
 		}
 
@@ -43,6 +45,7 @@ namespace RobotArmUR2.Robot_Programs {
 				pickUpShape(serial, true);
 				base.moveToTriangleStack(serial);
 				pickUpShape(serial, false);
+				emptyFrameCount = 0;
 			} else if (squares.Count > 0) {
 				PointF center = squares[0].Center;
 				PointF pt = new PointF((float)center.X / width, (float)center.Y / height);
@@ -50,8 +53,12 @@ namespace RobotArmUR2.Robot_Programs {
 				pickUpShape(serial, true);
 				base.moveToSquareStack(serial);
 				pickUpShape(serial, false);
+				emptyFrameCount = 0;
 			} else {
-				return false;
+				emptyFrameCount++;
+				if (emptyFrameCount >= EmptyFramesNeeded) {
+					return false;
+				}
 			}
 
 			return true;
@@ -61,7 +68,7 @@ namespace RobotArmUR2.Robot_Programs {
 			Thread.Sleep(1000);
 			serial.LowerServo();
 			Thread.Sleep(1000);
-			serial.SetMagnetState(magnetOn); 
+			serial.PowerMagnet(magnetOn);
 			Thread.Sleep(1000);
 			serial.RaiseServo();
 			Thread.Sleep(1000);
