@@ -29,19 +29,19 @@ namespace RobotArmUR2 {
 		}
 		
 		private void BLMoveTo_Click(object sender, EventArgs e) {
-			robot.RunProgram(new MoveToPosProgram(robot, robot.Calibration.BottomLeft)); //TODO change parameter to accept class
+			robot.Interface.MoveTo(robot.Calibration.BottomLeft);
 		}
 
 		private void TLMoveTo_Click(object sender, EventArgs e) {
-			robot.RunProgram(new MoveToPosProgram(robot, robot.Calibration.TopLeft));
+			robot.Interface.MoveTo(robot.Calibration.TopLeft);
 		}
 
 		private void TRMoveTo_Click(object sender, EventArgs e) {
-			robot.RunProgram(new MoveToPosProgram(robot, robot.Calibration.TopRight));
+			robot.Interface.MoveTo(robot.Calibration.TopRight);
 		}
 
 		private void BRMoveTo_Click(object sender, EventArgs e) {
-			robot.RunProgram(new MoveToPosProgram(robot, robot.Calibration.BottomRight));
+			robot.Interface.MoveTo(robot.Calibration.BottomRight);
 		}
 
 		public void OnCalibrationChanged() {
@@ -59,24 +59,39 @@ namespace RobotArmUR2 {
 			}));
 		}
 
-		private void calibrateClicked(int pointNumber) {
-			robot.RunProgram(new CalibrationProgram(robot, this, pointNumber));
+		private RobotPoint getPos() { //TODO move into robot?
+			float? rot = robot.Interface.GetRotation();
+			float? ext = robot.Interface.GetExtension();
+			if ((rot != null) && (ext != null)) {
+				return new RobotPoint((float)rot, (float)ext);
+			} else {
+				return null;
+			}
+		}
+
+		private void calibrateClicked(RobotCalibrationPoint pt) {
+			if (pt == null) return;
+			RobotPoint pos = getPos();
+			if(pos != null) {
+				pt.Rotation = pos.Rotation;
+				pt.Extension = pos.Extension; //TODO put inside class
+			}
 		}
 
 		private void BLCalibrate_Click(object sender, EventArgs e) {
-			calibrateClicked(1);
+			calibrateClicked(robot.Calibration.BottomLeft);
 		}
 
 		private void BRCalibrate_Click(object sender, EventArgs e) {
-			calibrateClicked(4);
+			calibrateClicked(robot.Calibration.BottomRight);
 		}
 
 		private void TLCalibrate_Click(object sender, EventArgs e) {
-			calibrateClicked(2);
+			calibrateClicked(robot.Calibration.TopLeft);
 		}
 
 		private void TRCalibrate_Click(object sender, EventArgs e) {
-			calibrateClicked(3);
+			calibrateClicked(robot.Calibration.TopRight);
 		}
 
 		private static bool confirmReset() {
@@ -148,19 +163,19 @@ namespace RobotArmUR2 {
 		}
 
 		private void TriangleMoveTo_Click(object sender, EventArgs e) {
-			robot.RunProgram(new MoveToPosProgram(robot, robot.Calibration.TriangleStack));
+			robot.Interface.MoveTo(robot.Calibration.TriangleStack);
 		}
 
 		private void SquareMoveTo_Click(object sender, EventArgs e) {
-			robot.RunProgram(new MoveToPosProgram(robot, robot.Calibration.SquareStack));
+			robot.Interface.MoveTo(robot.Calibration.SquareStack);
 		}
 
 		private void TriangleCalibrate_Click(object sender, EventArgs e) {
-			robot.RunProgram(new CalibrationProgram(robot, this, 5));
+			calibrateClicked(robot.Calibration.TriangleStack);
 		}
 
 		private void SquareCalibrate_Click(object sender, EventArgs e) {
-			robot.RunProgram(new CalibrationProgram(robot, this, 6));
+			calibrateClicked(robot.Calibration.SquareStack);
 		}
 
 		private void ResetTriangle_Click(object sender, EventArgs e) {

@@ -131,7 +131,9 @@ namespace RobotArmUR2
 		private void Camera2Menu_Click(object sender, EventArgs e) { changeCamera(2); }
 
 		private void AutoConnect_Click(object sender, EventArgs e) {
-			robot.ConnectToRobot();
+			if (!robot.Interface.ConnectToRobot()) {
+				MessageBox.Show("Could not find device.");
+			}
 		}
 
 		private void goToHomeToolStripMenuItem_Click(object sender, EventArgs e) {

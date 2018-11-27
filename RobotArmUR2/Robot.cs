@@ -12,10 +12,10 @@ namespace RobotArmUR2 {
 		private static readonly object settingsLock = new object();
 		private static readonly object programLock = new object();
 
-		public IRobotUI UIListener { get => uiListener.Listener; set { uiListener.Listener = value; robotInterface.UIListener = value; } }
+		public IRobotUI UIListener { get => uiListener.Listener; set { uiListener.Listener = value; Interface.UIListener = value; } }
 		public RobotCalibration Calibration { get; private set; } = new RobotCalibration();
 		
-		private RobotInterface robotInterface = new RobotInterface();
+		public RobotInterface Interface { get; } = new RobotInterface();
 		private RobotUIInvoker uiListener = new RobotUIInvoker();
 
 		private volatile Thread programThread;
@@ -29,9 +29,9 @@ namespace RobotArmUR2 {
 			UIListener = listener;
 		}
 
-		public bool ConnectToRobot() {
-			return robotInterface.ConnectToRobot();
-		}
+		/*public bool ConnectToRobot() {
+			return Interface.ConnectToRobot();
+		}*/
 		
 		//Returns if program was started
 		public bool RunProgram(RobotProgram program) {
@@ -49,14 +49,14 @@ namespace RobotArmUR2 {
 		private void ProgramLoop(RobotProgram program) {
 			//Prepare robot for program
 			uiListener.ProgramStateChanged(true);
-			robotInterface.DisableManualControl();
-			robotInterface.StopAll();
-			robotInterface.PowerMagnetOff();
-			robotInterface.RaiseServo();
+			Interface.DisableManualControl();
+			Interface.StopAll();
+			Interface.PowerMagnetOff();
+			Interface.RaiseServo();
 			Thread.Sleep(500); //Give system some settling time
 
 			Console.WriteLine("Initializing...");
-			program.Initialize(robotInterface);
+			program.Initialize(Interface);
 			Console.WriteLine("Initialize Finished.\nRunning program...");
 			bool forceCancel = false; 
 			while (true) {
@@ -65,15 +65,15 @@ namespace RobotArmUR2 {
 				}
 				if (forceCancel) {
 					Console.WriteLine("Force exiting...");
-					program.ProgramCancelled(robotInterface);
+					program.ProgramCancelled(Interface);
 					break;
-				} else if (!program.ProgramStep(robotInterface)) break;
+				} else if (!program.ProgramStep(Interface)) break;
 			}
 			Console.WriteLine("Program finished. \nExiting...");
 
 			//End program
 			uiListener.ProgramStateChanged(false);
-			robotInterface.EnableManualControl();
+			Interface.EnableManualControl();
 			programThread = null;
 			Console.WriteLine("Exited successfully.");
 		}
@@ -94,13 +94,13 @@ namespace RobotArmUR2 {
 		public void ManualControlKeyEvent(Keys key, bool pressed) {
 			lock (settingsLock) {
 				if (key == ApplicationSettings.Key_MagnetOn) {
-					robotInterface.SetManualMagnet(true);
+					Interface.SetManualMagnet(true);
 				} else if (key == ApplicationSettings.Key_MagnetOff) {
-					robotInterface.SetManualMagnet(false);
+					Interface.SetManualMagnet(false);
 				}else if(key == ApplicationSettings.Key_RaiseServo) {
-					robotInterface.SetManualServo(true);
+					Interface.SetManualServo(true);
 				}else if(key == ApplicationSettings.Key_LowerServo) {
-					robotInterface.SetManualServo(false);
+					Interface.SetManualServo(false);
 				} else {
 					Rotation? setRotation = null;
 					Extension? setExtension = null;
@@ -128,12 +128,12 @@ namespace RobotArmUR2 {
 					}
 
 					if(setRotation != null) {
-						robotInterface.SetManualControl((Rotation)setRotation);
+						Interface.SetManualControl((Rotation)setRotation);
 						uiListener.ChangeManualRotateImage((Rotation)setRotation);
 					}
 
 					if(setExtension != null) {
-						robotInterface.SetManualControl((Extension)setExtension);
+						Interface.SetManualControl((Extension)setExtension);
 						uiListener.ChangeManualExtensionImage((Extension)setExtension);
 					}
 				}
