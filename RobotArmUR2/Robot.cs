@@ -13,7 +13,7 @@ namespace RobotArmUR2 {
 		private static readonly object programLock = new object();
 
 		public IRobotUI UIListener { get => uiListener.Listener; set { uiListener.Listener = value; Interface.UIListener = value; } }
-		public RobotCalibration Calibration { get; private set; } = new RobotCalibration();
+		public RobotCalibration Calibration { get; } = new RobotCalibration();
 		
 		public RobotInterface Interface { get; } = new RobotInterface();
 		private RobotUIInvoker uiListener = new RobotUIInvoker();

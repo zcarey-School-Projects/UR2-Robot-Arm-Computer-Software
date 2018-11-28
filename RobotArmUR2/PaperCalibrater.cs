@@ -121,23 +121,33 @@ namespace RobotArmUR2 {
 
 		private void ResetBounds_Click(object sender, EventArgs e) {
 			if (vision == null) return;
-			vision.PaperCalibration = new PaperCalibration();
+			vision.PaperCalibration.ResetToDefault(); //TODO make thread safe
 		}
 
 		private void AutoDetect_Click(object sender, EventArgs e) { //TODO auto-detect
-			/*RotatedRect? auto = vision.AutoDetectPaper();
+			RotatedRect? auto = vision.AutoDetectPaper();
 			if (auto == null) {
 				MessageBox.Show("Could not find the paper.", "Error", MessageBoxButtons.OK);
 			} else {
 				RotatedRect bounds = (RotatedRect)auto;
-				PaperCalibration calibrate = new PaperCalibration();
-				PointF[] verts = bounds.GetVertices();
-				calibrate.TL = verts[0];
-				calibrate.TR = verts[1];
-				calibrate.BL = verts[2];
-				calibrate.BR = verts[3];
-				vision.PaperCalibration = calibrate;
-			}*/
+				double d = Math.Sqrt(Math.Pow(bounds.Size.Width / 2, 2) + Math.Pow(bounds.Size.Height / 2, 2));
+				double radAngle = bounds.Angle * Math.PI / 180;
+				double ratio = Math.Atan(bounds.Size.Width / bounds.Size.Height);
+
+				double deltaX = d * Math.Sin(ratio - radAngle);
+				double deltaY = d * Math.Cos(ratio - radAngle);
+				vision.PaperCalibration.TopRight.X = (float)(bounds.Center.X + deltaX); //TODO create a thread-safe method for setting full points
+				vision.PaperCalibration.TopRight.Y = (float)(bounds.Center.Y - deltaY);
+				vision.PaperCalibration.BottomLeft.X = (float)(bounds.Center.X - deltaX);
+				vision.PaperCalibration.BottomLeft.Y = (float)(bounds.Center.Y + deltaY);
+
+				deltaX = d * Math.Sin(ratio + radAngle);
+				deltaY = d * Math.Cos(ratio + radAngle);
+				vision.PaperCalibration.TopLeft.X = (float)(bounds.Center.X - deltaX);
+				vision.PaperCalibration.TopLeft.Y = (float)(bounds.Center.Y - deltaY);
+				vision.PaperCalibration.BottomRight.X = (float)(bounds.Center.X + deltaX);
+				vision.PaperCalibration.BottomRight.Y = (float)(bounds.Center.Y + deltaY);
+			}
 		}
 	}
 

@@ -127,13 +127,13 @@ namespace RobotArmUR2.VisionProcessing{
 					return paperCalibration;
 				}
 			}
-			set {
+			/*set {
 				lock (calibrationLock) {
 					if (value != null) {
 						paperCalibration = value;
 					}
 				}
-			}
+			}*/ //TODO check is lock is needed. If not, remove need for private variable
 		}
 
 		public bool RotateImage180 { get; set; } = false;
@@ -293,19 +293,18 @@ namespace RobotArmUR2.VisionProcessing{
 
 		//Warps the ThresholdImage so the calibrated corners take up the entire image.
 		private void warpImage() {
-			PointF[] paperPoints = new PointF[4];
+			PointF[] paperPoints = new PointF[4]; //TODO add a "Calibration.ToScreenCoordArray(Size);"
 			lock (calibrationLock) { //TODO what?
-				paperPoints[0] = paperCalibration.BottomLeft; //Yay implicit operators :)
-				paperPoints[1] = paperCalibration.TopLeft;
-				paperPoints[2] = paperCalibration.TopRight;
-				paperPoints[3] = paperCalibration.BottomRight;
+				paperPoints[0] = paperCalibration.BottomLeft.GetScreenCoord(thresholdImage.Size); //Yay implicit operators :)
+				paperPoints[1] = paperCalibration.TopLeft.GetScreenCoord(thresholdImage.Size);
+				paperPoints[2] = paperCalibration.TopRight.GetScreenCoord(thresholdImage.Size);
+				paperPoints[3] = paperCalibration.BottomRight.GetScreenCoord(thresholdImage.Size);
 			}
 			warpedImage = new Image<Gray, byte>(550, 425); //Should be close to aspect ratio of a piece of 8.5 x 11 paper.
 			Size size = warpedImage.Size;
-			PointF[] targetPoints = new PointF[] { new PointF(0, size.Height), new PointF(0, 0), new PointF(size.Width, 0), new PointF(size.Width, size.Height) };
+			PointF[] targetPoints = new PointF[] { new PointF(0, size.Height - 1), new PointF(0, 0), new PointF(size.Width - 1, 0), new PointF(size.Width - 1, size.Height - 1) };
 
 			using (var matrix = CvInvoke.GetPerspectiveTransform(paperPoints, targetPoints)) {
-				warpedImage = new Image<Gray, byte>(550, 425);
 				CvInvoke.WarpPerspective(thresholdImage, warpedImage, matrix, warpedImage.Size, Emgu.CV.CvEnum.Inter.Cubic);
 			}
 		}

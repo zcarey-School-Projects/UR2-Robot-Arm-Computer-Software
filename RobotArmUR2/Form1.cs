@@ -45,8 +45,6 @@ namespace RobotArmUR2
 
 			paperCalibrater = new PaperCalibrater(/*this, vision*/);
 
-			vision.PaperCalibration = new PaperCalibration();
-
 			RobotSpeedSlider.Value = Properties.Settings.Default.RobotSpeed;
 			RobotSpeedSlider_Scroll(null, null);
 			/*
