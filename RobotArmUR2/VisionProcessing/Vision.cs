@@ -230,49 +230,17 @@ namespace RobotArmUR2.VisionProcessing{
 		//Does all the necessary processing on images to properly detect shapes.
 		private void processVision() {
 			lock (visionLock) {
-				GrayscaleImage = GetGrayImage(InputImage); //Convert to black/white image since it is all we care about.
-				ThresholdImage = GetThresholdImage(grayscaleImage);
-				WarpedImage = GetWarpedImage(thresholdImage);
-				cannyEdges = EdgeDetection(warpedImage);
+				GrayscaleImage = ImageProcessing.GetGrayImage(InputImage);
+				ThresholdImage = ImageProcessing.GetThresholdImage(grayscaleImage, new Gray(GrayscaleThreshold), new Gray(255));
+				lock (calibrationLock) {//TODO what? prevent calibration changes
+					WarpedImage = ImageProcessing.GetWarpedImage(thresholdImage, paperCalibration);
+				}
+				cannyEdges = ImageProcessing.EdgeDetection(warpedImage);
 				CannyImage = DrawEdges(warpedImage, new Gray(255));
-				DetectedShapes shapes = DetectShapes(cannyEdges);
+				DetectedShapes shapes = ImageProcessing.DetectShapes(cannyEdges);
 				Triangles = shapes.Triangles;
 				Squares = shapes.Squares;
 			}
-		}
-
-		private Image<Gray, TDepth> GetGrayImage<TColor, TDepth>(Image<TColor, TDepth> input) where TColor:struct, IColor where TDepth:new() {
-			return input.Convert<Gray, TDepth>();
-		}
-
-		private Image<Gray, TDepth> GetThresholdImage<TDepth>(Image<Gray, TDepth> input) where TDepth:new() {
-			return input.ThresholdBinary(new Gray(GrayscaleThreshold), new Gray(255));
-		}
-
-		//Warps the ThresholdImage so the calibrated corners take up the entire image.
-		private Image<TColor, TDepth> GetWarpedImage<TColor, TDepth>(Image<TColor, TDepth> image) where TColor:struct, IColor where TDepth:new(){ //TODO follow format of other methods
-			PointF[] paperPoints = new PointF[4]; //TODO add a "Calibration.ToScreenCoordArray(Size);"
-			lock (calibrationLock) { //TODO what? prevent calibration changes
-				paperPoints[0] = paperCalibration.BottomLeft.GetScreenCoord(thresholdImage.Size); //Yay implicit operators :)
-				paperPoints[1] = paperCalibration.TopLeft.GetScreenCoord(thresholdImage.Size);
-				paperPoints[2] = paperCalibration.TopRight.GetScreenCoord(thresholdImage.Size);
-				paperPoints[3] = paperCalibration.BottomRight.GetScreenCoord(thresholdImage.Size);
-			}
-			Image<TColor, TDepth> warpedImage = new Image<TColor, TDepth>(550, 425); //Should be close to aspect ratio of a piece of 8.5 x 11 paper.
-			PointF[] targetPoints = new PointF[] { new PointF(0, warpedImage.Height - 1), new PointF(0, 0), new PointF(warpedImage.Width - 1, 0), new PointF(warpedImage.Width - 1, warpedImage.Height - 1) };
-
-			using (var matrix = CvInvoke.GetPerspectiveTransform(paperPoints, targetPoints)) {
-				CvInvoke.WarpPerspective(thresholdImage, warpedImage, matrix, warpedImage.Size, Emgu.CV.CvEnum.Inter.Cubic);
-			}
-
-			return warpedImage;
-		}
-
-		//Finds edges in an image.
-		private UMat EdgeDetection<TColor, TDepth>(Image<TColor, TDepth> input) where TColor:struct, IColor where TDepth:new() {
-			UMat cannyEdges = new UMat();
-			CvInvoke.Canny(input, cannyEdges, 180.0, 120.0); //TODO crashed, may need to add checks
-			return cannyEdges;
 		}
 
 		private Image<TColor, TDepth> DrawEdges<TColor, TDepth>(Image<TColor, TDepth> copyImage, TColor drawColor, int lineThickness = 2) where TColor:struct, IColor where TDepth:new() {
@@ -289,48 +257,10 @@ namespace RobotArmUR2.VisionProcessing{
 			return cannyImage;
 		}
 
-		private DetectedShapes DetectShapes(UMat cannyEdges) {
-			DetectedShapes shapes = new DetectedShapes();
-			//Image<Bgr, byte> triangleRectImage = origImage.CopyBlank();
-			VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
-			CvInvoke.FindContours(cannyEdges, contours, null, Emgu.CV.CvEnum.RetrType.List, Emgu.CV.CvEnum.ChainApproxMethod.ChainApproxSimple);
-			int count = contours.Size;
-			for (int i = 0; i < count; i++) {
-				VectorOfPoint contour = contours[i];
-				VectorOfPoint approxContour = new VectorOfPoint();
-				CvInvoke.ApproxPolyDP(contour, approxContour, CvInvoke.ArcLength(contour, true) * 0.05, true);
-				if (CvInvoke.ContourArea(approxContour, false) > 250) { //only consider areas that are large enough.
-					if (approxContour.Size == 3) { //Three vertices, must be a triangle!
-						Point[] pts = approxContour.ToArray();
-						shapes.Triangles.Add(new Triangle2DF(pts[0], pts[1], pts[2]));
-					} else if (approxContour.Size == 4) { //Four vertices, must be a square!
-						#region Determine if all angles are within 80-100 degrees
-						bool isRectangle = true;
-						Point[] pts = approxContour.ToArray();
-						LineSegment2D[] edges = PointCollection.PolyLine(pts, true);
-						for (int j = 0; j < edges.Length; j++) {
-							double dAngle = Math.Abs(edges[(j + 1) % edges.Length].GetExteriorAngleDegree(edges[j]));
-							/*if (dAngle < RectangleMinimumAngle || dAngle > RectangleMaximumAngle) {
-								isRectangle = false;
-								break; //TODO cleanup
-							}*/
-						}
-						#endregion
-
-						if (isRectangle) {
-							shapes.Squares.Add(CvInvoke.MinAreaRect(approxContour));
-						}
-					}
-				}
-			}
-
-			return shapes;
-		}
-
 		public RotatedRect? AutoDetectPaper() {//TODO threadsafe??????
-			Image<Gray, byte> workingImage = GetGrayImage(InputImage);
-			workingImage = GetThresholdImage(workingImage);
-			UMat edges = EdgeDetection(workingImage);
+			Image<Gray, byte> workingImage = ImageProcessing.GetGrayImage(InputImage);
+			workingImage = ImageProcessing.GetThresholdImage(workingImage, new Gray(GrayscaleThreshold), new Gray(255));
+			UMat edges = ImageProcessing.EdgeDetection(workingImage);
 			//DetectShapes();
 
 			//TODO similar code to DetectShapes()
@@ -390,14 +320,4 @@ namespace RobotArmUR2.VisionProcessing{
 
 	}
 
-	public class DetectedShapes {
-
-		public List<Triangle2DF> Triangles { get; } = new List<Triangle2DF>();
-		public List<RotatedRect> Squares { get; } = new List<RotatedRect>();
-
-		public DetectedShapes() {
-
-		}
-
-	}
 }
