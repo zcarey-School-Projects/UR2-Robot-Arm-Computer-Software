@@ -12,8 +12,6 @@ namespace RobotArmUR2.Robot_Programs {
 		private Vision vision;
 		private PaperCalibrater paper;
 
-		private List<Triangle2DF> triangles;
-		private List<RotatedRect> squares;
 		private int emptyFrameCount = 0;
 		private const int EmptyFramesNeeded = 20;
 
@@ -33,21 +31,20 @@ namespace RobotArmUR2.Robot_Programs {
 
 		public override bool ProgramStep(RobotInterface serial) {
 			//vision.getShapeLists(out triangles, out boxes);
-			triangles = vision.Triangles;
-			squares = vision.Squares;
+			DetectedShapes shapes = vision.DetectedShapes; //TODO add "GetPaperPoints"
 			Image<Gray, byte> temp = vision.WarpedImage;
 			int width = temp.Width;
 			int height = temp.Height;
-			if (triangles.Count > 0) {
-				PointF center = triangles[0].Centeroid;
+			if (shapes.Triangles.Count > 0) {
+				PointF center = shapes.Triangles[0].Centeroid;
 				PointF pt = new PointF((float)center.X / width, (float)center.Y / height);
 				base.moveToPoint(serial, pt);
 				pickUpShape(serial, true);
 				base.moveToTriangleStack(serial);
 				pickUpShape(serial, false);
 				emptyFrameCount = 0;
-			} else if (squares.Count > 0) {
-				PointF center = squares[0].Center;
+			} else if (shapes.Squares.Count > 0) {
+				PointF center = shapes.Squares[0].Center;
 				PointF pt = new PointF((float)center.X / width, (float)center.Y / height);
 				moveToPoint(serial, pt); //TODO need to rename function to something more fitting
 				pickUpShape(serial, true);

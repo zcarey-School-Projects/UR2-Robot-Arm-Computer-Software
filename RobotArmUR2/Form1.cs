@@ -73,30 +73,20 @@ namespace RobotArmUR2
 			//threshImage.Image = vision.CannyImage;
 
 			Image<Bgr, byte> warped = vision.WarpedImage.Convert<Bgr, byte>();
-			List<Triangle2DF> trigs = vision.Triangles;
-			List<RotatedRect> squares = vision.Squares;
-			vision.DrawTriangles(warped, vision.Triangles, ApplicationSettings.TriangleHighlightColor, ApplicationSettings.TriangleHighlightThickness);
-			vision.DrawSquares(warped, vision.Squares, ApplicationSettings.SquareHighlightColor, ApplicationSettings.SquareHighlightThickness);
+			vision.DrawShapes(warped, ApplicationSettings.TriangleHighlightColor, ApplicationSettings.SquareHighlightColor, ApplicationSettings.ShapeHighlightThickness);
 			warpedImage.Image = warped;
 
+			DetectedShapes shapes = vision.DetectedShapes; //TODO "GetNextShape" and return PaperPoints
 			RobotPoint robotCoords = null;
-			if(trigs.Count > 0) {
-				PointF pt = trigs[0].Centeroid;
+			if(shapes.Triangles.Count > 0) {
+				PointF pt = shapes.Triangles[0].Centeroid;
 				PointF rel = new PointF(pt.X / warped.Width, pt.Y / warped.Height);
 				robotCoords = RobotProgram.CalculateRobotCoordinates(robot.Calibration, rel);
-			}else if(squares.Count > 0) {
-				PointF pt = squares[0].Center;
+			}else if(shapes.Squares.Count > 0) {
+				PointF pt = shapes.Squares[0].Center;
 				PointF rel = new PointF(pt.X / warped.Width, pt.Y / warped.Height);
 				robotCoords = RobotProgram.CalculateRobotCoordinates(robot.Calibration, rel);
 			}
-
-			BeginInvoke(new Action(() => {
-				TriangleCount.Text = "Triangles: " + trigs.Count;
-				SquareCount.Text = "Squares: " + squares.Count;
-				if (robotCoords != null) {
-					TargetCoords.Text = "Target: (" + robotCoords.Rotation.ToString("N2").PadLeft(4) + "°, " + robotCoords.Extension.ToString("N2").PadLeft(5) +" mm)";
-				}
-			}));
 
 			paperCalibrater.NewFrameFinished(vision);
 		}

@@ -59,10 +59,7 @@
 			this.Image3 = new System.Windows.Forms.PictureBox();
 			this.Image2 = new System.Windows.Forms.PictureBox();
 			this.Image1 = new System.Windows.Forms.PictureBox();
-			this.TriangleCount = new System.Windows.Forms.Label();
-			this.SquareCount = new System.Windows.Forms.Label();
 			this.Rotate180Checkbox = new System.Windows.Forms.CheckBox();
-			this.TargetCoords = new System.Windows.Forms.Label();
 			this.ThresholdValue = new System.Windows.Forms.TrackBar();
 			this.ThresholdValueLabel = new System.Windows.Forms.Label();
 			this.menuStrip1.SuspendLayout();
@@ -364,24 +361,6 @@
 			this.Image1.TabStop = false;
 			this.Image1.MouseClick += new System.Windows.Forms.MouseEventHandler(this.OriginalImage_MouseClick);
 			// 
-			// TriangleCount
-			// 
-			this.TriangleCount.AutoSize = true;
-			this.TriangleCount.Location = new System.Drawing.Point(563, 372);
-			this.TriangleCount.Name = "TriangleCount";
-			this.TriangleCount.Size = new System.Drawing.Size(83, 17);
-			this.TriangleCount.TabIndex = 26;
-			this.TriangleCount.Text = "Triangles: 0";
-			// 
-			// SquareCount
-			// 
-			this.SquareCount.AutoSize = true;
-			this.SquareCount.Location = new System.Drawing.Point(563, 389);
-			this.SquareCount.Name = "SquareCount";
-			this.SquareCount.Size = new System.Drawing.Size(77, 17);
-			this.SquareCount.TabIndex = 27;
-			this.SquareCount.Text = "Squares: 0";
-			// 
 			// Rotate180Checkbox
 			// 
 			this.Rotate180Checkbox.AutoSize = true;
@@ -392,15 +371,6 @@
 			this.Rotate180Checkbox.Text = "Rotate 180";
 			this.Rotate180Checkbox.UseVisualStyleBackColor = true;
 			this.Rotate180Checkbox.CheckedChanged += new System.EventHandler(this.Rotate180Checkbox_CheckedChanged);
-			// 
-			// TargetCoords
-			// 
-			this.TargetCoords.AutoSize = true;
-			this.TargetCoords.Location = new System.Drawing.Point(411, 415);
-			this.TargetCoords.Name = "TargetCoords";
-			this.TargetCoords.Size = new System.Drawing.Size(54, 17);
-			this.TargetCoords.TabIndex = 30;
-			this.TargetCoords.Text = "Target:";
 			// 
 			// ThresholdValue
 			// 
@@ -428,10 +398,7 @@
 			this.ClientSize = new System.Drawing.Size(1005, 474);
 			this.Controls.Add(this.ThresholdValueLabel);
 			this.Controls.Add(this.ThresholdValue);
-			this.Controls.Add(this.TargetCoords);
 			this.Controls.Add(this.Rotate180Checkbox);
-			this.Controls.Add(this.SquareCount);
-			this.Controls.Add(this.TriangleCount);
 			this.Controls.Add(this.statusStrip1);
 			this.Controls.Add(this.Stack);
 			this.Controls.Add(this.RotateRightVisual);
@@ -509,10 +476,7 @@
 		private System.Windows.Forms.StatusStrip statusStrip1;
 		private System.Windows.Forms.ToolStripStatusLabel FpsStatusLabel;
 		private System.Windows.Forms.PictureBox Image1;
-		private System.Windows.Forms.Label TriangleCount;
-		private System.Windows.Forms.Label SquareCount;
 		private System.Windows.Forms.CheckBox Rotate180Checkbox;
-		private System.Windows.Forms.Label TargetCoords;
 		private System.Windows.Forms.TrackBar ThresholdValue;
 		private System.Windows.Forms.Label ThresholdValueLabel;
 	}
