@@ -309,22 +309,28 @@ namespace RobotArmUR2.VisionProcessing{
 			}
 		}
 
-		public RotatedRect? AutoDetectPaper() {
+		public RotatedRect? AutoDetectPaper() {//TODO threadsafe??????
 			GrayscaleImage = InputImage.Convert<Gray, byte>(); //Convert to black/white image since it is all we care about.
-			ThresholdImage = grayscaleImage.ThresholdBinary(new Gray(255d / 2), new Gray(255));
+			ThresholdImage = grayscaleImage.ThresholdBinary(new Gray(GrayscaleThreshold), new Gray(255)); //TODO is there not a method for this?
 			cannyEdgeDetection(thresholdImage);
-			DetectShapes();
+			//DetectShapes();
 
-			if (squareList.Count == 0) return null;
+			//TODO similar code to DetectShapes()
+			VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
+			CvInvoke.FindContours(cannyEdges, contours, null, Emgu.CV.CvEnum.RetrType.List, Emgu.CV.CvEnum.ChainApproxMethod.ChainApproxSimple);
+			int count = contours.Size;
 
-			//Find largest rectangle
-			float largestSize = 0;
+			//Find largest contour
+			double largestSize = 0;
 			RotatedRect? largest = null;
-			foreach(RotatedRect square in squareList) {
-				float area = square.Size.Width * square.Size.Height;
-				if(area > largestSize) {
-					largest = square;
+			for (int i = 0; i < count; i++) {
+				VectorOfPoint contour = contours[i];
+				//VectorOfPoint approxContour = new VectorOfPoint();
+				//CvInvoke.ApproxPolyDP(contour, approxContour, CvInvoke.ArcLength(contour, true) * 0.05, true);
+				double area = CvInvoke.ContourArea(contour, false);
+				if (area > largestSize){
 					largestSize = area;
+					largest = CvInvoke.MinAreaRect(contour);
 				}
 			}
 

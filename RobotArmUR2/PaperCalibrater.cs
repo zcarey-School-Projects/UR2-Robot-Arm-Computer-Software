@@ -7,7 +7,7 @@ using Emgu.CV.Structure;
 
 namespace RobotArmUR2 {
 	public partial class PaperCalibrater : Form {
-
+		//TODO put threshold slider in paper calibrater?
 		private static readonly Bgr MaskColor = new Bgr(42, 240, 247);
 		private static readonly float MaskTransparency = 0.2f;
 
