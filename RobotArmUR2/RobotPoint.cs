@@ -23,5 +23,13 @@ namespace RobotArmUR2 {
 			Extension = point.Extension;
 		}
 
+		public override string ToString() {
+			return "{ " + Rotation.ToString("N2") + "° , " + Extension.ToString("N2") + " mm }";
+		}
+
+		public string ToString(uint digits) {
+			return "{ " + Rotation.ToString("N" + digits) + "° , " + Extension.ToString("N" + digits) + " mm }";
+		}
+
 	}
 }

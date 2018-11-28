@@ -36,6 +36,14 @@ namespace RobotArmUR2.VisionProcessing {
 			return coord;
 		}
 
+		public override string ToString() {
+			return "{ " + X.ToString("N3") + " , " + Y.ToString("N3") + " }";
+		}
+
+		public string ToString(uint digits) {
+			return "{ " + X.ToString("N" + digits) + " , " + Y.ToString("N" + digits) + " }";
+		}
+
 		public static implicit operator PointF(PaperPoint pt) {
 			return new PointF(pt.X, pt.Y);
 		}

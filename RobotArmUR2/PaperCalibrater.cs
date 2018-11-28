@@ -147,6 +147,11 @@ namespace RobotArmUR2 {
 				vision.PaperCalibration.TopLeft.Y = (float)(bounds.Center.Y - deltaY);
 				vision.PaperCalibration.BottomRight.X = (float)(bounds.Center.X + deltaX);
 				vision.PaperCalibration.BottomRight.Y = (float)(bounds.Center.Y + deltaY);
+
+				Console.WriteLine("BL: " + vision.PaperCalibration.BottomLeft);
+				Console.WriteLine("TL: " + vision.PaperCalibration.TopLeft);
+				Console.WriteLine("TR: " + vision.PaperCalibration.TopRight);
+				Console.WriteLine("BR: " + vision.PaperCalibration.BottomRight);
 			}
 		}
 	}
