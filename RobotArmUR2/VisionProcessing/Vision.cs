@@ -236,7 +236,7 @@ namespace RobotArmUR2.VisionProcessing{
 					WarpedImage = ImageProcessing.GetWarpedImage(thresholdImage, paperCalibration);
 				}
 				cannyEdges = ImageProcessing.EdgeDetection(warpedImage);
-				CannyImage = DrawEdges(warpedImage, new Gray(255));
+				CannyImage = ImageProcessing.GetEdgeImage<Gray, byte>(cannyEdges);
 				DetectedShapes shapes = ImageProcessing.DetectShapes(cannyEdges);
 				Triangles = shapes.Triangles;
 				Squares = shapes.Squares;

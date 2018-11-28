@@ -42,6 +42,10 @@ namespace RobotArmUR2.VisionProcessing {
 			return cannyEdges;
 		}
 
+		public static Image<TColor, TDepth> GetEdgeImage<TColor, TDepth>(UMat Edges) where TColor:struct, IColor where TDepth:new(){
+			return Edges.ToImage<TColor, TDepth>();
+		}
+
 		public static VectorOfVectorOfPoint FindContours(UMat Edges){
 			VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
 			CvInvoke.FindContours(Edges, contours, null, Emgu.CV.CvEnum.RetrType.List, Emgu.CV.CvEnum.ChainApproxMethod.ChainApproxSimple);
