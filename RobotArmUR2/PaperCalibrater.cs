@@ -126,27 +126,29 @@ namespace RobotArmUR2 {
 
 		private void AutoDetect_Click(object sender, EventArgs e) { //TODO auto-detect
 			RotatedRect? auto = vision.AutoDetectPaper();
+			Size imgSize = vision.GrayscaleImage.Size;
 			if (auto == null) {
 				MessageBox.Show("Could not find the paper.", "Error", MessageBoxButtons.OK);
 			} else {
 				RotatedRect bounds = (RotatedRect)auto;
 				double d = Math.Sqrt(Math.Pow(bounds.Size.Width / 2, 2) + Math.Pow(bounds.Size.Height / 2, 2));
-				double radAngle = bounds.Angle * Math.PI / 180;
+				double radAngle = Math.Abs(bounds.Angle * Math.PI / 180);
 				double ratio = Math.Atan(bounds.Size.Width / bounds.Size.Height);
+				Console.WriteLine(bounds.Angle);
 
 				double deltaX = d * Math.Sin(ratio - radAngle);
 				double deltaY = d * Math.Cos(ratio - radAngle);
-				vision.PaperCalibration.TopRight.X = (float)(bounds.Center.X + deltaX); //TODO create a thread-safe method for setting full points
-				vision.PaperCalibration.TopRight.Y = (float)(bounds.Center.Y - deltaY);
-				vision.PaperCalibration.BottomLeft.X = (float)(bounds.Center.X - deltaX);
-				vision.PaperCalibration.BottomLeft.Y = (float)(bounds.Center.Y + deltaY);
+				vision.PaperCalibration.TopRight.X = (float)(bounds.Center.X + deltaX) / imgSize.Width; //TODO create a thread-safe method for setting full points
+				vision.PaperCalibration.TopRight.Y = (float)(bounds.Center.Y - deltaY) / imgSize.Height;
+				vision.PaperCalibration.BottomLeft.X = (float)(bounds.Center.X - deltaX) / imgSize.Width;
+				vision.PaperCalibration.BottomLeft.Y = (float)(bounds.Center.Y + deltaY) / imgSize.Height;
 
 				deltaX = d * Math.Sin(ratio + radAngle);
 				deltaY = d * Math.Cos(ratio + radAngle);
-				vision.PaperCalibration.TopLeft.X = (float)(bounds.Center.X - deltaX);
-				vision.PaperCalibration.TopLeft.Y = (float)(bounds.Center.Y - deltaY);
-				vision.PaperCalibration.BottomRight.X = (float)(bounds.Center.X + deltaX);
-				vision.PaperCalibration.BottomRight.Y = (float)(bounds.Center.Y + deltaY);
+				vision.PaperCalibration.TopLeft.X = (float)(bounds.Center.X - deltaX) / imgSize.Width;
+				vision.PaperCalibration.TopLeft.Y = (float)(bounds.Center.Y - deltaY) / imgSize.Height;
+				vision.PaperCalibration.BottomRight.X = (float)(bounds.Center.X + deltaX) / imgSize.Width;
+				vision.PaperCalibration.BottomRight.Y = (float)(bounds.Center.Y + deltaY) / imgSize.Height;
 
 				Console.WriteLine("BL: " + vision.PaperCalibration.BottomLeft);
 				Console.WriteLine("TL: " + vision.PaperCalibration.TopLeft);

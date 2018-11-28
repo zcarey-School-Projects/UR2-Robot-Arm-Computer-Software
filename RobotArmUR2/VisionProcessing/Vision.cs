@@ -278,7 +278,7 @@ namespace RobotArmUR2.VisionProcessing{
 		private void cannyEdgeDetection(Image<Gray, byte> inputImage) {
 			//UMat cannyEdges = new UMat();
 			//LineSegment2D[] lines;
-			CvInvoke.Canny(inputImage, cannyEdges, 180.0, 120.0);
+			CvInvoke.Canny(inputImage, cannyEdges, 180.0, 120.0); //TODO crashed, may need to add checks
 			cannyImage = inputImage.CopyBlank();
 			LineSegment2D[] lines = CvInvoke.HoughLinesP(cannyEdges,
 				1, //Distance resolution in pixel-related units
@@ -292,7 +292,7 @@ namespace RobotArmUR2.VisionProcessing{
 		}
 
 		//Warps the ThresholdImage so the calibrated corners take up the entire image.
-		private void warpImage() {
+		private void warpImage() { //TODO follow format of other methods
 			PointF[] paperPoints = new PointF[4]; //TODO add a "Calibration.ToScreenCoordArray(Size);"
 			lock (calibrationLock) { //TODO what?
 				paperPoints[0] = paperCalibration.BottomLeft.GetScreenCoord(thresholdImage.Size); //Yay implicit operators :)
@@ -312,7 +312,7 @@ namespace RobotArmUR2.VisionProcessing{
 		public RotatedRect? AutoDetectPaper() {
 			GrayscaleImage = InputImage.Convert<Gray, byte>(); //Convert to black/white image since it is all we care about.
 			ThresholdImage = grayscaleImage.ThresholdBinary(new Gray(255d / 2), new Gray(255));
-			cannyEdgeDetection(warpedImage);
+			cannyEdgeDetection(thresholdImage);
 			DetectShapes();
 
 			if (squareList.Count == 0) return null;

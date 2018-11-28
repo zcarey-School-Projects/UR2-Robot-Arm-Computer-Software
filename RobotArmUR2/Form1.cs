@@ -69,8 +69,8 @@ namespace RobotArmUR2
 
 		public void VisionUI_NewFrameFinished(Vision vision) {
 			origImage.Image = vision.InputImage; //grabs image before continuing, therefore should be thread safe.
-			//threshImage.Image = vision.ThresholdImage;
-			threshImage.Image = vision.CannyImage;
+			threshImage.Image = vision.ThresholdImage;
+			//threshImage.Image = vision.CannyImage;
 
 			Image<Bgr, byte> warped = vision.WarpedImage.Convert<Bgr, byte>();
 			List<Triangle2DF> trigs = vision.Triangles;
