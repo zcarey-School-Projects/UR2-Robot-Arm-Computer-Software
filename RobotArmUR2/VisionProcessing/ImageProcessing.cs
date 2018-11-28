@@ -4,6 +4,7 @@ using Emgu.CV;
 using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 
@@ -14,7 +15,7 @@ namespace RobotArmUR2.VisionProcessing {
 			return input.Convert<Gray, TDepth>();
 		}
 
-		public static Image<TColor, TDepth> GetThresholdImage<TColor, TDepth>(Image<TColor, TDepth> input, TColor threshold, TColor MaxValue) where TColor:struct, IColor where TDepth : new() {
+		public static Image<TColor, TDepth> GetThresholdImage<TColor, TDepth>(Image<TColor, TDepth> input, TColor threshold, TColor MaxValue) where TColor : struct, IColor where TDepth : new() {
 			return input.ThresholdBinary(threshold, MaxValue);
 		}
 
@@ -41,14 +42,24 @@ namespace RobotArmUR2.VisionProcessing {
 			return cannyEdges;
 		}
 
-		public static DetectedShapes DetectShapes(UMat cannyEdges) {
-			DetectedShapes shapes = new DetectedShapes();
-			//Image<Bgr, byte> triangleRectImage = origImage.CopyBlank();
+		public static VectorOfVectorOfPoint FindContours(UMat Edges){
 			VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
-			CvInvoke.FindContours(cannyEdges, contours, null, Emgu.CV.CvEnum.RetrType.List, Emgu.CV.CvEnum.ChainApproxMethod.ChainApproxSimple);
-			int count = contours.Size;
-			for (int i = 0; i < count; i++) {
-				VectorOfPoint contour = contours[i];
+			CvInvoke.FindContours(Edges, contours, null, Emgu.CV.CvEnum.RetrType.List, Emgu.CV.CvEnum.ChainApproxMethod.ChainApproxSimple);
+			return contours;
+		}
+
+		public static IEnumerable GetContourEnumerable(VectorOfVectorOfPoint contours) {
+			return new ContourList(contours);
+		}
+
+		public static DetectedShapes DetectShapes(UMat Edges) {
+			return DetectShapes(FindContours(Edges));
+		}
+
+		public static DetectedShapes DetectShapes(VectorOfVectorOfPoint contours) {
+			DetectedShapes shapes = new DetectedShapes();
+
+			foreach (VectorOfPoint contour in GetContourEnumerable(contours)) {
 				VectorOfPoint approxContour = new VectorOfPoint();
 				CvInvoke.ApproxPolyDP(contour, approxContour, CvInvoke.ArcLength(contour, true) * 0.05, true);
 				if (CvInvoke.ContourArea(approxContour, false) > 250) { //only consider areas that are large enough.
@@ -77,6 +88,80 @@ namespace RobotArmUR2.VisionProcessing {
 			}
 
 			return shapes;
+		}
+
+		public static RotatedRect? DetectPaper(UMat Edges) {
+			return DetectPaper(FindContours(Edges));
+		}
+
+		public static RotatedRect? DetectPaper(VectorOfVectorOfPoint contours) {
+			//Detect latgest contour
+			double largestSize = 0;
+			VectorOfPoint largestContour = null;
+			foreach(VectorOfPoint contour in GetContourEnumerable(contours)) {
+				double area = CvInvoke.ContourArea(contour, false);
+				if(area > largestSize) {
+					largestSize = area;
+					largestContour = contour;
+				}
+			}
+
+			if (largestContour == null) return null;
+			else return CvInvoke.MinAreaRect(largestContour);
+		}
+
+		//Class allows to go through contours using foreach
+		private class ContourList : IEnumerable {
+			public VectorOfVectorOfPoint Contours { get; private set; }
+			public ContourList(VectorOfVectorOfPoint contours) {
+				Contours = contours;
+			}
+
+			// Implementation for the GetEnumerator method.
+			IEnumerator IEnumerable.GetEnumerator() {
+				return (IEnumerator)GetEnumerator();
+			}
+
+			public ContourEnumerator GetEnumerator() {
+				return new ContourEnumerator(Contours);
+			}
+
+			public class ContourEnumerator : IEnumerator {
+				private VectorOfVectorOfPoint contours;
+
+				// Enumerators are positioned before the first element
+				// until the first MoveNext() call.
+				private int position = -1;
+
+				public ContourEnumerator(VectorOfVectorOfPoint contours) {
+					this.contours = contours;
+				}
+
+				public bool MoveNext() {
+					position++;
+					return (position < contours.Size);
+				}
+
+				public void Reset() {
+					position = -1;
+				}
+
+				object IEnumerator.Current {
+					get {
+						return Current;
+					}
+				}
+
+				public VectorOfPoint Current {
+					get {
+						try {
+							return contours[position];
+						} catch (IndexOutOfRangeException) {
+							throw new InvalidOperationException();
+						}
+					}
+				}
+			}
 		}
 	}
 

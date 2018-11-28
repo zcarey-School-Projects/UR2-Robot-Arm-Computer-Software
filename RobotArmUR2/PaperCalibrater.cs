@@ -33,6 +33,8 @@ namespace RobotArmUR2 {
 		}
 
 		public void NewFrameFinished(Vision vision) {
+			//TODO get rid of dependency
+			//TODO only run this if form is shown
 			this.vision = vision;
 
 			Image<Bgr, byte> img = vision.InputImage;

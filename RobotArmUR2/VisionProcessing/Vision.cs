@@ -263,26 +263,7 @@ namespace RobotArmUR2.VisionProcessing{
 			UMat edges = ImageProcessing.EdgeDetection(workingImage);
 			//DetectShapes();
 
-			//TODO similar code to DetectShapes()
-			VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
-			CvInvoke.FindContours(cannyEdges, contours, null, Emgu.CV.CvEnum.RetrType.List, Emgu.CV.CvEnum.ChainApproxMethod.ChainApproxSimple);
-			int count = contours.Size;
-
-			//Find largest contour
-			double largestSize = 0;
-			RotatedRect? largest = null;
-			for (int i = 0; i < count; i++) {
-				VectorOfPoint contour = contours[i];
-				//VectorOfPoint approxContour = new VectorOfPoint();
-				//CvInvoke.ApproxPolyDP(contour, approxContour, CvInvoke.ArcLength(contour, true) * 0.05, true);
-				double area = CvInvoke.ContourArea(contour, false);
-				if (area > largestSize){
-					largestSize = area;
-					largest = CvInvoke.MinAreaRect(contour);
-				}
-			}
-
-			return largest;
+			return ImageProcessing.DetectPaper(edges);
 		}
 
 		public void DrawTriangles(Image<Bgr, byte> image, List<Triangle2DF> shapes, Bgr color, int thickness) {
