@@ -8,80 +8,68 @@ using System.IO.Ports;
 using System.Management;
 using System.Threading;
 
-namespace RobotHelpers.Serial {
+namespace Util.Serial {
 	public class SerialCommunicator {
-		//TODO: Make baud rate changeable
 		private static readonly object serialLock = new object();
 		private SerialPort serial;
-		private SerialUIListener UIListener = null;
 
-		public SerialCommunicator() {
-			serial = new SerialPort("null", 57600, Parity.None, 8, StopBits.One);
-			serial.NewLine = "\n";
-			serial.ReadTimeout = 5000;
-			serial.WriteTimeout = 5000;
+		public bool IsOpen { get { lock (serialLock) { return serial.IsOpen; } } }
+
+		#region Events and Handlers
+		public delegate void ConnectionChangedHandler(bool IsConnected, string PortName); 
+		public event ConnectionChangedHandler OnConnectionChanged;
+		#endregion
+
+		public SerialCommunicator(int baud = 57600, Parity parity = Parity.None, StopBits stopBits = StopBits.One) {
+			serial = new SerialPort("null", baud, parity, 8, stopBits);
+			serial.NewLine = ">";
+			serial.ReadTimeout = 500;
+			serial.WriteTimeout = 500;
+			serial.Encoding = Encoding.ASCII;
+			serial.Disposed += closeEvent;
+			serial.ErrorReceived += closeEvent;
 		}
 
-		public SerialCommunicator(SerialUIListener UI) : this() {
-			this.UIListener = UI;
-		}
-
-		public void setSerialUIListener(SerialUIListener listener) {
-			UIListener = listener;
-		}
-
-		public String[] getAvailablePorts() {
-			return SerialPort.GetPortNames();
-		}
-
-		public bool isOpen() {
-			lock (serialLock) {
-				return serial.IsOpen;
-			}
-		}
+		private void closeEvent(object sender, EventArgs args) { close(); }
 
 		public void close() {
 			lock (serialLock) {
+				Console.WriteLine("SERIAL CLOSED");//TODO REMOVE after testing
 				serial.Close();
-				invokeConnected(false, "");
+				OnConnectionChanged(false, null);
 			}
 		}
 
-		public bool open(String portName) {
+		public bool Open(String portName) {
 			lock (serialLock) {
 				if (serial.IsOpen) close();
 				serial.PortName = portName;
 				try {
+					serial.DiscardOutBuffer();
 					serial.Open();
-					if (!serial.IsOpen) {
-						return false;
-					}
-					serial.WriteLine(""); //Let the robot know to cancel whatever it's doing
-					Thread.Sleep(500);
-					while (serial.BytesToRead > 0 || serial.BytesToWrite > 0) {
+					if (!serial.IsOpen) return false;
+					
+					do {
+						Thread.Sleep(50);
 						serial.DiscardInBuffer();
 						serial.DiscardOutBuffer();
-						Thread.Sleep(100);
-					}
-					serial.WriteLine("");
-					invokeConnected(true, portName);
+					} while (serial.BytesToRead > 0 || serial.BytesToWrite > 0);
+					
+					OnConnectionChanged(true, portName);
 					return true;
-				} catch (Exception) {
-					//Console.WriteLine("Could not connect.");
+				} catch (Exception e) {
+					Console.Error.WriteLine("\nCould not connect to device: " + e.Message);
+					Console.Error.WriteLine(e.StackTrace);
+					Console.Error.WriteLine();
 					return false;
 				}
 			}
 		}
 
-		public bool autoConnect() {
-			return autoConnect("CH340");
-		}
-
-		public bool autoConnect(string deviceName) {
-			close();
-			//lock (serialLock) {
-				ManagementObjectSearcher manObjSearch = new ManagementObjectSearcher("SELECT * FROM Win32_PnPEntity WHERE ConfigManagerErrorCode = 0");//"Select * from Win32_SerialPort");
-				ManagementObjectCollection manObjReturn = manObjSearch.Get();
+		public bool AutoConnect(string deviceName) {
+			lock (serialLock) { //Not necessary, but will stop communication while looking for a connection.
+				close();
+				ManagementObjectCollection manObjReturn = new ManagementObjectSearcher("SELECT * FROM Win32_PnPEntity WHERE ConfigManagerErrorCode = 0").Get();
 
 				foreach (ManagementObject manObj in manObjReturn) {
 					//string desc = manObj["Description"].ToString();
@@ -92,132 +80,107 @@ namespace RobotHelpers.Serial {
 					if (name.Contains(deviceName) && name.Contains("(COM")) {
 						int comStart = name.LastIndexOf("(COM") + 1;
 						int comEnd = name.Substring(comStart).IndexOf(")") + comStart;
-						string port = name.Substring(comStart, comEnd - comStart);
+						if (comEnd < 0) continue; //Could not find other end of COM name
+						string portName = name.Substring(comStart, comEnd - comStart);
 
-						if (open(port)) {
-							Console.WriteLine("Connected Device: " + name);
-							return true;
-						}
-
+						return Open(portName);
 					}
-					//String portName = manObj["Name"].ToString();
-					//sp.PortName = portName;
 				}
-			//}
-			return false;
+
+				return false;
+			}
 		}
 
-		public object sendCommand(SerialCommand cmd) {
-			if (!serial.IsOpen) return null;
-			string command = cmd.getCommand();
-			string data = cmd.GetData();
-			string message = (command != null ? command : "") + (data != null ? data : "");
-/*			if (message.Length > 255) {
-				Console.WriteLine("WARNING: Command length exceeds 255 bytes, not sending command: " + cmd.GetName());
-				message = message.Substring(0, 255);
-				return null;
-			}*/
-
+		public object SendCommand(SerialCommand cmd) {
 			lock (serialLock) {
 				try {
-					Console.WriteLine("Writing: " + "/n" + message + "!");
-					serial.Write("\n" + message + "!");
-					//serial.Write(new byte[] { (byte)'\n' }, 0, 1);
-
-					//byte[] messageSize = new byte[1] { (byte)message.Length };
-					//serial.Write(messageSize, 0, 1);
-					/*
-					int numBytes = serial.ReadByte();
-					byte[] bytes = new byte[numBytes];
-					if (numBytes > 0) {
-						serial.Read(bytes, 0, numBytes);
-					}*/ //TODO return a string
-					Console.WriteLine("Reading...");
+					if (!serial.IsOpen) return null;
+					string command = cmd.GetCommand();
+					if (command == null) throw new ArgumentNullException("Can not send a null command.");
+					string commandArgs = "";
+					foreach (string arg in cmd.GetArguments()) {
+						if (arg == null) throw new ArgumentNullException("Can not send a null argument.");
+						commandArgs += arg + ":";
+					}
+					serial.WriteLine("<" + command + ";" + commandArgs); //Since we are using WriteLine, the ">" character gets written automatically
 					string response = serial.ReadLine();
-					char[] chars = response.ToCharArray();
-					byte[] bytes = new byte[chars.Length];
-					for(int i = 0; i < chars.Length; i++) {
-						bytes[i] = (byte)chars[i];
+					if (!response.StartsWith("<" + command + ";")) {
+						//TODO implement. close serial, cancel command
 					}
-					Console.WriteLine("Responding");
-					return cmd.OnSerialResponse(this, new SerialResponse(ref bytes));
-				} catch (Exception) {
-					Console.WriteLine("Serial Error: " + cmd.GetName());
-					Console.WriteLine("Remaining bytes: " + serial.BytesToRead);
-					Console.Write("Remaining Data: ");
-					while(serial.BytesToRead > 0) {
-						Console.Write((char)serial.ReadChar());
-					}
-					Console.WriteLine();
+					string paramString = response.Substring(command.Length + 2);
+					paramString.TrimEnd(':');
+					string[] parameters = paramString.Split(':');
+
+					return cmd.OnSerialResponse(this, parameters);
+				}catch(ArgumentNullException e) {
+					Console.Error.WriteLine("\nError writing to serial port: " + e.Message);
+					Console.Error.WriteLine(e.StackTrace + '\n');
+					return null;
+				}catch(InvalidOperationException e) {
+					Console.Error.WriteLine("\nTried reading/writing to a closed port: " + e.Message);
+					Console.Error.WriteLine(e.StackTrace + '\n');
+					return null;
+				} catch (TimeoutException e) {
+					Console.Error.WriteLine("\nA timeout occured while writing/reading serial port: " + e.Message);
+					Console.WriteLine("The serial port will be closed.");
+					Console.Error.WriteLine(e.StackTrace + '\n');
 					close();
 					return null;
 				}
 			}
 		}
 
-		public bool SendBytes(byte[] bytes) {
-			return SendBytes(bytes, 0, bytes.Length);
-		}
-
-		public bool SendBytes(byte[] bytes, int start, int length) {
-			if (!serial.IsOpen) return false;
-			try {
-				lock (serialLock) {
-					serial.Write(bytes, start, length);
+		public bool SendString(string str) {
+			lock (serialLock) {
+				if (!serial.IsOpen) return false;
+				try {
+					serial.Write(str);
+					return true;
+				} catch (ArgumentNullException e) {
+					Console.Error.WriteLine("\nError writing to serial port: " + e.Message);
+					Console.Error.WriteLine(e.StackTrace + '\n');
+					return false;
+				} catch (InvalidOperationException e) {
+					Console.Error.WriteLine("\nTried writing to a closed port: " + e.Message);
+					Console.Error.WriteLine(e.StackTrace + '\n');
+					return false;
+				} catch (TimeoutException e) {
+					Console.Error.WriteLine("\nA timeout occured while writing/reading serial port: " + e.Message);
+					Console.WriteLine("The serial port will be closed.");
+					Console.Error.WriteLine(e.StackTrace + '\n');
+					close();
+					return false;
 				}
-				return true;
-			} catch (Exception e) {
-				Console.WriteLine("Serial Send Error: " + e.Message);
-				close();
-				return false;
 			}
 		}
 
-		public SerialResponse ReadBytes(int numBytes) {
-			if (!serial.IsOpen) return null;
-			try {
-				byte[] bytes = new byte[numBytes];
-				if (numBytes > 0) {
-					lock (serialLock) {
-						serial.Read(bytes, 0, numBytes);
-					}
+		public byte? ReadChar() {
+			lock (serialLock) {
+				if (!serial.IsOpen) return null;
+				try {
+					int data = serial.ReadByte(); //TODO remove if there are no errors
+					if (data < 0) throw new EndOfStreamException("Well, not sure what to do now.");
+					return (byte)data;
+				} catch (ArgumentNullException e) {
+					Console.Error.WriteLine("\nError writing to serial port: " + e.Message);
+					Console.Error.WriteLine(e.StackTrace + '\n');
+					return null;
+				} catch (InvalidOperationException e) {
+					Console.Error.WriteLine("\nTried writing to a closed port: " + e.Message);
+					Console.Error.WriteLine(e.StackTrace + '\n');
+					return null;
+				} catch (TimeoutException e) {
+					Console.Error.WriteLine("\nA timeout occured while writing/reading serial port: " + e.Message);
+					Console.WriteLine("The serial port will be closed.");
+					Console.Error.WriteLine(e.StackTrace + '\n');
+					close();
+					return null;
 				}
-
-				return new SerialResponse(ref bytes);
-			} catch (Exception e) {
-				Console.WriteLine("Serial Read Error: " + e.Message);
-				close();
-				return null;
 			}
 		}
 
-		public SerialResponse ReadLine() {
-			if (!serial.IsOpen) return null;
-			try {
-				string response = null;
-				lock (serialLock) {
-					response = serial.ReadLine();
-				}
-				if (response == null) return null;
-				char[] chars = response.ToCharArray();
-				byte[] bytes = new byte[chars.Length];
-				for(int i = 0; i < chars.Length; i++) {
-					bytes[i] = (byte)chars[i];
-				}
-
-				return new SerialResponse(ref bytes);
-			} catch (Exception e) {
-				Console.WriteLine("Serial Read Error: " + e.Message);
-				close();
-				return null;
-			}
+		public static String[] GetAvailablePorts() {
+			return SerialPort.GetPortNames();
 		}
-
-		private void invokeConnected(bool isConnected, string portName) {
-			if (UIListener != null) {
-				UIListener.SerialOnConnectionChanged(isConnected, portName);
-			}
-		}
-
 	}
 }

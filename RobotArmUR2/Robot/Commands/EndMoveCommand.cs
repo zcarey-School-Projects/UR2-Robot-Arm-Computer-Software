@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RobotArmUR2.Robot_Commands {
+namespace RobotArmUR2.Robot_Commands { //TODO fix namespaces
 	class EndMoveCommand : SerialCommand {
 
 		public override string GetName() {

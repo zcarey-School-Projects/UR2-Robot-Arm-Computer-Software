@@ -1,7 +1,7 @@
 ﻿using RobotArmUR2.Robot_Commands;
-using RobotHelpers.Serial;
 using System;
 using System.Timers;
+using Util.Serial;
 
 /*
  To add new manual control command, add a variable (at top of class),
@@ -25,7 +25,19 @@ namespace RobotArmUR2 {
 
 		private volatile bool wasMoving = false;
 
-		public SerialUIListener UIListener { set => serial.setSerialUIListener(value); } //TODO upgrade serial listener
+		#region Events and Handlers
+		//Simply pass along event from SerialCommunicator
+		public event Util.Serial.SerialCommunicator.ConnectionChangedHandler OnConnectionChanged {
+			add { serial.OnConnectionChanged += value; }
+			remove { serial.OnConnectionChanged += value; }
+		}
+
+		public delegate void ManualControlChangedHandler(Rotation newRotation, Extension newExtension);
+		public event ManualControlChangedHandler OnManualControlChanged;
+
+		public delegate void ProgramStateChangedHandler(bool IsRunning);
+		public event ProgramStateChangedHandler OnProgramStateChanged;
+		#endregion
 
 		public RobotInterface() {
 			manualTimer.Elapsed += onTimerTick;
@@ -36,7 +48,8 @@ namespace RobotArmUR2 {
 		public bool ConnectToRobot() {
 			//TODO add locks
 			DisableManualControl();
-			if (serial.autoConnect()) {
+			if (serial.AutoConnect("CH340")) {
+				//Console.WriteLine("Connected Device: " + name); //TODO move to form
 				lock (settingsLock) {
 					//TODO send robot "onConnect" command, which enables fan, steppers, etc
 					StopAll();
@@ -45,7 +58,7 @@ namespace RobotArmUR2 {
 					//TODO speed settings
 					//GoToHome()
 					EnableManualControl();
-
+					
 					return true;
 				}
 			} 
@@ -65,7 +78,7 @@ namespace RobotArmUR2 {
 			lock (timerLock) { //Wait for onTimerTick to finish if it hasn't
 				if (!manualTimer.Enabled) return; //Already disabled
 				manualTimer.Stop(); //Stop throwing tick events.
-				serial.sendCommand(new EndMoveCommand()); //Stop all movement
+				StopAll(); //Stop all movement
 			}
 		}
 
@@ -99,9 +112,9 @@ namespace RobotArmUR2 {
 					setServoState = null;
 				}
 
-				if (moveCommand != null) serial.sendCommand(moveCommand);
-				if (magnetCommand != null) serial.sendCommand(magnetCommand);
-				if (servoCommand != null) serial.sendCommand(servoCommand);
+				if (moveCommand != null) serial.SendCommand(moveCommand);
+				if (magnetCommand != null) serial.SendCommand(magnetCommand);
+				if (servoCommand != null) serial.SendCommand(servoCommand);
 			}
 		}
 
@@ -137,40 +150,32 @@ namespace RobotArmUR2 {
 		}
 
 		public void StopAll() {
-			serial.sendCommand(new EndMoveCommand());
+			serial.SendCommand(new EndMoveCommand());
 		}
 
-		public float? GetRotation() {
-			object response = serial.sendCommand(new GetRotationCommand());
-			if((response != null) && (response is float)) {
-				return (float)response;
-			} else {
-				return null;
-			}
-		}
 
-		public float? GetExtension() {
-			object response = serial.sendCommand(new GetExtensionCommand());
-			if ((response != null) && (response is float)) {
-				return (float)response;
+		public RobotPoint GetPosition() {
+			object response = serial.SendCommand(new GetPositionCommand());
+			if(response is RobotPoint) {
+				return (RobotPoint)response;
 			} else {
 				return null;
 			}
 		}
 
 		public void ReturnHome() {
-			serial.sendCommand(new GoToHomeCommand());
+			serial.SendCommand(new GoToHomeCommand());
 		}
 
 		public void MoveServo(bool raised) {
-			serial.sendCommand(new MoveServoCommand(raised));
+			serial.SendCommand(new MoveServoCommand(raised));
 		}
 
 		public void RaiseServo() { MoveServo(true); }
 		public void LowerServo() { MoveServo(false); }
 
 		public void PowerMagnet(bool IsOn) {
-			serial.sendCommand(new SetMagnetCommand(IsOn));
+			serial.SendCommand(new SetMagnetCommand(IsOn));
 		}
 
 		public void PowerMagnetOn() { PowerMagnet(true); }
@@ -178,12 +183,12 @@ namespace RobotArmUR2 {
 
 		public void MoveTo(RobotPoint position) {
 			if (position == null) return;
-			serial.sendCommand(new MoveToCommand(position));
+			serial.SendCommand(new MoveToCommand(position));
 		}
 
 		public void MoveToWait(RobotPoint position) {//TODO command doesnt work
 			if (position == null) return;
-			serial.sendCommand(new MoveToWaitCommand(position));
+			serial.SendCommand(new MoveToWaitCommand(position));
 		}
 	}
 

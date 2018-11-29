@@ -63,7 +63,7 @@ namespace RobotArmUR2
 			Properties.Settings.Default.Save();
 			vision.stop();
 		}
-
+		//TODO show connected com port
 		public void VisionUI_NewFrameFinished(Vision vision) {
 			origImage.Image = vision.InputImage; //grabs image before continuing, therefore should be thread safe.
 			threshImage.Image = vision.ThresholdImage;

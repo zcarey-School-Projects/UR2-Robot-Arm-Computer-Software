@@ -78,6 +78,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApplicationSettings.cs" />
+    <Compile Include="Robot\Commands\GetPositionCommand.cs" />
     <Compile Include="Util\Setting.cs" />
     <Compile Include="Util\EmguPictureBox.cs" />
     <Compile Include="Robot\Commands\EndMoveCommand.cs" />
@@ -112,8 +113,6 @@
     <Compile Include="Util\InputHandling\InputHandler.cs" />
     <Compile Include="Util\InputHandling\VideoInput.cs" />
     <Compile Include="Util\Serial\SerialCommand.cs" />
-    <Compile Include="Util\Serial\SerialResponse.cs" />
-    <Compile Include="Util\Serial\SerialUIListener.cs" />
     <Compile Include="PaperCalibrater.cs">
       <SubType>Form</SubType>
     </Compile>
