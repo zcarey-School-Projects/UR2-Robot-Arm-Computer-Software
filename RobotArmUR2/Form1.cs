@@ -62,9 +62,6 @@ namespace RobotArmUR2
 			//Properties.Settings.Default.RobotPrescale = PrescaleSlider.Value;
 			Properties.Settings.Default.Save();
 			vision.stop();
-
-			//TODO do save stuff
-			//Properties.Settings.Default.Save();
 		}
 
 		public void VisionUI_NewFrameFinished(Vision vision) {
