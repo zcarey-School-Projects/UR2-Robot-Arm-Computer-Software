@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RobotArmUR2.VisionProcessing;
+using System;
 using System.Drawing;
 
 namespace RobotArmUR2 {
@@ -19,7 +20,7 @@ namespace RobotArmUR2 {
 		//Called if the program is forcfully cancelled.
 		public abstract void ProgramCancelled(RobotInterface serial);
 
-		public static RobotPoint CalculateRobotCoordinates(RobotCalibration calib, PointF relativePaperCoords) { //TODO simplify with points?
+		public static RobotPoint CalculateRobotCoordinates(RobotCalibration calib, PaperPoint relativePaperCoords) { //TODO simplify with points?
 			double x1 = calib.BottomLeft.Extension * Math.Cos((180 - calib.BottomLeft.Rotation) * Math.PI / 180);
 			double x2 = calib.TopLeft.Extension * Math.Cos((180 - calib.TopLeft.Rotation) * Math.PI / 180);
 			double x3 = calib.TopRight.Extension * Math.Cos((180 - calib.TopRight.Rotation) * Math.PI / 180);
@@ -35,7 +36,6 @@ namespace RobotArmUR2 {
 
 			double x = alpha * (x3 - x2) + beta * (x1 - x2) + alpha * beta * (x4 + x2 - x1 - x3) + x2;
 			double y = alpha * (y3 - y2) + beta * (y1 - y2) + alpha * beta * (y4 + y2 - y1 - y3) + y2;
-			//Console.WriteLine("Relative: [{0}, {1}]", x, y); //TODO remove
 
 			double targetAngle = 180 - (Math.Atan2(y, x) * 180 / Math.PI);
 			double targetDistance = Math.Sqrt(x * x + y * y);
@@ -43,11 +43,10 @@ namespace RobotArmUR2 {
 			return new RobotPoint((float)targetAngle, (float)targetDistance);
 		}
 
-		protected void moveToPoint(RobotInterface serial, PointF relativePaperCoords) {
+		protected void moveToPoint(RobotInterface serial, PaperPoint relativePaperCoords) {
 			RobotPoint targetCoords = CalculateRobotCoordinates(Robot.Calibration, relativePaperCoords);
 			Console.WriteLine("Target: [{0}°, {1}mm]\n", targetCoords.Rotation, targetCoords.Extension);
 
-			//Console.WriteLine("[{0}, {1}]", targetAngle, targetDistance);
 			serial.MoveToWait(targetCoords);
 		}
 		//TODO whenever a command fails, we need to cancel the program.

@@ -28,25 +28,20 @@ namespace RobotArmUR2.Robot_Programs {
 			serial.PowerMagnetOff();
 			Thread.Sleep(1000);
 		}
-
+		
 		public override bool ProgramStep(RobotInterface serial) {
 			//vision.getShapeLists(out triangles, out boxes);
 			DetectedShapes shapes = vision.DetectedShapes; //TODO add "GetPaperPoints"
-			Image<Gray, byte> temp = vision.WarpedImage;
-			int width = temp.Width;
-			int height = temp.Height;
-			if (shapes.Triangles.Count > 0) {
-				PointF center = shapes.Triangles[0].Centeroid;
-				PointF pt = new PointF((float)center.X / width, (float)center.Y / height);
-				base.moveToPoint(serial, pt);
+			if (shapes.RelativeTrianglePoints.Count > 0) {
+				PaperPoint center = shapes.RelativeTrianglePoints[0];
+				base.moveToPoint(serial, center);
 				pickUpShape(serial, true);
 				base.moveToTriangleStack(serial);
 				pickUpShape(serial, false);
 				emptyFrameCount = 0;
-			} else if (shapes.Squares.Count > 0) {
-				PointF center = shapes.Squares[0].Center;
-				PointF pt = new PointF((float)center.X / width, (float)center.Y / height);
-				moveToPoint(serial, pt); //TODO need to rename function to something more fitting
+			} else if (shapes.RelativeSquarePoints.Count > 0) {
+				PaperPoint center = shapes.RelativeSquarePoints[0];
+				moveToPoint(serial, center); //TODO need to rename function to something more fitting
 				pickUpShape(serial, true);
 				base.moveToSquareStack(serial);
 				pickUpShape(serial, false);

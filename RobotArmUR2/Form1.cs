@@ -76,18 +76,6 @@ namespace RobotArmUR2
 			vision.DrawShapes(warped, ApplicationSettings.TriangleHighlightColor, ApplicationSettings.SquareHighlightColor, ApplicationSettings.ShapeHighlightThickness);
 			warpedImage.Image = warped;
 
-			DetectedShapes shapes = vision.DetectedShapes; //TODO "GetNextShape" and return PaperPoints
-			RobotPoint robotCoords = null;
-			if(shapes.Triangles.Count > 0) {
-				PointF pt = shapes.Triangles[0].Centeroid;
-				PointF rel = new PointF(pt.X / warped.Width, pt.Y / warped.Height);
-				robotCoords = RobotProgram.CalculateRobotCoordinates(robot.Calibration, rel);
-			}else if(shapes.Squares.Count > 0) {
-				PointF pt = shapes.Squares[0].Center;
-				PointF rel = new PointF(pt.X / warped.Width, pt.Y / warped.Height);
-				robotCoords = RobotProgram.CalculateRobotCoordinates(robot.Calibration, rel);
-			}
-
 			paperCalibrater.NewFrameFinished(vision);
 		}
 

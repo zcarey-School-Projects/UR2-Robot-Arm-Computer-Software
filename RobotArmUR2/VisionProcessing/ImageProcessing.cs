@@ -57,11 +57,12 @@ namespace RobotArmUR2.VisionProcessing {
 		}
 
 		public static DetectedShapes DetectShapes(UMat Edges) {
-			return DetectShapes(FindContours(Edges));
+			return DetectShapes(FindContours(Edges), Edges.Size);
 		}
 
-		public static DetectedShapes DetectShapes(VectorOfVectorOfPoint contours) {
-			DetectedShapes shapes = new DetectedShapes();
+		public static DetectedShapes DetectShapes(VectorOfVectorOfPoint contours, Size imageSize) {
+			List<Triangle2DF> triangles = new List<Triangle2DF>();
+			List<RotatedRect> squares = new List<RotatedRect>();
 
 			foreach (VectorOfPoint contour in GetContourEnumerable(contours)) {
 				VectorOfPoint approxContour = new VectorOfPoint();
@@ -69,7 +70,7 @@ namespace RobotArmUR2.VisionProcessing {
 				if (CvInvoke.ContourArea(approxContour, false) > 250) { //only consider areas that are large enough.
 					if (approxContour.Size == 3) { //Three vertices, must be a triangle!
 						Point[] pts = approxContour.ToArray();
-						shapes.Triangles.Add(new Triangle2DF(pts[0], pts[1], pts[2]));
+						triangles.Add(new Triangle2DF(pts[0], pts[1], pts[2]));
 					} else if (approxContour.Size == 4) { //Four vertices, must be a square!
 						#region Determine if all angles are within 80-100 degrees
 						bool isRectangle = true;
@@ -85,13 +86,13 @@ namespace RobotArmUR2.VisionProcessing {
 						#endregion
 
 						if (isRectangle) {
-							shapes.Squares.Add(CvInvoke.MinAreaRect(approxContour));
+							squares.Add(CvInvoke.MinAreaRect(approxContour));
 						}
 					}
 				}
 			}
 
-			return shapes;
+			return new DetectedShapes(triangles, squares, imageSize);
 		}
 
 		public static RotatedRect? DetectPaper(UMat Edges) {
@@ -169,14 +170,4 @@ namespace RobotArmUR2.VisionProcessing {
 		}
 	}
 
-	public class DetectedShapes {
-
-		public List<Triangle2DF> Triangles { get; } = new List<Triangle2DF>();
-		public List<RotatedRect> Squares { get; } = new List<RotatedRect>();
-
-		public DetectedShapes() {
-
-		}
-
-	}
 }
