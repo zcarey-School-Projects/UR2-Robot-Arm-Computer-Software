@@ -59,19 +59,9 @@ namespace RobotArmUR2 {
 			}));
 		}
 
-		private RobotPoint getPos() { //TODO move into robot?
-			float? rot = robot.Interface.GetRotation();
-			float? ext = robot.Interface.GetExtension();
-			if ((rot != null) && (ext != null)) {
-				return new RobotPoint((float)rot, (float)ext);
-			} else {
-				return null;
-			}
-		}
-
 		private void calibrateClicked(RobotCalibrationPoint pt) {
 			if (pt == null) return;
-			RobotPoint pos = getPos();
+			RobotPoint pos = robot.Interface.GetPosition();
 			if(pos != null) {
 				pt.Rotation = pos.Rotation;
 				pt.Extension = pos.Extension; //TODO put inside class

@@ -1,4 +1,4 @@
-﻿using RobotArmUR2.Robot_Commands;
+﻿using RobotArmUR2.RobotControl.Commands;
 using System;
 using System.Timers;
 using Util.Serial;
@@ -9,7 +9,7 @@ using Util.Serial;
  and add to onTimerTick to actually send command.
  */
 
-namespace RobotArmUR2 {
+namespace RobotArmUR2 { //TODO fix namespaces
 	public class RobotInterface {
 		private static readonly object timerLock = new object();
 		private static readonly object settingsLock = new object();
@@ -31,12 +31,6 @@ namespace RobotArmUR2 {
 			add { serial.OnConnectionChanged += value; }
 			remove { serial.OnConnectionChanged += value; }
 		}
-
-		public delegate void ManualControlChangedHandler(Rotation newRotation, Extension newExtension);
-		public event ManualControlChangedHandler OnManualControlChanged;
-
-		public delegate void ProgramStateChangedHandler(bool IsRunning);
-		public event ProgramStateChangedHandler OnProgramStateChanged;
 		#endregion
 
 		public RobotInterface() {

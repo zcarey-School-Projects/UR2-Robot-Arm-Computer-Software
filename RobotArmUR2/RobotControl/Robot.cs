@@ -1,37 +1,30 @@
 ﻿using System;
 using System.Threading;
-using RobotHelpers.Serial;
 using System.Windows.Forms;
-using RobotArmUR2.Robot_Commands;
-using RobotArmUR2.Robot_Programs;
-using RobotArmUR2.VisionProcessing;
-using System.Windows.Input;
 
 namespace RobotArmUR2 {
 	public class Robot {
 		private static readonly object settingsLock = new object();
 		private static readonly object programLock = new object();
 
-		public IRobotUI UIListener { get => uiListener.Listener; set { uiListener.Listener = value; Interface.UIListener = value; } }
 		public RobotCalibration Calibration { get; } = new RobotCalibration();
 		
 		public RobotInterface Interface { get; } = new RobotInterface();
-		private RobotUIInvoker uiListener = new RobotUIInvoker();
 
 		private volatile Thread programThread;
 		private volatile bool endProgram;
 
+		#region Events and Handlers
+		public delegate void ProgramStateChangedHandler(bool IsRunning);
+		public event ProgramStateChangedHandler OnProgramStateChanged;
+
+		public delegate void ManualControlChangedHandler(Rotation newRotation, Extension newExtension);
+		public event ManualControlChangedHandler OnManualControlChanged;
+		#endregion
+
 		public Robot() {
 			
 		}
-
-		public Robot(IRobotUI listener) {
-			UIListener = listener;
-		}
-
-		/*public bool ConnectToRobot() {
-			return Interface.ConnectToRobot();
-		}*/
 		
 		//Returns if program was started
 		public bool RunProgram(RobotProgram program) {
@@ -48,7 +41,7 @@ namespace RobotArmUR2 {
 
 		private void ProgramLoop(RobotProgram program) {
 			//Prepare robot for program
-			uiListener.ProgramStateChanged(true);
+			OnProgramStateChanged(true); //fire event
 			Interface.DisableManualControl();
 			Interface.StopAll();
 			Interface.PowerMagnetOff();
@@ -72,7 +65,7 @@ namespace RobotArmUR2 {
 			Console.WriteLine("Program finished. \nExiting...");
 
 			//End program
-			uiListener.ProgramStateChanged(false);
+			OnProgramStateChanged(false); //Fire event
 			Interface.EnableManualControl();
 			programThread = null;
 			Console.WriteLine("Exited successfully.");
@@ -127,15 +120,10 @@ namespace RobotArmUR2 {
 						else setExtension = Extension.None;
 					}
 
-					if(setRotation != null) {
-						Interface.SetManualControl((Rotation)setRotation);
-						uiListener.ChangeManualRotateImage((Rotation)setRotation);
-					}
+					if(setRotation != null) Interface.SetManualControl((Rotation)setRotation);
+					if(setExtension != null) Interface.SetManualControl((Extension)setExtension);
 
-					if(setExtension != null) {
-						Interface.SetManualControl((Extension)setExtension);
-						uiListener.ChangeManualExtensionImage((Extension)setExtension);
-					}
+					OnManualControlChanged(((setRotation != null) ? (Rotation)setRotation : Rotation.None), ((setExtension != null) ? (Extension)setExtension : Extension.None)); //Fire event
 				}
 			}
 		}

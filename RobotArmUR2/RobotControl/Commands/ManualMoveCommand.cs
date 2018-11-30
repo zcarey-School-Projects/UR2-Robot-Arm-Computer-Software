@@ -1,14 +1,10 @@
-﻿using RobotHelpers.Serial;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
+using Util.Serial;
 
-namespace RobotArmUR2.Robot_Commands {
+namespace RobotArmUR2.RobotControl.Commands {
 	class ManualMoveCommand : SerialCommand{
 
-		private Rotation rotationMove; //TODO move enum to folder
+		private Rotation rotationMove; 
 		private Extension extensionMove;
 
 		public ManualMoveCommand(Rotation rotation, Extension extension) {
@@ -16,16 +12,16 @@ namespace RobotArmUR2.Robot_Commands {
 			extensionMove = extension;
 		}
 
-		public override string GetName() {
+		public string GetName() {
 			return "Manual Move Command";
 		}
 
-		public override string getCommand() {
-			return "ManualMove;";
+		public string GetCommand() {
+			return "ManualMove";
 		}
 
-		public override string GetData() {
-			return getRotationValue() + ":" + getExtensionValue() + ":";
+		public string[] GetArguments() {
+			return new string[] { getRotationValue(), getExtensionValue() };
 		}
 
 		private string getRotationValue() {
@@ -46,13 +42,7 @@ namespace RobotArmUR2.Robot_Commands {
 			}
 		}
 
-		public override object OnSerialResponse(SerialCommunicator serial, SerialResponse response) {
-			string res = response.ToString();
-			if (res != "ManualMove") {
-				Console.WriteLine(res);
-				serial.close();
-			}
-
+		public object OnSerialResponse(SerialCommunicator serial, string[] parameters) {
 			return null;
 		}
 	}

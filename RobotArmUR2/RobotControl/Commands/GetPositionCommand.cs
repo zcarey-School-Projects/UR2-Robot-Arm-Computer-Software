@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Util.Serial;
+﻿using Util.Serial;
 
-namespace RobotArmUR2.Robot.Commands {
+namespace RobotArmUR2.RobotControl.Commands {
 	class GetPositionCommand : SerialCommand {
+
+		public GetPositionCommand() {
+
+		}
 
 		public string GetName() {
 			return "Get Position Command";

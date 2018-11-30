@@ -10,7 +10,7 @@ using RobotHelpers.InputHandling;
 
 namespace RobotArmUR2
 {
-	public partial class Form1 : Form, IRobotUI, IVisionUI
+	public partial class Form1 : Form, IVisionUI
 	{
 
 		private Vision vision;
@@ -34,8 +34,10 @@ namespace RobotArmUR2
 			warpedImage = new EmguPictureBox<Bgr, byte>(this, Image3);
 
 			Properties.Settings.Default.Reload();
-			this.robot = new Robot();
-			robot.UIListener = this;
+			this.robot = new Robot(); //TODO make vision event driven
+			robot.OnManualControlChanged += Robot_OnManualControlChanged;
+			robot.OnProgramStateChanged += Robot_OnProgramStateChanged;
+			robot.Interface.OnConnectionChanged += RobotInterface_OnConnectionChanged;
 			robotCalibrater = new RobotCalibrater(robot);
 			vision = new Vision(/*paperCalibrater*/);
 			//vision.setCamera(Default_Camera_Index);
@@ -151,17 +153,12 @@ namespace RobotArmUR2
 			robot.ManualControlKeyEvent(e.KeyCode, false);
 		}
 		
-		public void ChangeManualRotateImage(Rotation state) {
+		private void Robot_OnManualControlChanged(Rotation rotation, Extension extension) {
 			BeginInvoke(new Action(() => {
-				RotateLeftVisual.Image = ((state == Rotation.CCW) ? Properties.Resources.RotateLeft : Properties.Resources.RotateLeftOff);
-				RotateRightVisual.Image = ((state == Rotation.CW) ? Properties.Resources.RotateRight : Properties.Resources.RotateRightOff);
-			}));
-		}
-
-		public void ChangeManualExtensionImage(Extension state) {
-			BeginInvoke(new Action(() => {
-				ExtendVisual.Image = ((state == Extension.Outward) ? Properties.Resources.Extend : Properties.Resources.ExtendOff);
-				RetractVisual.Image = ((state == Extension.Inward) ? Properties.Resources.Retract : Properties.Resources.RetractOff);
+				RotateLeftVisual.Image = ((rotation == Rotation.CCW) ? Properties.Resources.RotateLeft : Properties.Resources.RotateLeftOff);
+				RotateRightVisual.Image = ((rotation == Rotation.CW) ? Properties.Resources.RotateRight : Properties.Resources.RotateRightOff);
+				ExtendVisual.Image = ((extension == Extension.Outward) ? Properties.Resources.Extend : Properties.Resources.ExtendOff);
+				RetractVisual.Image = ((extension == Extension.Inward) ? Properties.Resources.Retract : Properties.Resources.RetractOff);
 			}));
 		}
 
@@ -172,7 +169,7 @@ namespace RobotArmUR2
 			//TODO add speed
 		}
 
-		public void SerialOnConnectionChanged(bool isConnected, string portName) {
+		private void RobotInterface_OnConnectionChanged(bool isConnected, string portName) {
 			BeginInvoke(new Action(() => {
 				RobotConnected.CheckState = (isConnected ? CheckState.Checked : CheckState.Unchecked);
 				RobotPort.Text = "Port: " + portName;
@@ -183,16 +180,11 @@ namespace RobotArmUR2
 			robotCalibrater.ShowDialog();
 		}
 
-		private void GotoHomePos_Click(object sender, EventArgs e) {
-			robot.RunProgram(new ReturnHomeProgram(robot));
-		}
-
-		public void ProgramStateChanged(bool running) {
+		private void Robot_OnProgramStateChanged(bool running) {
 			BeginInvoke(new Action(() => {
 				RobotSpeedSlider.Enabled = !running;
 				AutoConnect.Enabled = !running;
 				menuStrip1.Enabled = !running;
-				//manualMoveEnabled = !running; //TODO
 				Stack.Text = (running ? "Cancel" : "Stack!");
 			}));
 		}

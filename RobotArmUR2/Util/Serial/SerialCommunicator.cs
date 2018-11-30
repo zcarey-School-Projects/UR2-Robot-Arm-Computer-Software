@@ -98,9 +98,12 @@ namespace Util.Serial {
 					string command = cmd.GetCommand();
 					if (command == null) throw new ArgumentNullException("Can not send a null command.");
 					string commandArgs = "";
-					foreach (string arg in cmd.GetArguments()) {
-						if (arg == null) throw new ArgumentNullException("Can not send a null argument.");
-						commandArgs += arg + ":";
+					string[] args = cmd.GetArguments();
+					if (args != null) {
+						foreach (string arg in args) {
+							if (arg == null) throw new ArgumentNullException("Can not send a null argument.");
+							commandArgs += arg + ":";
+						}
 					}
 					serial.WriteLine("<" + command + ";" + commandArgs); //Since we are using WriteLine, the ">" character gets written automatically
 					string response = serial.ReadLine();
