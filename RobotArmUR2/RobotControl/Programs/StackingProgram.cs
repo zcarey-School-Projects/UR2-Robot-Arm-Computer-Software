@@ -24,23 +24,15 @@ namespace RobotArmUR2.Robot_Programs {
 			Thread.Sleep(1000);
 			return true;
 		}
-		//TODO clean program
+		
 		public override bool ProgramStep(RobotInterface serial) {
 			DetectedShapes shapes = vision.DetectedShapes; 
 			if (shapes.RelativeTrianglePoints.Count > 0) {
 				PaperPoint center = shapes.RelativeTrianglePoints[0];
-				if (!base.moveRobotToPaperPoint(serial, center)) return false;
-				if (!pickUpShape(serial, true)) return false;
-				if (!moveToTriangleStack(serial)) return false;
-				if (!pickUpShape(serial, false)) return false;
-				emptyFrameCount = 0;
+				if (!stackShape(serial, center)) return false;
 			} else if (shapes.RelativeSquarePoints.Count > 0) {
 				PaperPoint center = shapes.RelativeSquarePoints[0];
-				if (!moveRobotToPaperPoint(serial, center)) return false;
-				if (!pickUpShape(serial, true)) return false;
-				if (!moveToSquareStack(serial)) return false;
-				if (!pickUpShape(serial, false)) return false;
-				emptyFrameCount = 0;
+				if (!stackShape(serial, center)) return false;
 			} else {
 				emptyFrameCount++;
 				if (emptyFrameCount >= EmptyFramesNeeded) {
@@ -48,6 +40,15 @@ namespace RobotArmUR2.Robot_Programs {
 				}
 			}
 
+			return true;
+		}
+
+		private bool stackShape(RobotInterface serial, PaperPoint center) {
+			if (!moveRobotToPaperPoint(serial, center)) return false;
+			if (!pickUpShape(serial, true)) return false;
+			if (!moveToTriangleStack(serial)) return false;
+			if (!pickUpShape(serial, false)) return false;
+			emptyFrameCount = 0;
 			return true;
 		}
 
