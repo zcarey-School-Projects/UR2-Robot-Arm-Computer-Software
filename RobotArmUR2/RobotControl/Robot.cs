@@ -76,10 +76,13 @@ namespace RobotArmUR2 {
 			//programThread.Join();
 		}
 
-		bool keyCCWPressed = false;
-		bool keyCWPressed = false;
-		bool keyExtendPressed = false;
-		bool keyContractPressed = false;
+		#region Manual Key Events
+		private static readonly object keyEventLock = new object();
+
+		volatile bool keyCCWPressed = false;
+		volatile bool keyCWPressed = false;
+		volatile bool keyExtendPressed = false;
+		volatile bool keyContractPressed = false;
 		bool? lastMagnetState = null;
 		bool? lastServoState = null;
 
@@ -96,42 +99,45 @@ namespace RobotArmUR2 {
 		}
 
 		public void ManualControlKeyEvent(Keys key, bool pressed) {
-			if ((key == ApplicationSettings.Keybind_MagnetOn) && (lastMagnetState != true)) {
-				lastMagnetState = true;
-				Interface.SetManualMagnet(true);
-			} else if ((key == ApplicationSettings.Keybind_MagnetOff) && (lastMagnetState != false)) {
-				lastMagnetState = false;
-				Interface.SetManualMagnet(false);
-			}else if((key == ApplicationSettings.Keybind_RaiseServo) && (lastServoState != true)) {
-				lastServoState = true;
-				Interface.SetManualServo(true);
-			}else if((key == ApplicationSettings.Keybind_LowerServo) && (lastServoState != false)) {
-				lastServoState = false;
-				Interface.SetManualServo(false);
-			} else {
-				Rotation? setRotation = null;
-				Extension? setExtension = null;
+			lock (keyEventLock) {
+				if ((key == ApplicationSettings.Keybind_MagnetOn) && (lastMagnetState != true)) {
+					lastMagnetState = true;
+					Interface.SetManualMagnet(true);
+				} else if ((key == ApplicationSettings.Keybind_MagnetOff) && (lastMagnetState != false)) {
+					lastMagnetState = false;
+					Interface.SetManualMagnet(false);
+				} else if ((key == ApplicationSettings.Keybind_RaiseServo) && (lastServoState != true)) {
+					lastServoState = true;
+					Interface.SetManualServo(true);
+				} else if ((key == ApplicationSettings.Keybind_LowerServo) && (lastServoState != false)) {
+					lastServoState = false;
+					Interface.SetManualServo(false);
+				} else {
+					Rotation? setRotation = null;
+					Extension? setExtension = null;
 
-				if ((key == ApplicationSettings.Keybind_RotateCCW) && (pressed != keyCCWPressed)) {
-					keyCCWPressed = pressed;
-					setRotation = getManualControl(keyCCWPressed, keyCWPressed, Rotation.CCW, Rotation.CW);
-				}else if ((key == ApplicationSettings.Keybind_RotateCW) && (pressed != keyCWPressed)) {
-					keyCWPressed = pressed;
-					setRotation = getManualControl(keyCWPressed, keyCCWPressed, Rotation.CW, Rotation.CCW);
-				}else if((key == ApplicationSettings.Keybind_ExtendInward) && (pressed != keyContractPressed)) {
-					keyContractPressed = pressed;
-					setExtension = getManualControl(keyContractPressed, keyExtendPressed, Extension.Inward, Extension.Outward);
-				}else if((key == ApplicationSettings.Keybind_ExtendOutward) && (pressed != keyExtendPressed)) {
-					keyExtendPressed = pressed;
-					setExtension = getManualControl(keyExtendPressed, keyContractPressed, Extension.Outward, Extension.Inward);
+					if ((key == ApplicationSettings.Keybind_RotateCCW) && (pressed != keyCCWPressed)) {
+						keyCCWPressed = pressed;
+						setRotation = getManualControl(keyCCWPressed, keyCWPressed, Rotation.CCW, Rotation.CW);
+					} else if ((key == ApplicationSettings.Keybind_RotateCW) && (pressed != keyCWPressed)) {
+						keyCWPressed = pressed;
+						setRotation = getManualControl(keyCWPressed, keyCCWPressed, Rotation.CW, Rotation.CCW);
+					} else if ((key == ApplicationSettings.Keybind_ExtendInward) && (pressed != keyContractPressed)) {
+						keyContractPressed = pressed;
+						setExtension = getManualControl(keyContractPressed, keyExtendPressed, Extension.Inward, Extension.Outward);
+					} else if ((key == ApplicationSettings.Keybind_ExtendOutward) && (pressed != keyExtendPressed)) {
+						keyExtendPressed = pressed;
+						setExtension = getManualControl(keyExtendPressed, keyContractPressed, Extension.Outward, Extension.Inward);
+					}
+
+					if (setRotation != null) Interface.SetManualControl((Rotation)setRotation);
+					if (setExtension != null) Interface.SetManualControl((Extension)setExtension);
+
+					OnManualControlChanged(((setRotation != null) ? (Rotation)setRotation : Rotation.None), ((setExtension != null) ? (Extension)setExtension : Extension.None)); //Fire event
 				}
-
-				if(setRotation != null) Interface.SetManualControl((Rotation)setRotation);
-				if(setExtension != null) Interface.SetManualControl((Extension)setExtension);
-
-				OnManualControlChanged(((setRotation != null) ? (Rotation)setRotation : Rotation.None), ((setExtension != null) ? (Extension)setExtension : Extension.None)); //Fire event
 			}
 		}
+		#endregion
 
 	}
 }
