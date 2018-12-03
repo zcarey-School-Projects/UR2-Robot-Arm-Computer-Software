@@ -25,9 +25,7 @@ namespace RobotHelpers.InputHandling {
 			buffer = null;
 		}
 
-		protected override int getDelayMS() {
-			return 33;
-		}
+		protected override int DelayMS { get; } = 33;
 
 		protected override bool isNextFrameAvailable() {
 			return frameAvailable;

@@ -200,7 +200,7 @@ namespace RobotArmUR2
 		private void ThresholdValue_Scroll(object sender, EventArgs e) {
 			byte val = (byte)ThresholdValue.Value;
 			vision.GrayscaleThreshold = val;
-			ThresholdValueLabel.Text = "Threshold: " + val.ToString().PadLeft(3); //TODO save threshold
+			ThresholdValueLabel.Text = "Threshold: " + val.ToString().PadLeft(3);
 		}
 
 		private void robotToolStripMenuItem_Click(object sender, EventArgs e) {

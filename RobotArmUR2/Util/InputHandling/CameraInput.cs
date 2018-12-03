@@ -17,9 +17,7 @@ namespace RobotHelpers.InputHandling {
 			captureDevice = null;
 		}
 
-		protected override int getDelayMS() {
-			return 0;
-		}
+		protected override int DelayMS { get; } = 0;
 
 		protected override bool isNextFrameAvailable() {
 			if (captureDevice == null) return false;

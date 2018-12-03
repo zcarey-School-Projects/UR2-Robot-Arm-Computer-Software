@@ -47,6 +47,15 @@ namespace RobotHelpers.InputHandling {
 
 		protected abstract void onDispose();
 
+		///<summary>
+		/// <returns> The MS that should be waited until the next frame is returned 
+		/// <para>For images, this should return 67 (for 15fps, to keep computation low).</para>
+		/// <para>Cameras should also return 0, since they will auto-block when reading</para>
+		/// <para>Videos return the value saved. (15fps = 67ms, 30fps = 33ms, 60fps = 17ms)</para>
+		/// </returns>
+		/// </summary>
+		protected abstract int DelayMS { get; }
+
 		/// <summary>
 		/// Returns the path to the current working directory, i.e. Files in your solution.
 		/// </summary>
@@ -62,7 +71,7 @@ namespace RobotHelpers.InputHandling {
 		/// <returns>null if there was no frame to read.</returns>
 		public Image<Bgr, byte> GetFrame() {
 			//Block read until specified delay.
-			while(timer.ElapsedMilliseconds < (playing ? getDelayMS() : 67)) {
+			while(timer.ElapsedMilliseconds < (playing ? DelayMS : 67)) {
 				Thread.Sleep(1);
 			}
 			timer.Restart(); //Set elapsed time to 0.
@@ -90,15 +99,6 @@ namespace RobotHelpers.InputHandling {
 				return null;
 			}
 		}
-
-		///<summary>
-		/// <returns> The MS that should be waited until the next frame is returned 
-		/// <para>For images, this should return 67 (for 15fps, to keep computation low).</para>
-		/// <para>Cameras should also return 0, since they will auto-block when reading</para>
-		/// <para>Videos return the value saved. (15fps = 67ms, 30fps = 33ms, 60fps = 17ms)</para>
-		/// </returns>
-		/// </summary>
-		protected abstract int getDelayMS();
 
 		///<summary>
 		/// <returns>If there is a frame available to be read. 

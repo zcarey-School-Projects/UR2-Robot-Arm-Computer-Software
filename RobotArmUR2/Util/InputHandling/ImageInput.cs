@@ -17,9 +17,7 @@ namespace RobotHelpers.InputHandling {
 			imageBuffer = null;
 		}
 
-		protected override int getDelayMS() {
-			return 67; //TODO add to property
-		}
+		protected override int DelayMS { get; } = 67;
 
 		protected override bool isNextFrameAvailable() {
 			return (imageBuffer != null);
