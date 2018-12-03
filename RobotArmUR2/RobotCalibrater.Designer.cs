@@ -54,6 +54,7 @@
 			this.SquareLabel = new System.Windows.Forms.Label();
 			this.label7 = new System.Windows.Forms.Label();
 			this.label8 = new System.Windows.Forms.Label();
+			this.Save = new System.Windows.Forms.Button();
 			this.SuspendLayout();
 			// 
 			// label1
@@ -354,11 +355,22 @@
 			this.label8.TabIndex = 30;
 			this.label8.Text = "Square Stack";
 			// 
+			// Save
+			// 
+			this.Save.Location = new System.Drawing.Point(561, 230);
+			this.Save.Name = "Save";
+			this.Save.Size = new System.Drawing.Size(75, 23);
+			this.Save.TabIndex = 31;
+			this.Save.Text = "Save";
+			this.Save.UseVisualStyleBackColor = true;
+			this.Save.Click += new System.EventHandler(this.Save_Click);
+			// 
 			// RobotCalibrater
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(648, 265);
+			this.Controls.Add(this.Save);
 			this.Controls.Add(this.label8);
 			this.Controls.Add(this.label7);
 			this.Controls.Add(this.SquareLabel);
@@ -439,5 +451,6 @@
 		private System.Windows.Forms.Label SquareLabel;
 		private System.Windows.Forms.Label label7;
 		private System.Windows.Forms.Label label8;
+		private System.Windows.Forms.Button Save;
 	}
 }

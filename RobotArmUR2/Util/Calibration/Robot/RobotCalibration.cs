@@ -19,18 +19,17 @@ namespace RobotArmUR2 {
 			
 		}
 
-		public void SaveSettings() { 
+		public void SaveAllSettings() { 
 			BottomLeft.Save();
 			TopLeft.Save();
 			TopRight.Save();
 			BottomRight.Save();
 			TriangleStack.Save();
 			SquareStack.Save();
-
-			Properties.Settings.Default.Save();
+			ApplicationSettings.SaveSettings();
 		}
 
-		public void ResetToDefault() {
+		public void ResetAllToDefault() {
 			BottomLeft.ResetToDefault();
 			TopLeft.ResetToDefault();
 			TopRight.ResetToDefault();

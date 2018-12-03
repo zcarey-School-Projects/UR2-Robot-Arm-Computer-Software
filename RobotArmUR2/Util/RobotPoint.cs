@@ -19,6 +19,10 @@ namespace RobotArmUR2 {
 
 		//Deep copy
 		public RobotPoint(RobotPoint point) {
+			SetPoint(point);
+		}
+
+		public void SetPoint(RobotPoint point) {
 			Rotation = point.Rotation;
 			Extension = point.Extension;
 		}

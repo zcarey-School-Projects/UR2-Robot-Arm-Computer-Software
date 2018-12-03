@@ -13,11 +13,11 @@ namespace RobotArmUR2 {
 		}
 
 		private void RobotCalibrater_Load(object sender, EventArgs e) {
-			OnCalibrationChanged();
+			UpdateAllLabels();
 		}
 
 		private void RobotCalibrater_FormClosing(object sender, FormClosingEventArgs e) {
-			ApplicationSettings.RobotCalibration.SaveSettings();
+			//ApplicationSettings.RobotCalibration.SaveAllSettings();
 		}
 
 		private void RobotCalibrater_KeyDown(object sender, KeyEventArgs e) {
@@ -27,24 +27,12 @@ namespace RobotArmUR2 {
 		private void RobotCalibrater_KeyUp(object sender, KeyEventArgs e) {
 			robot.ManualControlKeyEvent(e.KeyCode, false);
 		}
-		
-		private void BLMoveTo_Click(object sender, EventArgs e) {
-			robot.Interface.MoveTo(ApplicationSettings.RobotCalibration.BottomLeft);
+
+		private void updateLabel(Label label, RobotPoint pos) {
+			label.Text = "(" + pos.Rotation.ToString("N2") + (char)248 + ", " + pos.Extension.ToString("N2") + "mm";
 		}
 
-		private void TLMoveTo_Click(object sender, EventArgs e) {
-			robot.Interface.MoveTo(ApplicationSettings.RobotCalibration.TopLeft);
-		}
-
-		private void TRMoveTo_Click(object sender, EventArgs e) {
-			robot.Interface.MoveTo(ApplicationSettings.RobotCalibration.TopRight);
-		}
-
-		private void BRMoveTo_Click(object sender, EventArgs e) {
-			robot.Interface.MoveTo(ApplicationSettings.RobotCalibration.BottomRight);
-		}
-
-		public void OnCalibrationChanged() { //TODO what 7 things are calling this?
+		public void UpdateAllLabels() {
 			updateLabel(BLLabel, ApplicationSettings.RobotCalibration.BottomLeft);
 			updateLabel(TLLabel, ApplicationSettings.RobotCalibration.TopLeft);
 			updateLabel(TRLabel, ApplicationSettings.RobotCalibration.TopRight);
@@ -53,131 +41,64 @@ namespace RobotArmUR2 {
 			updateLabel(SquareLabel, ApplicationSettings.RobotCalibration.SquareStack);
 		}
 
-		private void updateLabel(Label label, RobotPoint pos) {
-			//BeginInvoke(new Action(() => {
-				label.Text = "(" + pos.Rotation.ToString("N2") + (char)248 + ", " + pos.Extension.ToString("N2") + "mm)";
-			//}));
-		}
+		#region Move-to buttons
+		private void BLMoveTo_Click(object sender, EventArgs e) { robot.Interface.MoveTo(ApplicationSettings.RobotCalibration.BottomLeft); }
+		private void TLMoveTo_Click(object sender, EventArgs e) { robot.Interface.MoveTo(ApplicationSettings.RobotCalibration.TopLeft); }
+		private void TRMoveTo_Click(object sender, EventArgs e) { robot.Interface.MoveTo(ApplicationSettings.RobotCalibration.TopRight); }
+		private void BRMoveTo_Click(object sender, EventArgs e) { robot.Interface.MoveTo(ApplicationSettings.RobotCalibration.BottomRight); }
+		private void TriangleMoveTo_Click(object sender, EventArgs e) { robot.Interface.MoveTo(ApplicationSettings.RobotCalibration.TriangleStack); }
+		private void SquareMoveTo_Click(object sender, EventArgs e) { robot.Interface.MoveTo(ApplicationSettings.RobotCalibration.SquareStack); }
+		#endregion
 
-		private void calibrateClicked(RobotCalibrationPoint pt) {
+		private void calibrateClicked(Label label, RobotCalibrationPoint pt) {
 			if (pt == null) return;
 			RobotPoint pos = robot.Interface.GetPosition();
 			if (pos != null) {
-				pt.Rotation = pos.Rotation;
-				pt.Extension = pos.Extension; //TODO put inside class
-				OnCalibrationChanged();
+				pt.SetPoint(pos);
+				updateLabel(label, pt);
 			} else {
 				MessageBox.Show("Could not retrieve position.");
 			}
 			
 		}
 
-		private void BLCalibrate_Click(object sender, EventArgs e) {
-			calibrateClicked(ApplicationSettings.RobotCalibration.BottomLeft);
-		}
+		#region Calibrate buttons
+		private void BLCalibrate_Click(object sender, EventArgs e) { calibrateClicked(BLLabel, ApplicationSettings.RobotCalibration.BottomLeft); }
+		private void BRCalibrate_Click(object sender, EventArgs e) { calibrateClicked(BRLabel, ApplicationSettings.RobotCalibration.BottomRight); }
+		private void TLCalibrate_Click(object sender, EventArgs e) { calibrateClicked(TLLabel, ApplicationSettings.RobotCalibration.TopLeft); }
+		private void TRCalibrate_Click(object sender, EventArgs e) { calibrateClicked(TRLabel, ApplicationSettings.RobotCalibration.TopRight); }
+		private void TriangleCalibrate_Click(object sender, EventArgs e) { calibrateClicked(TriangleLabel, ApplicationSettings.RobotCalibration.TriangleStack); }
+		private void SquareCalibrate_Click(object sender, EventArgs e) { calibrateClicked(SquareLabel, ApplicationSettings.RobotCalibration.SquareStack); }
+		#endregion
 
-		private void BRCalibrate_Click(object sender, EventArgs e) {
-			calibrateClicked(ApplicationSettings.RobotCalibration.BottomRight);
-		}
+		private static bool confirmReset() { return MessageBox.Show("Are you sure?", "Confirmation", MessageBoxButtons.YesNo) == DialogResult.Yes; }
 
-		private void TLCalibrate_Click(object sender, EventArgs e) {
-			calibrateClicked(ApplicationSettings.RobotCalibration.TopLeft);
-		}
-
-		private void TRCalibrate_Click(object sender, EventArgs e) {
-			calibrateClicked(ApplicationSettings.RobotCalibration.TopRight);
-		}
-
-		private static bool confirmReset() {
-			return MessageBox.Show("Are you sure?", "Confirmation", MessageBoxButtons.YesNo) == DialogResult.Yes;
-		}
-
-		private void resetPoint1() {
-			ApplicationSettings.RobotCalibration.BottomLeft.ResetToDefault();
-		}
-
-		private void resetPoint2() {
-			ApplicationSettings.RobotCalibration.TopLeft.ResetToDefault();
-		}
-		//TODO naming
-		private void resetPoint3() {
-			ApplicationSettings.RobotCalibration.TopRight.ResetToDefault();
-		}
-
-		private void resetPoint4() {
-			ApplicationSettings.RobotCalibration.BottomRight.ResetToDefault();
-		}
-
-		private void resetTriangle() {
-			ApplicationSettings.RobotCalibration.TriangleStack.ResetToDefault();
-		}
-
-		private void resetSquare() {
-			ApplicationSettings.RobotCalibration.SquareStack.ResetToDefault();
-		}
-
-		private void ResetBL_Click(object sender, EventArgs e) {
-			if (confirmReset()) {
-				resetPoint1();
-				OnCalibrationChanged();
+		private void resetClicked(Label label, RobotCalibrationPoint pt) {
+			if(confirmReset()) {
+				pt.ResetToDefault();
+				updateLabel(label, pt);
 			}
 		}
 
-		private void ResetBR_Click(object sender, EventArgs e) {
-			if (confirmReset()) {
-				resetPoint4();
-				OnCalibrationChanged();
-			}
-		}
-
-		private void ResetTL_Click(object sender, EventArgs e) {
-			if (confirmReset()) {
-				resetPoint2();
-				OnCalibrationChanged();
-			}
-		}
-
-		private void ResetTR_Click(object sender, EventArgs e) {
-			if (confirmReset()) {
-				resetPoint3();
-				OnCalibrationChanged();
-			}
-		}
+		#region Reset Buttons
+		private void ResetBL_Click(object sender, EventArgs e) { resetClicked(BLLabel, ApplicationSettings.RobotCalibration.BottomLeft); }
+		private void ResetBR_Click(object sender, EventArgs e) { resetClicked(BRLabel, ApplicationSettings.RobotCalibration.BottomRight); }
+		private void ResetTL_Click(object sender, EventArgs e) { resetClicked(TLLabel, ApplicationSettings.RobotCalibration.TopLeft); }
+		private void ResetTR_Click(object sender, EventArgs e) { resetClicked(TRLabel, ApplicationSettings.RobotCalibration.TopRight); }
+		private void ResetTriangle_Click(object sender, EventArgs e) { resetClicked(TriangleLabel, ApplicationSettings.RobotCalibration.TriangleStack); }
+		private void ResetSquare_Click(object sender, EventArgs e) { resetClicked(SquareLabel, ApplicationSettings.RobotCalibration.SquareStack); }
+		#endregion
 
 		private void ResetAll_Click(object sender, EventArgs e) {
 			if(confirmReset()) {
-				resetPoint1();
-				resetPoint2();
-				resetPoint3();
-				resetPoint4();
-				resetTriangle();
-				resetSquare();
-				OnCalibrationChanged();
+				ApplicationSettings.RobotCalibration.ResetAllToDefault();
+				UpdateAllLabels();
 			}
 		}
 
-		private void TriangleMoveTo_Click(object sender, EventArgs e) {
-			robot.Interface.MoveTo(ApplicationSettings.RobotCalibration.TriangleStack);
-		}
-
-		private void SquareMoveTo_Click(object sender, EventArgs e) {
-			robot.Interface.MoveTo(ApplicationSettings.RobotCalibration.SquareStack);
-		}
-
-		private void TriangleCalibrate_Click(object sender, EventArgs e) {
-			calibrateClicked(ApplicationSettings.RobotCalibration.TriangleStack);
-		}
-
-		private void SquareCalibrate_Click(object sender, EventArgs e) {
-			calibrateClicked(ApplicationSettings.RobotCalibration.SquareStack);
-		}
-
-		private void ResetTriangle_Click(object sender, EventArgs e) {
-			resetTriangle();
-		}
-
-		private void ResetSquare_Click(object sender, EventArgs e) {
-			resetSquare();
+		private void Save_Click(object sender, EventArgs e) {
+			ApplicationSettings.RobotCalibration.SaveAllSettings();
+			MessageBox.Show("Successfully saved."); //The cake is a lie, just let user know buttons worked.
 		}
 	}
 }
