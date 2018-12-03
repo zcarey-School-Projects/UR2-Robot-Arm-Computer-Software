@@ -34,6 +34,7 @@ namespace RobotArmUR2 {
 		public static Keys Keybind_ExtendOutward { get; } = Keys.W;
 		public static Keys Keybind_ExtendInward { get; } = Keys.S;
 		public static Keys Keybind_LowerServo { get; } = Keys.Q;
+		public static Keys Keybind_RaiseServo { get; } = Keys.E;
 		public static Keys Keybind_MagnetOn { get; } = Keys.M;
 		public static Keys Keybind_MagnetOff { get; } = Keys.N;
 		#endregion

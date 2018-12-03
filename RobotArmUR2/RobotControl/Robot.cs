@@ -82,34 +82,34 @@ namespace RobotArmUR2 {
 		bool keyContractPressed = false;
 
 		public void ManualControlKeyEvent(Keys key, bool pressed) {
-			if (key == ApplicationSettings.Key_MagnetOn) {
+			if (key == ApplicationSettings.Keybind_MagnetOn) {
 				Interface.SetManualMagnet(true);
-			} else if (key == ApplicationSettings.Key_MagnetOff) {
+			} else if (key == ApplicationSettings.Keybind_MagnetOff) {
 				Interface.SetManualMagnet(false);
-			}else if(key == ApplicationSettings.Key_RaiseServo) {
+			}else if(key == ApplicationSettings.Keybind_RaiseServo) {
 				Interface.SetManualServo(true);
-			}else if(key == ApplicationSettings.Key_LowerServo) {
+			}else if(key == ApplicationSettings.Keybind_LowerServo) {
 				Interface.SetManualServo(false);
 			} else {
 				Rotation? setRotation = null;
 				Extension? setExtension = null;
 
-				if (key == ApplicationSettings.Key_RotateCCW) { //TODO cleanup
+				if (key == ApplicationSettings.Keybind_RotateCCW) { //TODO cleanup
 					keyCCWPressed = pressed;
 					if (keyCCWPressed) setRotation = Rotation.CCW;
 					else if (keyCWPressed) setRotation = Rotation.CW;
 					else setRotation = Rotation.None;
-				} else if (key == ApplicationSettings.Key_RotateCW) {
+				} else if (key == ApplicationSettings.Keybind_RotateCW) {
 					keyCWPressed = pressed;
 					if (keyCWPressed) setRotation = Rotation.CW;
 					else if (keyCCWPressed) setRotation = Rotation.CCW;
 					else setRotation = Rotation.None;
-				} else if (key == ApplicationSettings.Key_ExtendOutward) {
+				} else if (key == ApplicationSettings.Keybind_ExtendOutward) {
 					keyExtendPressed = pressed;
 					if (keyExtendPressed) setExtension = Extension.Outward;
 					else if (keyContractPressed) setExtension = Extension.Inward;
 					else setExtension = Extension.None;
-				} else if (key == ApplicationSettings.Key_ExtendInward) {
+				} else if (key == ApplicationSettings.Keybind_ExtendInward) {
 					keyContractPressed = pressed;
 					if (keyContractPressed) setExtension = Extension.Inward;
 					else if (keyExtendPressed) setExtension = Extension.Outward;
