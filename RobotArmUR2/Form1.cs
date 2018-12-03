@@ -101,7 +101,7 @@ namespace RobotArmUR2
 		}
 
 		private void goToHomeToolStripMenuItem_Click(object sender, EventArgs e) {
-			robot.RunProgram(new ReturnHomeProgram(robot));
+			robot.RunProgram(new ReturnHomeProgram());
 		}
 
 		private void paperPositionToolStripMenuItem_Click(object sender, EventArgs e) {
@@ -176,7 +176,7 @@ namespace RobotArmUR2
 		}
 		
 		private void Stack_Click(object sender, EventArgs e) {
-			if(!robot.RunProgram(new StackingProgram(robot, vision, paperCalibrater))) {
+			if(!robot.RunProgram(new StackingProgram(vision))) {
 				robot.CancelProgram();
 			}
 		}

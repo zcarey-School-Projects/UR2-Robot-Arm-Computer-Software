@@ -2,16 +2,16 @@
 namespace RobotArmUR2.Robot_Programs {
 	public class ReturnHomeProgram : RobotProgram {
 
-		public ReturnHomeProgram(Robot robot) : base(robot) {
+		public ReturnHomeProgram() {
 
 		}
 
-		public override void Initialize(RobotInterface serial) {
-			serial.ReturnHome();
+		public override bool Initialize(RobotInterface serial) {
+			return true;
 		}
 
 		public override bool ProgramStep(RobotInterface serial) {
-			return false;
+			return serial.ReturnHome();
 		}
 
 		public override void ProgramCancelled(RobotInterface serial) {

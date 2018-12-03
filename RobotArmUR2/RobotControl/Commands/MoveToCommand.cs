@@ -23,7 +23,7 @@ namespace RobotArmUR2.RobotControl.Commands {
 		}
 
 		public virtual object OnSerialResponse(SerialCommunicator serial, string[] parameters) {
-			return null;
+			return true;
 		}
 	}
 }

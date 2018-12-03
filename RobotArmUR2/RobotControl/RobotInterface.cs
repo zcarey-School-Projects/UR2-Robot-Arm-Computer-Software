@@ -177,10 +177,15 @@ namespace RobotArmUR2 { //TODO fix namespaces
 			}
 		}
 
-		public void StopAll() {
-			serial.SendCommand(new EndMoveCommand());
+		private bool sendBasicCommand(SerialCommand command) {
+			object response = serial.SendCommand(command);
+			if ((response != null) && (response is bool) && ((bool)response == true)) return true;
+			else return false;
 		}
 
+		public bool StopAll() {
+			return sendBasicCommand(new EndMoveCommand());
+		}
 
 		public RobotPoint GetPosition() {
 			object response = serial.SendCommand(new GetPositionCommand());
@@ -191,32 +196,32 @@ namespace RobotArmUR2 { //TODO fix namespaces
 			}
 		}
 
-		public void ReturnHome() {
-			serial.SendCommand(new GoToHomeCommand());
+		public bool ReturnHome() {
+			return sendBasicCommand(new GoToHomeCommand());
 		}
 
-		public void MoveServo(bool raised) {
-			serial.SendCommand(new MoveServoCommand(raised));
+		public bool MoveServo(bool raised) {
+			return sendBasicCommand(new MoveServoCommand(raised));
 		}
 
-		public void RaiseServo() { MoveServo(true); }
-		public void LowerServo() { MoveServo(false); }
+		public bool RaiseServo() { return MoveServo(true); }
+		public bool LowerServo() { return MoveServo(false); }
 
-		public void PowerMagnet(bool IsOn) {
-			serial.SendCommand(new SetMagnetCommand(IsOn));
+		public bool PowerMagnet(bool IsOn) {
+			return sendBasicCommand(new SetMagnetCommand(IsOn));
 		}
 
-		public void PowerMagnetOn() { PowerMagnet(true); }
-		public void PowerMagnetOff() { PowerMagnet(false); }
+		public bool PowerMagnetOn() { return PowerMagnet(true); }
+		public bool PowerMagnetOff() { return PowerMagnet(false); }
 
-		public void MoveTo(RobotPoint position) {
-			if (position == null) return;
-			serial.SendCommand(new MoveToCommand(position));
+		public bool MoveTo(RobotPoint position) {
+			if (position == null) return false;
+			return sendBasicCommand(new MoveToCommand(position));
 		}
 
-		public void MoveToWait(RobotPoint position) {
-			if (position == null) return;
-			serial.SendCommand(new MoveToWaitCommand(position));
+		public bool MoveToWait(RobotPoint position) {
+			if (position == null) return false;
+			return sendBasicCommand(new MoveToWaitCommand(position));
 		}
 	}
 

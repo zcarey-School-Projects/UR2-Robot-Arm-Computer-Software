@@ -46,19 +46,23 @@ namespace RobotArmUR2 {
 			Thread.Sleep(500); //Give system some settling time
 
 			Console.WriteLine("Initializing...");
-			program.Initialize(Interface);
-			Console.WriteLine("Initialize Finished.\nRunning program...");
-			bool forceCancel = false; 
-			while (true) {
-				lock (programLock) {
-					if (endProgram) forceCancel = true;
+			if (program.Initialize(Interface)) {
+				Console.WriteLine("Initialize Finished.\nRunning program...");
+				bool forceCancel = false;
+				while (true) {
+					lock (programLock) {
+						if (endProgram) forceCancel = true;
+					}
+					if (forceCancel) {
+						Console.WriteLine("Force exiting...");
+						program.ProgramCancelled(Interface);
+						break;
+					} else if (!program.ProgramStep(Interface)) break;
 				}
-				if (forceCancel) {
-					Console.WriteLine("Force exiting...");
-					program.ProgramCancelled(Interface);
-					break;
-				} else if (!program.ProgramStep(Interface)) break;
+			} else {
+				Console.WriteLine("Initialize failed.");
 			}
+			
 			Console.WriteLine("Program finished. \nExiting...");
 
 			//End program

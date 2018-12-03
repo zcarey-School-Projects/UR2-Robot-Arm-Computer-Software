@@ -24,7 +24,7 @@ namespace RobotArmUR2.RobotControl.Commands {
 
 		public SetPrescaleCommand(byte BasePrescale, byte CarriagePrescale) : this((byte?)BasePrescale, (byte?)CarriagePrescale) { }
 
-		public virtual string GetCommand() {
+		public string GetCommand() {
 			return "Prescale";
 		}
 
@@ -35,12 +35,12 @@ namespace RobotArmUR2.RobotControl.Commands {
 			return args.ToArray();
 		}
 
-		public virtual string GetName() {
+		public string GetName() {
 			return "Set Prescale Command";
 		}
 
-		public virtual object OnSerialResponse(SerialCommunicator serial, string[] parameters) {
-			return null;
+		public object OnSerialResponse(SerialCommunicator serial, string[] parameters) {
+			return true;
 		}
 	}
 }

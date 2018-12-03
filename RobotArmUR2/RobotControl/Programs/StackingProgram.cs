@@ -8,43 +8,38 @@ using System.Threading;
 namespace RobotArmUR2.Robot_Programs {
 	public class StackingProgram : RobotProgram {
 
-		private Robot robot;
 		private Vision vision;
-		private PaperCalibrater paper;
 
 		private int emptyFrameCount = 0;
 		private const int EmptyFramesNeeded = 20;
 
-		public StackingProgram(Robot robot, Vision vision, PaperCalibrater paper) : base(robot){
-			this.robot = robot;
+		public StackingProgram(Vision vision) {
 			this.vision = vision;
-			this.paper = paper;
 		}
 
-		public override void Initialize(RobotInterface serial) {
-			//serial.MoveToAndWait(5, 0);
-			serial.ReturnHome();
-			serial.RaiseServo();
-			serial.PowerMagnetOff();
+		public override bool Initialize(RobotInterface serial) {
+			if (!serial.RaiseServo()) return false;
+			if (!serial.PowerMagnetOff()) return false;
+			if (!serial.ReturnHome()) return false;
 			Thread.Sleep(1000);
+			return true;
 		}
-		
+		//TODO clean program
 		public override bool ProgramStep(RobotInterface serial) {
-			//vision.getShapeLists(out triangles, out boxes);
 			DetectedShapes shapes = vision.DetectedShapes; 
 			if (shapes.RelativeTrianglePoints.Count > 0) {
 				PaperPoint center = shapes.RelativeTrianglePoints[0];
-				base.moveRobotToPaperPoint(serial, center);
-				pickUpShape(serial, true);
-				base.moveToTriangleStack(serial);
-				pickUpShape(serial, false);
+				if (!base.moveRobotToPaperPoint(serial, center)) return false;
+				if (!pickUpShape(serial, true)) return false;
+				if (!moveToTriangleStack(serial)) return false;
+				if (!pickUpShape(serial, false)) return false;
 				emptyFrameCount = 0;
 			} else if (shapes.RelativeSquarePoints.Count > 0) {
 				PaperPoint center = shapes.RelativeSquarePoints[0];
-				moveRobotToPaperPoint(serial, center);
-				pickUpShape(serial, true);
-				base.moveToSquareStack(serial);
-				pickUpShape(serial, false);
+				if (!moveRobotToPaperPoint(serial, center)) return false;
+				if (!pickUpShape(serial, true)) return false;
+				if (!moveToSquareStack(serial)) return false;
+				if (!pickUpShape(serial, false)) return false;
 				emptyFrameCount = 0;
 			} else {
 				emptyFrameCount++;
@@ -56,14 +51,16 @@ namespace RobotArmUR2.Robot_Programs {
 			return true;
 		}
 
-		private void pickUpShape(RobotInterface serial, bool magnetOn) {
+		private bool pickUpShape(RobotInterface serial, bool magnetOn) {
 			Thread.Sleep(1000);
-			serial.LowerServo();
+			if (!serial.LowerServo()) return false;
 			Thread.Sleep(1000);
-			serial.PowerMagnet(magnetOn);
+			if(!serial.PowerMagnet(magnetOn)) return false;
 			Thread.Sleep(1000);
-			serial.RaiseServo();
+			if (!serial.RaiseServo()) return false;
 			Thread.Sleep(1000);
+
+			return true;
 		}
 
 		public override void ProgramCancelled(RobotInterface serial) {
