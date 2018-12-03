@@ -72,6 +72,26 @@ namespace RobotArmUR2 {
 			picture.Image = img;
 		}
 
+		private PaperPoint getClosestPaperPoint(Point mousePoint, double minimumDistance = double.MaxValue) {
+			Point? hit = picture.GetImagePoint(mousePoint);
+			if (hit == null) return null;
+
+			double closest = double.MaxValue;
+			Point relative = (Point)hit;
+			Size imgSize = picture.Image.Size;
+			PaperPoint closestPoint = null;
+			foreach (PaperPoint point in ApplicationSettings.PaperCalibration.ToArray()) {
+				Point pos = point.GetScreenCoord(imgSize);
+				double distance = Math.Sqrt(Math.Pow(relative.X - pos.X, 2) + Math.Pow(relative.Y - pos.Y, 2));
+				if ((distance < closest) && (distance <= minimumDistance)) {
+					closest = distance;
+					closestPoint = point;
+				}
+			}
+
+			return closestPoint;
+		}
+
 		private void PaperPicture_MouseMove(object sender, MouseEventArgs e) {
 			if (draggingPoint != null) {
 				PointF? hit = picture.GetRelativeImagePoint(new Point(e.X, e.Y));
@@ -80,21 +100,8 @@ namespace RobotArmUR2 {
 					draggingPoint.Y = ((PointF)hit).Y;
 				}
 			} else {
-				bool showHand = false;
-				 //TODO for adaptive circle, use relative points instead
-				Point? hit = picture.GetImagePoint(new Point(e.X, e.Y)); //TODO since other method uses similar code, put in a method?
-				if (hit != null) {
-					Point relative = (Point)hit;
-					foreach (Point point in ApplicationSettings.PaperCalibration.ToArray(picture.Image.Size)) {
-						double distance = Math.Sqrt(Math.Pow(relative.X - point.X, 2) + Math.Pow(relative.Y - point.Y, 2));
-						if (distance <= 11) {
-							showHand = true;
-							break;
-						}
-					}
-				}
-
-				PaperPicture.Cursor = (showHand ? Cursors.Hand : Cursors.Default);
+				PaperPoint closestPoint = getClosestPaperPoint(new Point(e.X, e.Y), 11);
+				PaperPicture.Cursor = ((closestPoint != null) ? Cursors.Hand : Cursors.Default);
 			}
 		}
 
@@ -104,21 +111,7 @@ namespace RobotArmUR2 {
 
 		private void PaperPicture_MouseDown(object sender, MouseEventArgs e) {
 			if (draggingPoint == null) {
-				Point? hit = picture.GetImagePoint(new Point(e.X, e.Y));
-				if (hit == null) return; 
-
-				double closest = double.MaxValue;
-				Point relative = (Point)hit;
-				Size imgSize = picture.Image.Size;
-				foreach(PaperPoint point in ApplicationSettings.PaperCalibration.ToArray()) {
-					Point pos = point.GetScreenCoord(imgSize);
-					double distance = Math.Sqrt(Math.Pow(relative.X - pos.X, 2) + Math.Pow(relative.Y - pos.Y, 2));
-					if((distance < closest) && (distance <= 11)) {
-						closest = distance;
-						draggingPoint = point;
-					}
-				}
-				
+				draggingPoint = getClosestPaperPoint(new Point(e.X, e.Y), 11);
 				if (draggingPoint != null) PaperPicture.Cursor = Cursors.Default;
 			}
 		}
