@@ -5,29 +5,38 @@ using System.Windows.Forms;
 
 namespace RobotArmUR2 {
 	public static class ApplicationSettings {
-		//TODO make properties to prevent editing values.
 
-		//Visuals
-		public static readonly Bgr TriangleHighlightColor = new Bgr(Color.Yellow);
-		public static readonly Bgr SquareHighlightColor = new Bgr(Color.Red);
-		public const int ShapeHighlightThickness = 3;
+		#region Visuals
+		private static Bgr trigColor = new Bgr(Color.Yellow);
+		public static Bgr TriangleHighlightColor { get => new Bgr(trigColor.Blue, trigColor.Green, trigColor.Red); }
 
-		public static readonly Bgr PaperROIMaskColor = new Bgr(42, 240, 247);
-		public const float PaperROIMaskTransparency = 0.2f;
+		private static Bgr squareColor = new Bgr(Color.Red);
+		public static Bgr SquareHighlightColor { get => new Bgr(squareColor.Blue, squareColor.Green, squareColor.Red); }
 
-		public static readonly Bgr PaperROICircleColor = new Bgr(42, 240, 247);
-		public const int PaperROICircleThickness = 3;
-		public const int PaperROICircleRadius = 10;
+		public static int ShapeHighlightThickness { get; } = 3;
 
-		//Keybindings
-		public const Keys Key_RotateCCW = Keys.A;
-		public const Keys Key_RotateCW = Keys.D;
-		public const Keys Key_ExtendOutward = Keys.W;
-		public const Keys Key_ExtendInward = Keys.S;
-		public const Keys Key_RaiseServo = Keys.E;
-		public const Keys Key_LowerServo = Keys.Q;
-		public const Keys Key_MagnetOn = Keys.M;
-		public const Keys Key_MagnetOff = Keys.N;
+		private static Bgr paperMaskColor = new Bgr(42, 240, 247);
+		public static Bgr PaperROIMaskColor { get => new Bgr(paperMaskColor.Blue, paperMaskColor.Green, paperMaskColor.Red); }
+
+		public static float PaperROIMaskTransparency { get; } = 0.2f;
+
+		private static Bgr paperCircleColor = new Bgr(42, 240, 247);
+		public static Bgr PaperROICircleColor { get => new Bgr(paperCircleColor.Blue, paperCircleColor.Green, paperCircleColor.Red); }
+
+		public static int PaperROICircleThickness { get; } = 3;
+
+		public static int PaperROICircleRadius { get; } = 10;
+		#endregion
+
+		#region Keybindings
+		public static Keys Keybind_RotateCCW { get; } = Keys.A;
+		public static Keys Keybind_RotateCW { get; } = Keys.D;
+		public static Keys Keybind_ExtendOutward { get; } = Keys.W;
+		public static Keys Keybind_ExtendInward { get; } = Keys.S;
+		public static Keys Keybind_LowerServo { get; } = Keys.Q;
+		public static Keys Keybind_MagnetOn { get; } = Keys.M;
+		public static Keys Keybind_MagnetOff { get; } = Keys.N;
+		#endregion
 
 		public static readonly PaperCalibration PaperCalibration = new PaperCalibration();
 		public static readonly RobotCalibration RobotCalibration = new RobotCalibration();
