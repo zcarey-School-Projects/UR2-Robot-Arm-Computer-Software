@@ -20,12 +20,8 @@ namespace RobotArmUR2.VisionProcessing {
 		}
 
 		//Warps the ThresholdImage so the calibrated corners take up the entire image.
-		public static Image<TColor, TDepth> GetWarpedImage<TColor, TDepth>(Image<TColor, TDepth> image, PaperCalibration paperCalibration) where TColor : struct, IColor where TDepth : new() { //TODO follow format of other methods
-			PointF[] paperPoints = new PointF[4]; //TODO add a "Calibration.ToScreenCoordArray(Size);"
-			paperPoints[0] = paperCalibration.BottomLeft.GetScreenCoord(image.Size); //Yay implicit operators :)
-			paperPoints[1] = paperCalibration.TopLeft.GetScreenCoord(image.Size);
-			paperPoints[2] = paperCalibration.TopRight.GetScreenCoord(image.Size);
-			paperPoints[3] = paperCalibration.BottomRight.GetScreenCoord(image.Size);
+		public static Image<TColor, TDepth> GetWarpedImage<TColor, TDepth>(Image<TColor, TDepth> image, PaperCalibration paperCalibration) where TColor : struct, IColor where TDepth : new() {
+			PointF[] paperPoints = paperCalibration.ToArray(image.Size); //BottomLeft, TopLeft, TopRight, BottomRight
 			Image<TColor, TDepth> warpedImage = new Image<TColor, TDepth>(550, 425); //Should be close to aspect ratio of a piece of 8.5 x 11 paper.
 			PointF[] targetPoints = new PointF[] { new PointF(0, warpedImage.Height - 1), new PointF(0, 0), new PointF(warpedImage.Width - 1, 0), new PointF(warpedImage.Width - 1, warpedImage.Height - 1) };
 

@@ -29,12 +29,32 @@ namespace RobotArmUR2.VisionProcessing {
 			BottomRight.ResetToDefault();
 		}
 
+		/// <summary>
+		/// Puts paper points into an array.
+		/// Returns {BottomLeft, TopLeft, TopRight, BottomRight}
+		/// </summary>
+		/// <returns></returns>
 		public PaperPoint[] ToArray() {
 			return new PaperPoint[] {
 				BottomLeft,
 				TopLeft,
 				TopRight,
 				BottomRight
+			};
+		}
+
+		/// <summary>
+		/// Returns image coordinates in array format. Same as calling GetScreenCoord(size);
+		/// Returns {BottomLeft, TopLeft, TopRight, BottomRight}
+		/// </summary>
+		/// <param name="size"></param>
+		/// <returns></returns>
+		public PointF[] ToArray(Size size) {
+			return new PointF[]{
+				BottomLeft.GetScreenCoord(size),
+				TopLeft.GetScreenCoord(size),
+				TopRight.GetScreenCoord(size),
+				BottomRight.GetScreenCoord(size)
 			};
 		}
 
