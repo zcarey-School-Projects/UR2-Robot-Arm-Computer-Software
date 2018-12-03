@@ -31,17 +31,17 @@ namespace RobotArmUR2.Robot_Programs {
 		
 		public override bool ProgramStep(RobotInterface serial) {
 			//vision.getShapeLists(out triangles, out boxes);
-			DetectedShapes shapes = vision.DetectedShapes; //TODO add "GetPaperPoints"
+			DetectedShapes shapes = vision.DetectedShapes; 
 			if (shapes.RelativeTrianglePoints.Count > 0) {
 				PaperPoint center = shapes.RelativeTrianglePoints[0];
-				base.moveToPoint(serial, center);
+				base.moveRobotToPaperPoint(serial, center);
 				pickUpShape(serial, true);
 				base.moveToTriangleStack(serial);
 				pickUpShape(serial, false);
 				emptyFrameCount = 0;
 			} else if (shapes.RelativeSquarePoints.Count > 0) {
 				PaperPoint center = shapes.RelativeSquarePoints[0];
-				moveToPoint(serial, center); //TODO need to rename function to something more fitting
+				moveRobotToPaperPoint(serial, center);
 				pickUpShape(serial, true);
 				base.moveToSquareStack(serial);
 				pickUpShape(serial, false);

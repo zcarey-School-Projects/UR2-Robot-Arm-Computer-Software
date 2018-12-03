@@ -214,7 +214,7 @@ namespace RobotArmUR2 { //TODO fix namespaces
 			serial.SendCommand(new MoveToCommand(position));
 		}
 
-		public void MoveToWait(RobotPoint position) {//TODO command doesnt work
+		public void MoveToWait(RobotPoint position) {
 			if (position == null) return;
 			serial.SendCommand(new MoveToWaitCommand(position));
 		}

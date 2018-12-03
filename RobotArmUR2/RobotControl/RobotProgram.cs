@@ -43,7 +43,7 @@ namespace RobotArmUR2 {
 			return new RobotPoint((float)targetAngle, (float)targetDistance);
 		}
 
-		protected void moveToPoint(RobotInterface serial, PaperPoint relativePaperCoords) {
+		protected void moveRobotToPaperPoint(RobotInterface serial, PaperPoint relativePaperCoords) {
 			RobotPoint targetCoords = CalculateRobotCoordinates(Robot.Calibration, relativePaperCoords);
 			Console.WriteLine("Target: [{0}°, {1}mm]\n", targetCoords.Rotation, targetCoords.Extension);
 

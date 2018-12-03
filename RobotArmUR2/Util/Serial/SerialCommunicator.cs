@@ -34,7 +34,6 @@ namespace Util.Serial {
 
 		public void close() {
 			lock (serialLock) {
-				Console.WriteLine("SERIAL CLOSED");//TODO REMOVE after testing
 				serial.Close(); //Also throws a closeEvent?
 				//OnConnectionChanged(false, null);
 			}
@@ -107,8 +106,8 @@ namespace Util.Serial {
 					serial.WriteLine("<" + command + ";" + commandArgs); //Since we are using WriteLine, the ">" character gets written automatically
 					string response = serial.ReadLine();
 					if (!response.StartsWith("<" + command + ";")) {
-						//TODO implement. close serial, cancel command
-						throw new NotImplementedException();
+						close(); 
+						return null;
 					}
 					string paramString = response.Substring(command.Length + 2);
 					paramString = paramString.TrimEnd(',');
@@ -161,7 +160,7 @@ namespace Util.Serial {
 			lock (serialLock) {
 				if (!serial.IsOpen) return null;
 				try {
-					int data = serial.ReadByte(); //TODO remove if there are no errors //TODO System.UnauthorizedAccessException
+					int data = serial.ReadByte(); 
 					if (data < 0) throw new EndOfStreamException("Well, not sure what to do now.");
 					return (byte)data;
 				} catch (ArgumentNullException e) {

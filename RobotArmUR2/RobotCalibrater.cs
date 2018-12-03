@@ -65,9 +65,11 @@ namespace RobotArmUR2 {
 			if (pos != null) {
 				pt.Rotation = pos.Rotation;
 				pt.Extension = pos.Extension; //TODO put inside class
-				//TODO "cannot get position"
+				OnCalibrationChanged();
+			} else {
+				MessageBox.Show("Could not retrieve position.");
 			}
-			OnCalibrationChanged();
+			
 		}
 
 		private void BLCalibrate_Click(object sender, EventArgs e) {

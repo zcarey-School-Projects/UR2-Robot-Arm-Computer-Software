@@ -34,7 +34,7 @@ namespace RobotArmUR2.VisionProcessing {
 
 		public static UMat EdgeDetection<TColor, TDepth>(Image<TColor, TDepth> input) where TColor : struct, IColor where TDepth : new() {
 			UMat cannyEdges = new UMat();
-			CvInvoke.Canny(input, cannyEdges, 180.0, 120.0); //TODO crashed, may need to add checks
+			CvInvoke.Canny(input, cannyEdges, 180.0, 120.0);
 			return cannyEdges;
 		}
 

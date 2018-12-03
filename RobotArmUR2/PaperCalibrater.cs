@@ -64,7 +64,7 @@ namespace RobotArmUR2 {
 			if (draggingPoint != null) {
 				PointF? hit = picture.GetRelativeImagePoint(new Point(e.X, e.Y));
 				if(hit != null) {
-					draggingPoint.X = ((PointF)hit).X; //TODO put inside PaperPoint class?
+					draggingPoint.X = ((PointF)hit).X;
 					draggingPoint.Y = ((PointF)hit).Y;
 				}
 			} else {
@@ -94,12 +94,12 @@ namespace RobotArmUR2 {
 		private void PaperPicture_MouseDown(object sender, MouseEventArgs e) {
 			if (vision == null) return;
 			if (draggingPoint == null) {
-				if (picture.Image == null) return; //TODO With EmguPictureBox, is this needed?
+				Point? hit = picture.GetImagePoint(new Point(e.X, e.Y));
+				if (hit == null) return; 
+
 				PaperCalibration calibration = vision.PaperCalibration;
 				double closest = double.MaxValue;
-				//foreach (PointF point in calibration.ToArray(PaperPicture.Size)) {
-				Point? hit = picture.GetImagePoint(new Point(e.X, e.Y));
-				if (hit == null) return; //TODO instead clip to closest point on image
+
 				Point relative = (Point)hit;
 				Size imgSize = picture.Image.Size;
 				foreach(PaperPoint point in vision.PaperCalibration.ToArray()) {
@@ -123,10 +123,10 @@ namespace RobotArmUR2 {
 
 		private void ResetBounds_Click(object sender, EventArgs e) {
 			if (vision == null) return;
-			vision.PaperCalibration.ResetToDefault(); //TODO make thread safe
+			vision.PaperCalibration.ResetToDefault();
 		}
 
-		private void AutoDetect_Click(object sender, EventArgs e) { //TODO auto-detect
+		private void AutoDetect_Click(object sender, EventArgs e) { 
 			RotatedRect? auto = vision.AutoDetectPaper();
 			Size imgSize = vision.GrayscaleImage.Size;
 			if (auto == null) {
