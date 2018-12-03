@@ -11,6 +11,7 @@ namespace RobotArmUR2 {
 		private static readonly Bgr MaskColor = new Bgr(42, 240, 247);
 		private static readonly float MaskTransparency = 0.2f;
 
+		//TODO move settings to Application settings.
 		private static readonly Bgr CircleColor = new Bgr(42, 240, 247);
 		private static readonly int CircleThickness = 3;
 		private static readonly int CircleRadius = 10;
@@ -29,7 +30,7 @@ namespace RobotArmUR2 {
 		}
 
 		private void PaperCalibrater_FormClosing(object sender, FormClosingEventArgs e) {
-			vision.PaperCalibration.SaveSettings();
+			ApplicationSettings.PaperCalibration.SaveSettings();
 		}
 
 		public void NewFrameFinished(Vision vision) {
@@ -39,17 +40,13 @@ namespace RobotArmUR2 {
 
 			Image<Bgr, byte> img = vision.InputImage;
 			Image<Bgr, byte> rect = img.CopyBlank();
-			
-			Point[] paperPoints = new Point[4];
-			paperPoints[0] = vision.PaperCalibration.BottomLeft.GetScreenCoord(rect.Size);
-			paperPoints[1] = vision.PaperCalibration.TopLeft.GetScreenCoord(rect.Size);
-			paperPoints[2] = vision.PaperCalibration.TopRight.GetScreenCoord(rect.Size);
-			paperPoints[3] = vision.PaperCalibration.BottomRight.GetScreenCoord(rect.Size);
+
+			Point[] paperPoints = ApplicationSettings.PaperCalibration.ToArray(rect.Size); //{BottomLeft, TopLeft, TopRight, BottomRight}
 			rect.FillConvexPoly(paperPoints, MaskColor);
 			CvInvoke.AddWeighted(img, 1 - MaskTransparency, rect, MaskTransparency, 0, img);
 
-			foreach (PaperPoint point in vision.PaperCalibration.ToArray()) {
-				img.Draw(new CircleF(point.GetScreenCoord(rect.Size), CircleRadius), CircleColor, CircleThickness);
+			foreach (PointF point in ApplicationSettings.PaperCalibration.ToArray(rect.Size.Width, rect.Size.Height)) {
+				img.Draw(new CircleF(point, CircleRadius), CircleColor, CircleThickness);
 			}
 
 			picture.Image = img;
@@ -69,13 +66,12 @@ namespace RobotArmUR2 {
 				}
 			} else {
 				bool showHand = false;
-				PaperCalibration calibration = vision.PaperCalibration; //TODO for adaptive circle, use relative points instead
+				 //TODO for adaptive circle, use relative points instead
 				Point? hit = picture.GetImagePoint(new Point(e.X, e.Y)); //TODO since other method uses similar code, put in a method?
 				if (hit != null) {
 					Point relative = (Point)hit;
-					foreach (PaperPoint point in calibration.ToArray()) {
-						Point imgPos = point.GetScreenCoord(picture.Image.Size);
-						double distance = Math.Sqrt(Math.Pow(relative.X - imgPos.X, 2) + Math.Pow(relative.Y - imgPos.Y, 2));
+					foreach (Point point in ApplicationSettings.PaperCalibration.ToArray(picture.Image.Size)) {
+						double distance = Math.Sqrt(Math.Pow(relative.X - point.X, 2) + Math.Pow(relative.Y - point.Y, 2));
 						if (distance <= 11) {
 							showHand = true;
 							break;
@@ -97,12 +93,10 @@ namespace RobotArmUR2 {
 				Point? hit = picture.GetImagePoint(new Point(e.X, e.Y));
 				if (hit == null) return; 
 
-				PaperCalibration calibration = vision.PaperCalibration;
 				double closest = double.MaxValue;
-
 				Point relative = (Point)hit;
 				Size imgSize = picture.Image.Size;
-				foreach(PaperPoint point in vision.PaperCalibration.ToArray()) {
+				foreach(PaperPoint point in ApplicationSettings.PaperCalibration.ToArray()) {
 					Point pos = point.GetScreenCoord(imgSize);
 					double distance = Math.Sqrt(Math.Pow(relative.X - pos.X, 2) + Math.Pow(relative.Y - pos.Y, 2));
 					if((distance < closest) && (distance <= 11)) {
@@ -123,7 +117,7 @@ namespace RobotArmUR2 {
 
 		private void ResetBounds_Click(object sender, EventArgs e) {
 			if (vision == null) return;
-			vision.PaperCalibration.ResetToDefault();
+			ApplicationSettings.PaperCalibration.ResetToDefault();
 		}
 
 		private void AutoDetect_Click(object sender, EventArgs e) { 
@@ -138,24 +132,18 @@ namespace RobotArmUR2 {
 				double ratio = Math.Atan(bounds.Size.Width / bounds.Size.Height);
 				Console.WriteLine(bounds.Angle);
 
-				double deltaX = d * Math.Sin(ratio - radAngle);
-				double deltaY = d * Math.Cos(ratio - radAngle);
-				vision.PaperCalibration.TopRight.X = (float)(bounds.Center.X + deltaX) / imgSize.Width; //TODO create a thread-safe method for setting full points
-				vision.PaperCalibration.TopRight.Y = (float)(bounds.Center.Y - deltaY) / imgSize.Height;
-				vision.PaperCalibration.BottomLeft.X = (float)(bounds.Center.X - deltaX) / imgSize.Width;
-				vision.PaperCalibration.BottomLeft.Y = (float)(bounds.Center.Y + deltaY) / imgSize.Height;
+				float deltaX = (float)(d * Math.Sin(ratio - radAngle));
+				float deltaY = (float)(d * Math.Cos(ratio - radAngle));
 
-				deltaX = d * Math.Sin(ratio + radAngle);
-				deltaY = d * Math.Cos(ratio + radAngle);
-				vision.PaperCalibration.TopLeft.X = (float)(bounds.Center.X - deltaX) / imgSize.Width;
-				vision.PaperCalibration.TopLeft.Y = (float)(bounds.Center.Y - deltaY) / imgSize.Height;
-				vision.PaperCalibration.BottomRight.X = (float)(bounds.Center.X + deltaX) / imgSize.Width;
-				vision.PaperCalibration.BottomRight.Y = (float)(bounds.Center.Y + deltaY) / imgSize.Height;
+				ApplicationSettings.PaperCalibration.TopRight.SetPoint(new PointF(bounds.Center.X + deltaX, bounds.Center.Y - deltaY), imgSize);
+				ApplicationSettings.PaperCalibration.BottomLeft.SetPoint(new PointF(bounds.Center.X - deltaX, bounds.Center.Y + deltaY), imgSize);
+				//TODO create a thread-safe method for setting full points
 
-				Console.WriteLine("BL: " + vision.PaperCalibration.BottomLeft);
-				Console.WriteLine("TL: " + vision.PaperCalibration.TopLeft);
-				Console.WriteLine("TR: " + vision.PaperCalibration.TopRight);
-				Console.WriteLine("BR: " + vision.PaperCalibration.BottomRight);
+				deltaX = (float)(d * Math.Sin(ratio + radAngle));
+				deltaY = (float)(d * Math.Cos(ratio + radAngle));
+
+				ApplicationSettings.PaperCalibration.TopLeft.SetPoint(new PointF(bounds.Center.X - deltaX, bounds.Center.Y - deltaY), imgSize);
+				ApplicationSettings.PaperCalibration.BottomRight.SetPoint(new PointF(bounds.Center.X + deltaX, bounds.Center.Y + deltaY), imgSize);
 			}
 		}
 	}

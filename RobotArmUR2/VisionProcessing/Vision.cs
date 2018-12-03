@@ -118,8 +118,6 @@ namespace RobotArmUR2.VisionProcessing{
 		private DetectedShapes detecetdShapes = new DetectedShapes();
 		public DetectedShapes DetectedShapes { get => detecetdShapes; private set { if (value == null) detecetdShapes = new DetectedShapes(); else detecetdShapes = value; } }
 
-		public PaperCalibration PaperCalibration { get; } = new PaperCalibration();
-
 		public bool RotateImage180 { get; set; } = false;
 		public byte GrayscaleThreshold { get; set; } = (byte)(255 / 2);
 
@@ -213,7 +211,7 @@ namespace RobotArmUR2.VisionProcessing{
 				GrayscaleImage = ImageProcessing.GetGrayImage(InputImage);
 				ThresholdImage = ImageProcessing.GetThresholdImage(GrayscaleImage, new Gray(GrayscaleThreshold), new Gray(255));
 				lock (calibrationLock) {//TODO what? prevent calibration changes
-					WarpedImage = ImageProcessing.GetWarpedImage(ThresholdImage, PaperCalibration);
+					WarpedImage = ImageProcessing.GetWarpedImage(ThresholdImage, ApplicationSettings.PaperCalibration);
 				}
 				UMat edges = ImageProcessing.EdgeDetection(WarpedImage);
 				CannyImage = ImageProcessing.GetEdgeImage<Gray, byte>(edges);

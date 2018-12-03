@@ -1,4 +1,5 @@
 ﻿using Emgu.CV.Structure;
+using RobotArmUR2.VisionProcessing;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -19,7 +20,8 @@ namespace RobotArmUR2 {
 		public const Keys Key_MagnetOn = Keys.M;
 		public const Keys Key_MagnetOff = Keys.N;
 
-		//TODO more settings
+		public static readonly PaperCalibration PaperCalibration = new PaperCalibration();
+
 		public static readonly Setting<byte> BasePrescale = new Setting<byte>(nameof(Properties.Settings.Default.BasePrescale));
 		public static readonly Setting<byte> CarriagePrescale = new Setting<byte>(nameof(Properties.Settings.Default.CarriagePrescale));
 

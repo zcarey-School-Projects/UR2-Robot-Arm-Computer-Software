@@ -49,12 +49,27 @@ namespace RobotArmUR2.VisionProcessing {
 		/// </summary>
 		/// <param name="size"></param>
 		/// <returns></returns>
-		public PointF[] ToArray(Size size) {
-			return new PointF[]{
+		public Point[] ToArray(Size size) {
+			return new Point[]{
 				BottomLeft.GetScreenCoord(size),
 				TopLeft.GetScreenCoord(size),
 				TopRight.GetScreenCoord(size),
 				BottomRight.GetScreenCoord(size)
+			};
+		}
+
+		/// <summary>
+		/// Puts the points into array format, multiplying them by the width and height.
+		/// </summary>
+		/// <param name="width"></param>
+		/// <param name="height"></param>
+		/// <returns></returns>
+		public PointF[] ToArray(float width, float height) {
+			return new PointF[]{
+				BottomLeft.GetAdjustedCoord(width, height),
+				TopLeft.GetAdjustedCoord(width, height),
+				TopRight.GetAdjustedCoord(width, height),
+				BottomRight.GetAdjustedCoord(width, height)
 			};
 		}
 

@@ -24,6 +24,25 @@ namespace RobotArmUR2.VisionProcessing {
 			Y = point.Y;
 		}
 
+		//Deep copy
+		public void SetPoint(PaperPoint point) {
+			X = point.X;
+			Y = point.Y;
+		}
+
+		public void SetPoint(PointF point, Size imgSize) {
+			X = point.X / imgSize.Width;
+			Y = point.Y / imgSize.Height;
+		}
+
+		public void SetPoint(Point point, Size imgSize) {
+			SetPoint((PointF)point, imgSize);
+		}
+
+		public PointF GetAdjustedCoord(float width, float height) {
+			return new PointF(width * X, height * Y);
+		}
+
 		public Point GetScreenCoord(Size screenSize) {
 			return new Point((int)(X * (screenSize.Width - 1) + 0.5f), (int)(Y * (screenSize.Height - 1) + 0.5f));
 		}
