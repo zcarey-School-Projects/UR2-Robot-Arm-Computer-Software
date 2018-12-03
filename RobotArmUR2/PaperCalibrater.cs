@@ -8,9 +8,9 @@ using Emgu.CV.Structure;
 namespace RobotArmUR2 {
 	public partial class PaperCalibrater : Form {
 
-		private Vision vision;
 		private PaperPoint draggingPoint = null;
 		private EmguPictureBox<Bgr, byte> picture;
+		private volatile bool autoDetectPaper = false;
 
 		public PaperCalibrater() {
 			InitializeComponent();
@@ -26,9 +26,11 @@ namespace RobotArmUR2 {
 		}
 
 		public void NewFrameFinished(Vision vision) {
-			//TODO get rid of dependency
 			//TODO only run this if form is shown
-			this.vision = vision;
+			if (autoDetectPaper) {
+				autoDetectPaper = false;
+				detectPaper(vision);
+			}
 
 			Image<Bgr, byte> img = vision.InputImage;
 			Image<Bgr, byte> rect = img.CopyBlank();
@@ -45,11 +47,6 @@ namespace RobotArmUR2 {
 		}
 
 		private void PaperPicture_MouseMove(object sender, MouseEventArgs e) {
-			if (vision == null) {
-				PaperPicture.Cursor = Cursors.Default;
-				return;
-			}
-
 			if (draggingPoint != null) {
 				PointF? hit = picture.GetRelativeImagePoint(new Point(e.X, e.Y));
 				if(hit != null) {
@@ -80,7 +77,6 @@ namespace RobotArmUR2 {
 		}
 
 		private void PaperPicture_MouseDown(object sender, MouseEventArgs e) {
-			if (vision == null) return;
 			if (draggingPoint == null) {
 				Point? hit = picture.GetImagePoint(new Point(e.X, e.Y));
 				if (hit == null) return; 
@@ -108,11 +104,14 @@ namespace RobotArmUR2 {
 		}
 
 		private void ResetBounds_Click(object sender, EventArgs e) {
-			if (vision == null) return;
 			ApplicationSettings.PaperCalibration.ResetToDefault();
 		}
 
-		private void AutoDetect_Click(object sender, EventArgs e) { 
+		private void AutoDetect_Click(object sender, EventArgs e) {
+			autoDetectPaper = true;
+		}
+
+		private void detectPaper(Vision vision) {
 			RotatedRect? auto = vision.AutoDetectPaper();
 			Size imgSize = vision.GrayscaleImage.Size;
 			if (auto == null) {
@@ -122,14 +121,12 @@ namespace RobotArmUR2 {
 				double d = Math.Sqrt(Math.Pow(bounds.Size.Width / 2, 2) + Math.Pow(bounds.Size.Height / 2, 2));
 				double radAngle = Math.Abs(bounds.Angle * Math.PI / 180);
 				double ratio = Math.Atan(bounds.Size.Width / bounds.Size.Height);
-				Console.WriteLine(bounds.Angle);
 
 				float deltaX = (float)(d * Math.Sin(ratio - radAngle));
 				float deltaY = (float)(d * Math.Cos(ratio - radAngle));
 
 				ApplicationSettings.PaperCalibration.TopRight.SetPoint(new PointF(bounds.Center.X + deltaX, bounds.Center.Y - deltaY), imgSize);
 				ApplicationSettings.PaperCalibration.BottomLeft.SetPoint(new PointF(bounds.Center.X - deltaX, bounds.Center.Y + deltaY), imgSize);
-				//TODO create a thread-safe method for setting full points
 
 				deltaX = (float)(d * Math.Sin(ratio + radAngle));
 				deltaY = (float)(d * Math.Cos(ratio + radAngle));
