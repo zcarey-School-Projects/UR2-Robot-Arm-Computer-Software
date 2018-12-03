@@ -18,6 +18,7 @@ namespace RobotArmUR2
 		private Robot robot;
 		private PaperCalibrater paperCalibrater;
 		private RobotCalibrater robotCalibrater;
+		private RobotSettings robotSettings;
 		
 		//Custom PictureBox wrappers that make using them simpler
 		private EmguPictureBox<Bgr, byte> origImage;
@@ -46,12 +47,7 @@ namespace RobotArmUR2
 			vision.UIListener = this;
 
 			paperCalibrater = new PaperCalibrater(/*this, vision*/);
-
-			RobotSpeedSlider.Value = Properties.Settings.Default.RobotSpeed;
-			RobotSpeedSlider_Scroll(null, null);
-			/*
-			PrescaleSlider.Value = Properties.Settings.Default.RobotPrescale;
-			PrescaleSlider_Scroll(null, null);*/
+			robotSettings = new RobotSettings(robot);
 		}
 
 		private void Form1_Load(object sender, EventArgs e) {
@@ -60,12 +56,10 @@ namespace RobotArmUR2
 		}
 
 		private void Form1_FormClosing(object sender, FormClosingEventArgs e) {
-			Properties.Settings.Default.RobotSpeed = RobotSpeedSlider.Value;
-			//Properties.Settings.Default.RobotPrescale = PrescaleSlider.Value;
 			Properties.Settings.Default.Save();
 			vision.stop();
 		}
-		//TODO show connected com port
+		
 		public void VisionUI_NewFrameFinished(Vision vision) {
 			origImage.Image = vision.InputImage; //grabs image before continuing, therefore should be thread safe.
 			threshImage.Image = vision.ThresholdImage;
@@ -162,13 +156,6 @@ namespace RobotArmUR2
 			}));
 		}
 
-		private void RobotSpeedSlider_Scroll(object sender, EventArgs e) {
-			/*float ms = RobotSpeedSlider.Value / 10f; 
-			RobotSpeedLabel.Text = "Carriage Speed: " + ms + "ms";
-			robot.SetSpeed((byte)RobotSpeedSlider.Value);*/
-			//TODO add speed
-		}
-
 		private void RobotInterface_OnConnectionChanged(bool isConnected, string portName) {
 			BeginInvoke(new Action(() => {
 				RobotConnected.CheckState = (isConnected ? CheckState.Checked : CheckState.Unchecked);
@@ -182,7 +169,6 @@ namespace RobotArmUR2
 
 		private void Robot_OnProgramStateChanged(bool running) {
 			BeginInvoke(new Action(() => {
-				RobotSpeedSlider.Enabled = !running;
 				AutoConnect.Enabled = !running;
 				menuStrip1.Enabled = !running;
 				Stack.Text = (running ? "Cancel" : "Stack!");
@@ -215,6 +201,10 @@ namespace RobotArmUR2
 			byte val = (byte)ThresholdValue.Value;
 			vision.GrayscaleThreshold = val;
 			ThresholdValueLabel.Text = "Threshold: " + val.ToString().PadLeft(3); //TODO save threshold
+		}
+
+		private void robotToolStripMenuItem_Click(object sender, EventArgs e) {
+			robotSettings.ShowDialog();
 		}
 	}
 

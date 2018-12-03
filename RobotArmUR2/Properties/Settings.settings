@@ -62,10 +62,10 @@
     <Setting Name="SquareStackExtension" Type="System.Single" Scope="User">
       <Value Profile="(Default)">304.8</Value>
     </Setting>
-    <Setting Name="RobotSpeed" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">100</Value>
+    <Setting Name="BasePrescale" Type="System.Byte" Scope="User">
+      <Value Profile="(Default)">15</Value>
     </Setting>
-    <Setting Name="RobotPrescale" Type="System.Int32" Scope="User">
+    <Setting Name="CarriagePrescale" Type="System.Byte" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
   </Settings>

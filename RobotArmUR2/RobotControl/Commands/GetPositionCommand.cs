@@ -1,4 +1,5 @@
-﻿using Util.Serial;
+﻿using System;
+using Util.Serial;
 
 namespace RobotArmUR2.RobotControl.Commands {
 	class GetPositionCommand : SerialCommand {

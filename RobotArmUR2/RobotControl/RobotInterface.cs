@@ -15,15 +15,18 @@ namespace RobotArmUR2 { //TODO fix namespaces
 		private static readonly object settingsLock = new object();
 
 		private SerialCommunicator serial = new SerialCommunicator();
-		private Timer manualTimer = new Timer(1000/20); //20 times per second
+		private Timer comTimer = new Timer(1000/20); //20 times per second
 
+		private volatile bool manualControlEnabled = true;
 		private bool? setMagnetState = null;
 		private bool? setServoState = null;
 		//private volatile byte? setSpeed = null;
 		private volatile Rotation setRotation = Rotation.None; //Is volatile needed?
 		private volatile Extension setExtension = Extension.None;
-
 		private volatile bool wasMoving = false;
+
+		private byte? setBasePrescale = null;
+		private byte? setCarriagePrescale = null;
 
 		#region Events and Handlers
 		//Simply pass along event from SerialCommunicator
@@ -34,10 +37,10 @@ namespace RobotArmUR2 { //TODO fix namespaces
 		#endregion
 
 		public RobotInterface() {
-			manualTimer.Elapsed += onTimerTick;
-			manualTimer.AutoReset = true;
+			comTimer.Elapsed += onTimerTick;
+			comTimer.AutoReset = true;
 			//manualTimer.Start();
-		}
+		}//TODO prevent multiple key events from firing
 
 		public bool ConnectToRobot() {
 			//TODO add locks
@@ -49,7 +52,6 @@ namespace RobotArmUR2 { //TODO fix namespaces
 					StopAll();
 					PowerMagnetOff();
 					RaiseServo();
-					//TODO speed settings
 					//GoToHome()
 					EnableManualControl();
 					
@@ -70,45 +72,57 @@ namespace RobotArmUR2 { //TODO fix namespaces
 
 		public void DisableManualControl() {
 			lock (timerLock) { //Wait for onTimerTick to finish if it hasn't
-				if (!manualTimer.Enabled) return; //Already disabled
-				manualTimer.Stop(); //Stop throwing tick events.
+				if (manualControlEnabled == false) return; //Already disabled
+				manualControlEnabled = false;
 				StopAll(); //Stop all movement
 			}
 		}
 
 		public void EnableManualControl() {
 			lock (timerLock) {
-				if (manualTimer.Enabled) return; //Already enabled
+				if (manualControlEnabled) return; //Already enabled
 				resetManualMoveVars();
-				manualTimer.Start(); //Allow event to fire
+				manualControlEnabled = true;
 			}
 		}
 
 		private void onTimerTick(object sender, EventArgs e) {
 			lock (timerLock) {
-				SerialCommand moveCommand = null;
-				SerialCommand magnetCommand = null;
-				SerialCommand servoCommand = null;
+				#region Manual Control
+				if (manualControlEnabled) {
+					SerialCommand moveCommand = null;
+					SerialCommand magnetCommand = null;
+					SerialCommand servoCommand = null;
 
-				lock (settingsLock) {
-					if((setRotation != Rotation.None) || (setExtension != Extension.None)) {
-						wasMoving = true;
-						moveCommand = new ManualMoveCommand(setRotation, setExtension);
-					}else if (wasMoving) {
-						wasMoving = false;
-						moveCommand = new EndMoveCommand();
+					lock (settingsLock) {
+						if ((setRotation != Rotation.None) || (setExtension != Extension.None)) {
+							wasMoving = true;
+							moveCommand = new ManualMoveCommand(setRotation, setExtension);
+						} else if (wasMoving) {
+							wasMoving = false;
+							moveCommand = new EndMoveCommand();
+						}
+
+						if (setMagnetState != null) magnetCommand = new SetMagnetCommand((bool)setMagnetState);
+						setMagnetState = null;
+
+						if (setServoState != null) servoCommand = new MoveServoCommand((bool)setServoState);
+						setServoState = null;
 					}
 
-					if (setMagnetState != null) magnetCommand = new SetMagnetCommand((bool)setMagnetState);
-					setMagnetState = null;
-
-					if (setServoState != null) servoCommand = new MoveServoCommand((bool)setServoState);
-					setServoState = null;
+					if (moveCommand != null) serial.SendCommand(moveCommand);
+					if (magnetCommand != null) serial.SendCommand(magnetCommand);
+					if (servoCommand != null) serial.SendCommand(servoCommand);
 				}
+				#endregion
 
-				if (moveCommand != null) serial.SendCommand(moveCommand);
-				if (magnetCommand != null) serial.SendCommand(magnetCommand);
-				if (servoCommand != null) serial.SendCommand(servoCommand);
+				lock (settingsLock) {
+					if(setBasePrescale != null || setCarriagePrescale != null) {
+						serial.SendCommand(new SetPrescaleCommand(setBasePrescale, setCarriagePrescale));
+						setBasePrescale = null;
+						setCarriagePrescale = null;
+					}
+				}
 			}
 		}
 
@@ -140,6 +154,26 @@ namespace RobotArmUR2 { //TODO fix namespaces
 		public void SetManualServo(bool isRaised) {
 			lock (settingsLock) {
 				setServoState = isRaised;
+			}
+		}
+
+		public void SetBasePrescale(byte prescale) {
+			if(prescale > 20) {
+				Console.Error.WriteLine("Base prescale out of range, not sending: " + prescale);
+				return;
+			}
+			lock (settingsLock) {
+				setBasePrescale = prescale;
+			}
+		}
+
+		public void SetCarriagePrescale(byte prescale) {
+			if(prescale > 20) {
+				Console.Error.WriteLine("Carriage prescale out of range, not sending: " + prescale);
+				return;
+			}
+			lock (settingsLock) {
+				setCarriagePrescale = prescale;
 			}
 		}
 

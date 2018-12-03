@@ -44,7 +44,7 @@ namespace RobotArmUR2 {
 			robot.Interface.MoveTo(robot.Calibration.BottomRight);
 		}
 
-		public void OnCalibrationChanged() {
+		public void OnCalibrationChanged() { //TODO what 7 things are calling this?
 			updateLabel(BLLabel, robot.Calibration.BottomLeft);
 			updateLabel(TLLabel, robot.Calibration.TopLeft);
 			updateLabel(TRLabel, robot.Calibration.TopRight);
@@ -62,10 +62,12 @@ namespace RobotArmUR2 {
 		private void calibrateClicked(RobotCalibrationPoint pt) {
 			if (pt == null) return;
 			RobotPoint pos = robot.Interface.GetPosition();
-			if(pos != null) {
+			if (pos != null) {
 				pt.Rotation = pos.Rotation;
 				pt.Extension = pos.Extension; //TODO put inside class
+				//TODO "cannot get position"
 			}
+			OnCalibrationChanged();
 		}
 
 		private void BLCalibrate_Click(object sender, EventArgs e) {

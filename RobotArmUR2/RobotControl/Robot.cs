@@ -4,7 +4,6 @@ using System.Windows.Forms;
 
 namespace RobotArmUR2 {
 	public class Robot {
-		private static readonly object settingsLock = new object();
 		private static readonly object programLock = new object();
 
 		public RobotCalibration Calibration { get; } = new RobotCalibration();
@@ -85,46 +84,44 @@ namespace RobotArmUR2 {
 		bool keyContractPressed = false;
 
 		public void ManualControlKeyEvent(Keys key, bool pressed) {
-			lock (settingsLock) {
-				if (key == ApplicationSettings.Key_MagnetOn) {
-					Interface.SetManualMagnet(true);
-				} else if (key == ApplicationSettings.Key_MagnetOff) {
-					Interface.SetManualMagnet(false);
-				}else if(key == ApplicationSettings.Key_RaiseServo) {
-					Interface.SetManualServo(true);
-				}else if(key == ApplicationSettings.Key_LowerServo) {
-					Interface.SetManualServo(false);
-				} else {
-					Rotation? setRotation = null;
-					Extension? setExtension = null;
+			if (key == ApplicationSettings.Key_MagnetOn) {
+				Interface.SetManualMagnet(true);
+			} else if (key == ApplicationSettings.Key_MagnetOff) {
+				Interface.SetManualMagnet(false);
+			}else if(key == ApplicationSettings.Key_RaiseServo) {
+				Interface.SetManualServo(true);
+			}else if(key == ApplicationSettings.Key_LowerServo) {
+				Interface.SetManualServo(false);
+			} else {
+				Rotation? setRotation = null;
+				Extension? setExtension = null;
 
-					if (key == ApplicationSettings.Key_RotateCCW) { //TODO cleanup
-						keyCCWPressed = pressed;
-						if (keyCCWPressed) setRotation = Rotation.CCW;
-						else if (keyCWPressed) setRotation = Rotation.CW;
-						else setRotation = Rotation.None;
-					} else if (key == ApplicationSettings.Key_RotateCW) {
-						keyCWPressed = pressed;
-						if (keyCWPressed) setRotation = Rotation.CW;
-						else if (keyCCWPressed) setRotation = Rotation.CCW;
-						else setRotation = Rotation.None;
-					} else if (key == ApplicationSettings.Key_ExtendOutward) {
-						keyExtendPressed = pressed;
-						if (keyExtendPressed) setExtension = Extension.Outward;
-						else if (keyContractPressed) setExtension = Extension.Inward;
-						else setExtension = Extension.None;
-					} else if (key == ApplicationSettings.Key_ExtendInward) {
-						keyContractPressed = pressed;
-						if (keyContractPressed) setExtension = Extension.Inward;
-						else if (keyExtendPressed) setExtension = Extension.Outward;
-						else setExtension = Extension.None;
-					}
-
-					if(setRotation != null) Interface.SetManualControl((Rotation)setRotation);
-					if(setExtension != null) Interface.SetManualControl((Extension)setExtension);
-
-					OnManualControlChanged(((setRotation != null) ? (Rotation)setRotation : Rotation.None), ((setExtension != null) ? (Extension)setExtension : Extension.None)); //Fire event
+				if (key == ApplicationSettings.Key_RotateCCW) { //TODO cleanup
+					keyCCWPressed = pressed;
+					if (keyCCWPressed) setRotation = Rotation.CCW;
+					else if (keyCWPressed) setRotation = Rotation.CW;
+					else setRotation = Rotation.None;
+				} else if (key == ApplicationSettings.Key_RotateCW) {
+					keyCWPressed = pressed;
+					if (keyCWPressed) setRotation = Rotation.CW;
+					else if (keyCCWPressed) setRotation = Rotation.CCW;
+					else setRotation = Rotation.None;
+				} else if (key == ApplicationSettings.Key_ExtendOutward) {
+					keyExtendPressed = pressed;
+					if (keyExtendPressed) setExtension = Extension.Outward;
+					else if (keyContractPressed) setExtension = Extension.Inward;
+					else setExtension = Extension.None;
+				} else if (key == ApplicationSettings.Key_ExtendInward) {
+					keyContractPressed = pressed;
+					if (keyContractPressed) setExtension = Extension.Inward;
+					else if (keyExtendPressed) setExtension = Extension.Outward;
+					else setExtension = Extension.None;
 				}
+
+				if(setRotation != null) Interface.SetManualControl((Rotation)setRotation);
+				if(setExtension != null) Interface.SetManualControl((Extension)setExtension);
+
+				OnManualControlChanged(((setRotation != null) ? (Rotation)setRotation : Rotation.None), ((setExtension != null) ? (Extension)setExtension : Extension.None)); //Fire event
 			}
 		}
 

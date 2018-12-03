@@ -3,7 +3,7 @@ using System.Windows.Forms;
 
 namespace RobotHelpers.InputHandling {
 	public abstract class FileInput : InputHandler{
-
+		private static readonly object threadLock = new object();
 		protected static OpenFileDialog dialog;
 
 		static FileInput() {
@@ -16,7 +16,9 @@ namespace RobotHelpers.InputHandling {
 		}
 
 		public FileInput(String filename) {
-			LoadFromFile(filename);
+			lock (threadLock) {
+				LoadFromFile(filename);
+			}
 		}
 
 		///<summary>
@@ -25,10 +27,12 @@ namespace RobotHelpers.InputHandling {
 		///</summary>
 		///<returns>File was loaded.</returns>
 		public bool LoadFromFile(String path) {
-			lock (inputLock) {
-				bool result = setFile(path);
-				printDebugMsg((result ? "Successfully loaded file: " : "Could not load file: ") + path);
-				return result;
+			lock (threadLock) {
+				lock (inputLock) {
+					bool result = setFile(path);
+					printDebugMsg((result ? "Successfully loaded file: " : "Could not load file: ") + path);
+					return result;
+				}
 			}
 		}
 
@@ -50,14 +54,16 @@ namespace RobotHelpers.InputHandling {
 		///<para>Opens a dialog for the user to select an input file to load.</para>
 		///</summary>
 		///<returns>Input was loaded. If not, previous input is kept.</returns>
-		public bool PromptUserToLoadFile() {//TODO make thread safe
-			dialog.Filter = getDialogFileExtensions();
-			if (dialog.ShowDialog() == DialogResult.OK) {
-				String path = dialog.FileName;
-				return LoadFromFile(path);
-			}
+		public bool PromptUserToLoadFile() {
+			lock (threadLock) {
+				dialog.Filter = getDialogFileExtensions();
+				if (dialog.ShowDialog() == DialogResult.OK) {
+					String path = dialog.FileName;
+					return LoadFromFile(path);
+				}
 
-			return false;
+				return false;
+			}
 		}
 
 	}

@@ -5,9 +5,9 @@ using System.Windows.Forms;
 namespace RobotArmUR2 {
 	public static class ApplicationSettings {
 
-		public static Bgr TriangleHighlightColor = new Bgr(Color.Yellow);
-		public static Bgr SquareHighlightColor = new Bgr(Color.Red);
-		public static int ShapeHighlightThickness = 3;
+		public static readonly Bgr TriangleHighlightColor = new Bgr(Color.Yellow);
+		public static readonly Bgr SquareHighlightColor = new Bgr(Color.Red);
+		public const int ShapeHighlightThickness = 3;
 
 		//Keybindings
 		public const Keys Key_RotateCCW = Keys.A;
@@ -20,6 +20,12 @@ namespace RobotArmUR2 {
 		public const Keys Key_MagnetOff = Keys.N;
 
 		//TODO more settings
+		public static readonly Setting<byte> BasePrescale = new Setting<byte>(nameof(Properties.Settings.Default.BasePrescale));
+		public static readonly Setting<byte> CarriagePrescale = new Setting<byte>(nameof(Properties.Settings.Default.CarriagePrescale));
+
+		public static void SaveSettings() {
+			Properties.Settings.Default.Save();
+		}
 
 	}
 }

@@ -265,25 +265,25 @@ namespace RobotArmUR2.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("100")]
-        public int RobotSpeed {
+        [global::System.Configuration.DefaultSettingValueAttribute("15")]
+        public byte BasePrescale {
             get {
-                return ((int)(this["RobotSpeed"]));
+                return ((byte)(this["BasePrescale"]));
             }
             set {
-                this["RobotSpeed"] = value;
+                this["BasePrescale"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public int RobotPrescale {
+        public byte CarriagePrescale {
             get {
-                return ((int)(this["RobotPrescale"]));
+                return ((byte)(this["CarriagePrescale"]));
             }
             set {
-                this["RobotPrescale"] = value;
+                this["CarriagePrescale"] = value;
             }
         }
     }

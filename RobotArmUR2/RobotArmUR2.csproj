@@ -79,6 +79,13 @@
   <ItemGroup>
     <Compile Include="ApplicationSettings.cs" />
     <Compile Include="RobotControl\Commands\GetPositionCommand.cs" />
+    <Compile Include="RobotControl\Commands\SetPrescaleCommand.cs" />
+    <Compile Include="RobotSettings.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="RobotSettings.Designer.cs">
+      <DependentUpon>RobotSettings.cs</DependentUpon>
+    </Compile>
     <Compile Include="Util\Setting.cs" />
     <Compile Include="Util\EmguPictureBox.cs" />
     <Compile Include="RobotControl\Commands\EndMoveCommand.cs" />
@@ -149,6 +156,9 @@
     </Compile>
     <EmbeddedResource Include="RobotCalibrater.resx">
       <DependentUpon>RobotCalibrater.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="RobotSettings.resx">
+      <DependentUpon>RobotSettings.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">

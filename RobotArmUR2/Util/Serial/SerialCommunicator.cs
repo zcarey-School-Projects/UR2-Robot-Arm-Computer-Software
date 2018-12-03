@@ -30,13 +30,13 @@ namespace Util.Serial {
 			serial.ErrorReceived += closeEvent;
 		}
 
-		private void closeEvent(object sender, EventArgs args) { close(); }
+		private void closeEvent(object sender, EventArgs args) { if(serial.IsOpen) close(); OnConnectionChanged(false, null); }
 
 		public void close() {
 			lock (serialLock) {
 				Console.WriteLine("SERIAL CLOSED");//TODO REMOVE after testing
-				serial.Close();
-				OnConnectionChanged(false, null);
+				serial.Close(); //Also throws a closeEvent?
+				//OnConnectionChanged(false, null);
 			}
 		}
 
@@ -45,7 +45,6 @@ namespace Util.Serial {
 				if (serial.IsOpen) close();
 				serial.PortName = portName;
 				try {
-					serial.DiscardOutBuffer();
 					serial.Open();
 					if (!serial.IsOpen) return false;
 					
@@ -102,17 +101,18 @@ namespace Util.Serial {
 					if (args != null) {
 						foreach (string arg in args) {
 							if (arg == null) throw new ArgumentNullException("Can not send a null argument.");
-							commandArgs += arg + ":";
+							commandArgs += arg + ",";
 						}
 					}
 					serial.WriteLine("<" + command + ";" + commandArgs); //Since we are using WriteLine, the ">" character gets written automatically
 					string response = serial.ReadLine();
 					if (!response.StartsWith("<" + command + ";")) {
 						//TODO implement. close serial, cancel command
+						throw new NotImplementedException();
 					}
 					string paramString = response.Substring(command.Length + 2);
-					paramString.TrimEnd(':');
-					string[] parameters = paramString.Split(':');
+					paramString = paramString.TrimEnd(',');
+					string[] parameters = paramString.Split(',');
 
 					return cmd.OnSerialResponse(this, parameters);
 				}catch(ArgumentNullException e) {
@@ -161,7 +161,7 @@ namespace Util.Serial {
 			lock (serialLock) {
 				if (!serial.IsOpen) return null;
 				try {
-					int data = serial.ReadByte(); //TODO remove if there are no errors
+					int data = serial.ReadByte(); //TODO remove if there are no errors //TODO System.UnauthorizedAccessException
 					if (data < 0) throw new EndOfStreamException("Well, not sure what to do now.");
 					return (byte)data;
 				} catch (ArgumentNullException e) {
