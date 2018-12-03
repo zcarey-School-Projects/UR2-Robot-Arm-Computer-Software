@@ -81,6 +81,18 @@ namespace RobotArmUR2 {
 		bool keyExtendPressed = false;
 		bool keyContractPressed = false;
 
+		private static Rotation getManualControl(bool keyPressed, bool oppositePressed, Rotation rot, Rotation opposite) {
+			if (keyPressed) return rot;
+			else if (oppositePressed) return opposite;
+			return Rotation.None;
+		}
+
+		private static Extension getManualControl(bool keyPressed, bool oppositePressed, Extension ext, Extension opposite) {
+			if (keyPressed) return ext;
+			else if (oppositePressed) return opposite;
+			return Extension.None;
+		}
+
 		public void ManualControlKeyEvent(Keys key, bool pressed) {
 			if (key == ApplicationSettings.Keybind_MagnetOn) {
 				Interface.SetManualMagnet(true);
@@ -94,26 +106,18 @@ namespace RobotArmUR2 {
 				Rotation? setRotation = null;
 				Extension? setExtension = null;
 
-				if (key == ApplicationSettings.Keybind_RotateCCW) { //TODO cleanup
+				if (key == ApplicationSettings.Keybind_RotateCCW) {
 					keyCCWPressed = pressed;
-					if (keyCCWPressed) setRotation = Rotation.CCW;
-					else if (keyCWPressed) setRotation = Rotation.CW;
-					else setRotation = Rotation.None;
-				} else if (key == ApplicationSettings.Keybind_RotateCW) {
+					setRotation = getManualControl(keyCCWPressed, keyCWPressed, Rotation.CCW, Rotation.CW);
+				}else if (key == ApplicationSettings.Keybind_RotateCW) {
 					keyCWPressed = pressed;
-					if (keyCWPressed) setRotation = Rotation.CW;
-					else if (keyCCWPressed) setRotation = Rotation.CCW;
-					else setRotation = Rotation.None;
-				} else if (key == ApplicationSettings.Keybind_ExtendOutward) {
-					keyExtendPressed = pressed;
-					if (keyExtendPressed) setExtension = Extension.Outward;
-					else if (keyContractPressed) setExtension = Extension.Inward;
-					else setExtension = Extension.None;
-				} else if (key == ApplicationSettings.Keybind_ExtendInward) {
+					setRotation = getManualControl(keyCWPressed, keyCCWPressed, Rotation.CW, Rotation.CCW);
+				}else if(key == ApplicationSettings.Keybind_ExtendInward) {
 					keyContractPressed = pressed;
-					if (keyContractPressed) setExtension = Extension.Inward;
-					else if (keyExtendPressed) setExtension = Extension.Outward;
-					else setExtension = Extension.None;
+					setExtension = getManualControl(keyContractPressed, keyExtendPressed, Extension.Inward, Extension.Outward);
+				}else if(key == ApplicationSettings.Keybind_ExtendOutward) {
+					keyExtendPressed = pressed;
+					setExtension = getManualControl(keyExtendPressed, keyContractPressed, Extension.Outward, Extension.Inward);
 				}
 
 				if(setRotation != null) Interface.SetManualControl((Rotation)setRotation);

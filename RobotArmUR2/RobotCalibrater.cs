@@ -20,6 +20,7 @@ namespace RobotArmUR2 {
 			//ApplicationSettings.RobotCalibration.SaveAllSettings();
 		}
 
+		#region Manual Control Key Events
 		private void RobotCalibrater_KeyDown(object sender, KeyEventArgs e) {
 			robot.ManualControlKeyEvent(e.KeyCode, true);
 		}
@@ -27,6 +28,7 @@ namespace RobotArmUR2 {
 		private void RobotCalibrater_KeyUp(object sender, KeyEventArgs e) {
 			robot.ManualControlKeyEvent(e.KeyCode, false);
 		}
+		#endregion
 
 		private void updateLabel(Label label, RobotPoint pos) {
 			label.Text = "(" + pos.Rotation.ToString("N2") + (char)248 + ", " + pos.Extension.ToString("N2") + "mm";
