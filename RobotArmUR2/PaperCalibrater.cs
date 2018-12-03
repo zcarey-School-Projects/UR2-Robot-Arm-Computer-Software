@@ -7,14 +7,6 @@ using Emgu.CV.Structure;
 
 namespace RobotArmUR2 {
 	public partial class PaperCalibrater : Form {
-		//TODO put threshold slider in paper calibrater?
-		private static readonly Bgr MaskColor = new Bgr(42, 240, 247);
-		private static readonly float MaskTransparency = 0.2f;
-
-		//TODO move settings to Application settings.
-		private static readonly Bgr CircleColor = new Bgr(42, 240, 247);
-		private static readonly int CircleThickness = 3;
-		private static readonly int CircleRadius = 10;
 
 		private Vision vision;
 		private PaperPoint draggingPoint = null;
@@ -42,11 +34,11 @@ namespace RobotArmUR2 {
 			Image<Bgr, byte> rect = img.CopyBlank();
 
 			Point[] paperPoints = ApplicationSettings.PaperCalibration.ToArray(rect.Size); //{BottomLeft, TopLeft, TopRight, BottomRight}
-			rect.FillConvexPoly(paperPoints, MaskColor);
-			CvInvoke.AddWeighted(img, 1 - MaskTransparency, rect, MaskTransparency, 0, img);
+			rect.FillConvexPoly(paperPoints, ApplicationSettings.PaperROIMaskColor);
+			CvInvoke.AddWeighted(img, 1 - ApplicationSettings.PaperROIMaskTransparency, rect, ApplicationSettings.PaperROIMaskTransparency, 0, img);
 
 			foreach (PointF point in ApplicationSettings.PaperCalibration.ToArray(rect.Size.Width, rect.Size.Height)) {
-				img.Draw(new CircleF(point, CircleRadius), CircleColor, CircleThickness);
+				img.Draw(new CircleF(point, ApplicationSettings.PaperROICircleRadius), ApplicationSettings.PaperROICircleColor, ApplicationSettings.PaperROICircleThickness);
 			}
 
 			picture.Image = img;

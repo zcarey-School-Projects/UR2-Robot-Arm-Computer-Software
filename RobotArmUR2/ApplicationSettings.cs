@@ -5,10 +5,19 @@ using System.Windows.Forms;
 
 namespace RobotArmUR2 {
 	public static class ApplicationSettings {
+		//TODO make properties to prevent editing values.
 
+		//Visuals
 		public static readonly Bgr TriangleHighlightColor = new Bgr(Color.Yellow);
 		public static readonly Bgr SquareHighlightColor = new Bgr(Color.Red);
 		public const int ShapeHighlightThickness = 3;
+
+		public static readonly Bgr PaperROIMaskColor = new Bgr(42, 240, 247);
+		public const float PaperROIMaskTransparency = 0.2f;
+
+		public static readonly Bgr PaperROICircleColor = new Bgr(42, 240, 247);
+		public const int PaperROICircleThickness = 3;
+		public const int PaperROICircleRadius = 10;
 
 		//Keybindings
 		public const Keys Key_RotateCCW = Keys.A;
