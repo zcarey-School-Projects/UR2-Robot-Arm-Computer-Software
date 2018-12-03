@@ -21,6 +21,7 @@ namespace RobotArmUR2 {
 		public const Keys Key_MagnetOff = Keys.N;
 
 		public static readonly PaperCalibration PaperCalibration = new PaperCalibration();
+		public static readonly RobotCalibration RobotCalibration = new RobotCalibration();
 
 		public static readonly Setting<byte> BasePrescale = new Setting<byte>(nameof(Properties.Settings.Default.BasePrescale));
 		public static readonly Setting<byte> CarriagePrescale = new Setting<byte>(nameof(Properties.Settings.Default.CarriagePrescale));

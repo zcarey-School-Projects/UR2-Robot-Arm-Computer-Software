@@ -17,7 +17,7 @@ namespace RobotArmUR2 {
 		}
 
 		private void RobotCalibrater_FormClosing(object sender, FormClosingEventArgs e) {
-			robot.Calibration.SaveSettings();
+			ApplicationSettings.RobotCalibration.SaveSettings();
 		}
 
 		private void RobotCalibrater_KeyDown(object sender, KeyEventArgs e) {
@@ -29,34 +29,34 @@ namespace RobotArmUR2 {
 		}
 		
 		private void BLMoveTo_Click(object sender, EventArgs e) {
-			robot.Interface.MoveTo(robot.Calibration.BottomLeft);
+			robot.Interface.MoveTo(ApplicationSettings.RobotCalibration.BottomLeft);
 		}
 
 		private void TLMoveTo_Click(object sender, EventArgs e) {
-			robot.Interface.MoveTo(robot.Calibration.TopLeft);
+			robot.Interface.MoveTo(ApplicationSettings.RobotCalibration.TopLeft);
 		}
 
 		private void TRMoveTo_Click(object sender, EventArgs e) {
-			robot.Interface.MoveTo(robot.Calibration.TopRight);
+			robot.Interface.MoveTo(ApplicationSettings.RobotCalibration.TopRight);
 		}
 
 		private void BRMoveTo_Click(object sender, EventArgs e) {
-			robot.Interface.MoveTo(robot.Calibration.BottomRight);
+			robot.Interface.MoveTo(ApplicationSettings.RobotCalibration.BottomRight);
 		}
 
 		public void OnCalibrationChanged() { //TODO what 7 things are calling this?
-			updateLabel(BLLabel, robot.Calibration.BottomLeft);
-			updateLabel(TLLabel, robot.Calibration.TopLeft);
-			updateLabel(TRLabel, robot.Calibration.TopRight);
-			updateLabel(BRLabel, robot.Calibration.BottomRight);
-			updateLabel(TriangleLabel, robot.Calibration.TriangleStack);
-			updateLabel(SquareLabel, robot.Calibration.SquareStack);
+			updateLabel(BLLabel, ApplicationSettings.RobotCalibration.BottomLeft);
+			updateLabel(TLLabel, ApplicationSettings.RobotCalibration.TopLeft);
+			updateLabel(TRLabel, ApplicationSettings.RobotCalibration.TopRight);
+			updateLabel(BRLabel, ApplicationSettings.RobotCalibration.BottomRight);
+			updateLabel(TriangleLabel, ApplicationSettings.RobotCalibration.TriangleStack);
+			updateLabel(SquareLabel, ApplicationSettings.RobotCalibration.SquareStack);
 		}
 
 		private void updateLabel(Label label, RobotPoint pos) {
-			BeginInvoke(new Action(() => {
+			//BeginInvoke(new Action(() => {
 				label.Text = "(" + pos.Rotation.ToString("N2") + (char)248 + ", " + pos.Extension.ToString("N2") + "mm)";
-			}));
+			//}));
 		}
 
 		private void calibrateClicked(RobotCalibrationPoint pt) {
@@ -73,19 +73,19 @@ namespace RobotArmUR2 {
 		}
 
 		private void BLCalibrate_Click(object sender, EventArgs e) {
-			calibrateClicked(robot.Calibration.BottomLeft);
+			calibrateClicked(ApplicationSettings.RobotCalibration.BottomLeft);
 		}
 
 		private void BRCalibrate_Click(object sender, EventArgs e) {
-			calibrateClicked(robot.Calibration.BottomRight);
+			calibrateClicked(ApplicationSettings.RobotCalibration.BottomRight);
 		}
 
 		private void TLCalibrate_Click(object sender, EventArgs e) {
-			calibrateClicked(robot.Calibration.TopLeft);
+			calibrateClicked(ApplicationSettings.RobotCalibration.TopLeft);
 		}
 
 		private void TRCalibrate_Click(object sender, EventArgs e) {
-			calibrateClicked(robot.Calibration.TopRight);
+			calibrateClicked(ApplicationSettings.RobotCalibration.TopRight);
 		}
 
 		private static bool confirmReset() {
@@ -93,27 +93,27 @@ namespace RobotArmUR2 {
 		}
 
 		private void resetPoint1() {
-			robot.Calibration.BottomLeft.ResetToDefault();
+			ApplicationSettings.RobotCalibration.BottomLeft.ResetToDefault();
 		}
 
 		private void resetPoint2() {
-			robot.Calibration.TopLeft.ResetToDefault();
+			ApplicationSettings.RobotCalibration.TopLeft.ResetToDefault();
 		}
-
+		//TODO naming
 		private void resetPoint3() {
-			robot.Calibration.TopRight.ResetToDefault();
+			ApplicationSettings.RobotCalibration.TopRight.ResetToDefault();
 		}
 
 		private void resetPoint4() {
-			robot.Calibration.BottomRight.ResetToDefault();
+			ApplicationSettings.RobotCalibration.BottomRight.ResetToDefault();
 		}
 
 		private void resetTriangle() {
-			robot.Calibration.TriangleStack.ResetToDefault();
+			ApplicationSettings.RobotCalibration.TriangleStack.ResetToDefault();
 		}
 
 		private void resetSquare() {
-			robot.Calibration.SquareStack.ResetToDefault();
+			ApplicationSettings.RobotCalibration.SquareStack.ResetToDefault();
 		}
 
 		private void ResetBL_Click(object sender, EventArgs e) {
@@ -157,19 +157,19 @@ namespace RobotArmUR2 {
 		}
 
 		private void TriangleMoveTo_Click(object sender, EventArgs e) {
-			robot.Interface.MoveTo(robot.Calibration.TriangleStack);
+			robot.Interface.MoveTo(ApplicationSettings.RobotCalibration.TriangleStack);
 		}
 
 		private void SquareMoveTo_Click(object sender, EventArgs e) {
-			robot.Interface.MoveTo(robot.Calibration.SquareStack);
+			robot.Interface.MoveTo(ApplicationSettings.RobotCalibration.SquareStack);
 		}
 
 		private void TriangleCalibrate_Click(object sender, EventArgs e) {
-			calibrateClicked(robot.Calibration.TriangleStack);
+			calibrateClicked(ApplicationSettings.RobotCalibration.TriangleStack);
 		}
 
 		private void SquareCalibrate_Click(object sender, EventArgs e) {
-			calibrateClicked(robot.Calibration.SquareStack);
+			calibrateClicked(ApplicationSettings.RobotCalibration.SquareStack);
 		}
 
 		private void ResetTriangle_Click(object sender, EventArgs e) {

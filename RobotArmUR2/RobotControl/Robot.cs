@@ -5,8 +5,6 @@ using System.Windows.Forms;
 namespace RobotArmUR2 {
 	public class Robot {
 		private static readonly object programLock = new object();
-
-		public RobotCalibration Calibration { get; } = new RobotCalibration();
 		
 		public RobotInterface Interface { get; } = new RobotInterface();
 

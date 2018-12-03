@@ -44,18 +44,18 @@ namespace RobotArmUR2 {
 		}
 
 		protected void moveRobotToPaperPoint(RobotInterface serial, PaperPoint relativePaperCoords) {
-			RobotPoint targetCoords = CalculateRobotCoordinates(Robot.Calibration, relativePaperCoords);
+			RobotPoint targetCoords = CalculateRobotCoordinates(ApplicationSettings.RobotCalibration, relativePaperCoords);
 			Console.WriteLine("Target: [{0}°, {1}mm]\n", targetCoords.Rotation, targetCoords.Extension);
 
 			serial.MoveToWait(targetCoords);
 		}
 		//TODO whenever a command fails, we need to cancel the program.
 		protected void moveToTriangleStack(RobotInterface serial) {
-			serial.MoveToWait(Robot.Calibration.TriangleStack);
+			serial.MoveToWait(ApplicationSettings.RobotCalibration.TriangleStack);
 		}
 
 		protected void moveToSquareStack(RobotInterface serial) {
-			serial.MoveToWait(Robot.Calibration.SquareStack);
+			serial.MoveToWait(ApplicationSettings.RobotCalibration.SquareStack);
 		}
 
 	}
