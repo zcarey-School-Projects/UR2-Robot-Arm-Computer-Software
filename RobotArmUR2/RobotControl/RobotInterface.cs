@@ -40,7 +40,7 @@ namespace RobotArmUR2 { //TODO fix namespaces
 			comTimer.Elapsed += onTimerTick;
 			comTimer.AutoReset = true;
 			//manualTimer.Start();
-		}//TODO prevent multiple key events from firing
+		}
 
 		public bool ConnectToRobot() {
 			//TODO add locks
