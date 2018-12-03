@@ -2,7 +2,6 @@
 
 namespace RobotArmUR2.VisionProcessing {
 	public class PaperCalibration {
-		//TODO put text next to paper clibration points
 
 		public PaperCalibrationPoint BottomLeft { get; } = new PaperCalibrationPoint(nameof(Properties.Settings.Default.PaperPointBLX), nameof(Properties.Settings.Default.PaperPointBLY));
 		public PaperCalibrationPoint TopLeft { get; } = new PaperCalibrationPoint(nameof(Properties.Settings.Default.PaperPointTLX), nameof(Properties.Settings.Default.PaperPointTLY));

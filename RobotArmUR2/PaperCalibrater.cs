@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using RobotArmUR2.VisionProcessing;
 using Emgu.CV.Structure;
+using Emgu.CV.CvEnum;
 
 namespace RobotArmUR2 {
 	public partial class PaperCalibrater : Form {
@@ -45,6 +46,28 @@ namespace RobotArmUR2 {
 			foreach (PointF point in ApplicationSettings.PaperCalibration.ToArray(rect.Size.Width, rect.Size.Height)) {
 				img.Draw(new CircleF(point, ApplicationSettings.PaperROICircleRadius), ApplicationSettings.PaperROICircleColor, ApplicationSettings.PaperROICircleThickness);
 			}
+
+			#region Draw Text next to circles
+			PointF textPoint = ApplicationSettings.PaperCalibration.BottomLeft.GetAdjustedCoord(rect.Size.Width, rect.Size.Height);
+			textPoint.X += ApplicationSettings.PaperROICircleRadius;
+			textPoint.Y -= ApplicationSettings.PaperROICircleRadius;
+			img.Draw("Bottom Left", Point.Round(textPoint), ApplicationSettings.PaperROIFont, ApplicationSettings.PaperROIFontScale, ApplicationSettings.PaperROIFontColor, ApplicationSettings.PaperROIFontThickness);
+
+			textPoint = ApplicationSettings.PaperCalibration.TopLeft.GetAdjustedCoord(rect.Size.Width, rect.Size.Height);
+			textPoint.X += ApplicationSettings.PaperROICircleRadius;
+			textPoint.Y += ApplicationSettings.PaperROICircleRadius;
+			img.Draw("Top Left", Point.Round(textPoint), ApplicationSettings.PaperROIFont, ApplicationSettings.PaperROIFontScale, ApplicationSettings.PaperROIFontColor, ApplicationSettings.PaperROIFontThickness);
+
+			textPoint = ApplicationSettings.PaperCalibration.TopRight.GetAdjustedCoord(rect.Size.Width, rect.Size.Height);
+			textPoint.X -= ApplicationSettings.PaperROICircleRadius;
+			textPoint.Y += ApplicationSettings.PaperROICircleRadius;
+			img.Draw("Top Right", Point.Round(textPoint), ApplicationSettings.PaperROIFont, ApplicationSettings.PaperROIFontScale, ApplicationSettings.PaperROIFontColor, ApplicationSettings.PaperROIFontThickness);
+
+			textPoint = ApplicationSettings.PaperCalibration.BottomRight.GetAdjustedCoord(rect.Size.Width, rect.Size.Height);
+			textPoint.X -= ApplicationSettings.PaperROICircleRadius;
+			textPoint.Y -= ApplicationSettings.PaperROICircleRadius;
+			img.Draw("Bottom Right", Point.Round(textPoint), ApplicationSettings.PaperROIFont, ApplicationSettings.PaperROIFontScale, ApplicationSettings.PaperROIFontColor, ApplicationSettings.PaperROIFontThickness);
+			#endregion
 
 			picture.Image = img;
 		}

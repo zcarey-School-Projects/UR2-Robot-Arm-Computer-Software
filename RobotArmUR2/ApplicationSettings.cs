@@ -1,4 +1,5 @@
-﻿using Emgu.CV.Structure;
+﻿using Emgu.CV.CvEnum;
+using Emgu.CV.Structure;
 using RobotArmUR2.VisionProcessing;
 using System.Drawing;
 using System.Windows.Forms;
@@ -26,6 +27,15 @@ namespace RobotArmUR2 {
 		public static int PaperROICircleThickness { get; } = 3;
 
 		public static int PaperROICircleRadius { get; } = 10;
+
+		public static FontFace PaperROIFont { get; } = FontFace.HersheyPlain;
+
+		private static Bgr paperFontColor = new Bgr();
+		public static Bgr PaperROIFontColor { get => new Bgr(paperFontColor.Blue, paperFontColor.Green, paperFontColor.Red); }
+
+		public static double PaperROIFontScale { get; } = 1;
+
+		public static int PaperROIFontThickness { get; } = 2;
 		#endregion
 
 		#region Keybindings
