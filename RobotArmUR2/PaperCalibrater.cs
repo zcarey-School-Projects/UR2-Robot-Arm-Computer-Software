@@ -11,6 +11,7 @@ namespace RobotArmUR2 {
 		private PaperPoint draggingPoint = null;
 		private EmguPictureBox<Bgr, byte> picture;
 		private volatile bool autoDetectPaper = false;
+		private volatile bool isOpen = false;
 
 		public PaperCalibrater() {
 			InitializeComponent();
@@ -18,15 +19,17 @@ namespace RobotArmUR2 {
 		}
 
 		private void PaperCalibrater_Load(object sender, EventArgs e) {
-			
+			picture.Image = null;
+			isOpen = true;
 		}
 
 		private void PaperCalibrater_FormClosing(object sender, FormClosingEventArgs e) {
+			isOpen = false;
 			ApplicationSettings.PaperCalibration.SaveSettings();
 		}
 
 		public void NewFrameFinished(Vision vision) {
-			//TODO only run this if form is shown
+			if (!isOpen) return; //Only update image if window is open.
 			if (autoDetectPaper) {
 				autoDetectPaper = false;
 				detectPaper(vision);
