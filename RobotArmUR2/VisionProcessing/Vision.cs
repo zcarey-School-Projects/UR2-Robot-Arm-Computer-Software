@@ -116,7 +116,7 @@ namespace RobotArmUR2.VisionProcessing {
 		#endregion
 
 		//private FPSCounter fpsCounter = new FPSCounter();
-
+		//TODO class that stores computed images!
 		public Vision() {
 			InputStream.OnNewImage += InputStream_OnNewImage;
 			inputTimer.Elapsed += Timer_OnTimeElapsed;
