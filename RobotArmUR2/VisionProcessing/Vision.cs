@@ -15,7 +15,6 @@ namespace RobotArmUR2.VisionProcessing{
 		private static readonly object exitLock = new object();
 		private static readonly object inputLock = new object(); //Protects changing the input stream while trying to input a new image.
 		private static readonly object visionLock = new object(); //Protects accessing images while new ones are being processed.
-		private static readonly object calibrationLock = new object();
 
 		private VisionUIInvoker uiListener = new VisionUIInvoker();
 		public IVisionUI UIListener { get => uiListener.Listener; set => uiListener.Listener = value; }
@@ -199,9 +198,7 @@ namespace RobotArmUR2.VisionProcessing{
 			lock (visionLock) {
 				GrayscaleImage = ImageProcessing.GetGrayImage(InputImage);
 				ThresholdImage = ImageProcessing.GetThresholdImage(GrayscaleImage, new Gray(GrayscaleThreshold), new Gray(255));
-				lock (calibrationLock) {//TODO what? prevent calibration changes
-					WarpedImage = ImageProcessing.GetWarpedImage(ThresholdImage, ApplicationSettings.PaperCalibration);
-				}
+				WarpedImage = ImageProcessing.GetWarpedImage(ThresholdImage, ApplicationSettings.PaperCalibration);
 				UMat edges = ImageProcessing.EdgeDetection(WarpedImage);
 				CannyImage = ImageProcessing.GetEdgeImage<Gray, byte>(edges);
 				DetectedShapes = ImageProcessing.DetectShapes(edges);
