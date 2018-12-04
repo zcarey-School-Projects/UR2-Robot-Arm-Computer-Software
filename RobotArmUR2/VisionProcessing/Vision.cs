@@ -10,7 +10,7 @@ using Emgu.CV.Util;
 
 namespace RobotArmUR2.VisionProcessing{
 
-	public class Vision : IDisposable {
+	public class Vision {
 
 		private static readonly object exitLock = new object();
 		private static readonly object inputLock = new object(); //Protects changing the input stream while trying to input a new image.
@@ -131,17 +131,6 @@ namespace RobotArmUR2.VisionProcessing{
 			captureThread = new Thread(visionThreadLoop);
 			captureThread.Name = "Vision Processing Thread";
 			captureThread.IsBackground = true;
-		}
-
-		~Vision() {
-			Dispose();
-		}
-
-		public void Dispose() {
-			//TODO dispose vision
-			//if(inputStream != null) inputStream.Dispose();
-			//if(origImage != null) origImage.Dispose();
-			//if (imageProc != null) imageProc.Dispose();
 		}
 
 		private void visionThreadLoop() {
