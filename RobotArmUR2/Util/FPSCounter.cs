@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace RobotHelpers.Util {
+namespace RobotArmUR2.Util {
 	public class FPSCounter {
 
 		public float FPS { get; private set; }
-
+		//TODO use timer, more accurate
 		private int fpsFramesToAverage;
 		private Queue<DateTime> frameTimes;
 

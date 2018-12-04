@@ -10,7 +10,6 @@ using RobotArmUR2.Util.Calibration;
 using RobotArmUR2.Util.Calibration.Paper;
 using RobotArmUR2.Util.Calibration.Robot;
 using RobotArmUR2.VisionProcessing;
-using RobotHelpers.InputHandling;
 
 namespace RobotArmUR2
 {
@@ -46,7 +45,7 @@ namespace RobotArmUR2
 			robotCalibrater = new RobotCalibrater(robot);
 			vision = new Vision(/*paperCalibrater*/);
 			//vision.setCamera(Default_Camera_Index);
-			vision.InputStream = new ImageInput("DebugImages\\Test Table.jpg");
+			
 
 			vision.SetNativeResolutionText += VisionUI_SetNativeResolutionText;
 			vision.SetFPSCounter += VisionUI_SetFPSCounter;
@@ -57,13 +56,16 @@ namespace RobotArmUR2
 		}
 
 		private void Form1_Load(object sender, EventArgs e) {
-			vision.start();
-
+			vision.InputStream.LoadLocalFile("DebugImages\\Test Table.jpg");
+			vision.InputStream.Play();
 		}
 
 		private void Form1_FormClosing(object sender, FormClosingEventArgs e) {
+			vision.InputStream.Stop();
+			vision.NewFrameFinished -= VisionUI_NewFrameFinished;
+			vision.SetFPSCounter -= VisionUI_SetFPSCounter;
+			vision.SetNativeResolutionText -= VisionUI_SetNativeResolutionText; //TODO needed?
 			Properties.Settings.Default.Save();
-			vision.stop();
 		}
 		
 		private void VisionUI_NewFrameFinished(Vision vision) {
@@ -79,20 +81,18 @@ namespace RobotArmUR2
 		}
 
 		private void screenshotToolStripMenuItem_Click(object sender, EventArgs e) {
-			InputHandler input = vision.InputStream;
-			if(input != null) {
-				input.UserPromptSaveScreenshot();
-			}
+			vision.InputStream.PromptUserSaveScreenshot();
 		}
 
 		private void imageToolStripMenuItem_Click(object sender, EventArgs e) {
-			ImageInput newInput = new ImageInput();
-			if (newInput.PromptUserToLoadFile()) {
-				vision.InputStream = newInput;
-			}
+			vision.InputStream.PromptUserLoadFile();
+			vision.InputStream.Play();
 		}
 
-		private void changeCamera(int cameraIndex) { vision.InputStream = new CameraInput(cameraIndex); }
+		private void changeCamera(int cameraIndex) {
+			vision.InputStream.SelectCamera(cameraIndex);
+			vision.InputStream.Play();
+		}
 
 		private void Camera0Menu_Click(object sender, EventArgs e) { changeCamera(0); }
 

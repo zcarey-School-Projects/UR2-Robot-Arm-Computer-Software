@@ -2,30 +2,20 @@
 using Emgu.CV.Structure;
 using System.Threading;
 using System.Drawing;
-using RobotHelpers.InputHandling;
-using RobotHelpers.Util;
+using System;
+using RobotArmUR2.Util;
+using System.Timers;
 
 namespace RobotArmUR2.VisionProcessing {
 
 	public class Vision {
 
-		private static readonly object exitLock = new object();
 		private static readonly object inputLock = new object(); //Protects changing the input stream while trying to input a new image.
 		private static readonly object visionLock = new object(); //Protects accessing images while new ones are being processed.
 
-		private InputHandler inputStream;
-		public InputHandler InputStream {
-			get {
-				lock (inputLock) {
-					return inputStream;
-				}
-			}
-			set {
-				lock (inputLock) {
-					if (inputStream != null) inputStream.Dispose();
-					inputStream = value;
-				}
-			} }
+		public ImageStream InputStream { get; } = new ImageStream();
+		private System.Timers.Timer inputTimer = new System.Timers.Timer();
+		private Mat rawInputBuffer;
 
 		#region Image Properties
 		private Image<Bgr, byte> rawImage = new Image<Bgr, byte>(1, 1); //Full pixel size, non-edited
@@ -125,77 +115,82 @@ namespace RobotArmUR2.VisionProcessing {
 		public event NewFrameFinishedHandler NewFrameFinished;
 		#endregion
 
-
-		private volatile bool exitThread = false;
-		private Thread captureThread;
-
-		private FPSCounter fpsCounter = new FPSCounter();
+		//private FPSCounter fpsCounter = new FPSCounter();
 
 		public Vision() {
-			captureThread = new Thread(visionThreadLoop);
-			captureThread.Name = "Vision Processing Thread";
-			captureThread.IsBackground = true;
+			InputStream.OnNewImage += InputStream_OnNewImage;
+			inputTimer.Elapsed += Timer_OnTimeElapsed;
+			inputTimer.AutoReset = true;
+
+			Console.WriteLine("Have OpenCL: " + CvInvoke.HaveOpenCL);
+			Console.WriteLine("Compatible GPU: " + CvInvoke.HaveOpenCLCompatibleGpuDevice);
+			Console.WriteLine("Are we using OpenCL: " + CvInvoke.UseOpenCL);
 		}
 
-		private void visionThreadLoop() {
-			while (true) {
-				lock (exitLock) {
-					if (exitThread) {
-						break;
-					}
-				}
-
-				lock (visionLock) { //While we are changing images around, we dont want the images to be accessed.
-					if (!inputImages()) {
-						fpsCounter.Reset();
-						SetNativeResolutionText(new Size(0, 0));
-						lock (visionLock) {
-							RawImage = null;
-							InputImage = null;
-							GrayscaleImage = null;
-							ThresholdImage = null;
-							WarpedImage = null;
-							CannyImage = null;
-						}
-						Thread.Sleep(1); //Keeps the thread from going mach 3 when there is no input, but still fast enough that it isn't "stalling" the pogram.
-					} else {
-						fpsCounter.Tick();
-						SetNativeResolutionText(RawImage.Size);
-						processVision();
-					}
-				}
-
-				SetFPSCounter(fpsCounter.FPS);
-				NewFrameFinished(this);
-			}
-
-			exitThread = false;
-		}
-
-		private bool inputImages() {
+		private void InputStream_OnNewImage(ImageStream stream, Mat image) {
 			lock (inputLock) {
-				lock (visionLock) {
-					if (inputStream == null) {
-						RawImage = null;
-					} else {
-						Image<Bgr, byte> input = inputStream.GetFrame(); //Attempt to read a new frame.
-						RawImage = input;
-						if (input == null) return false;
+				inputTimer.Interval = Math.Max(16, stream.TargetFPS * 3f); //TODO dont let mbe 0
+				inputTimer.Start();
 
-						//Scale image so Height = 480, but still keeps aspect ratio.
-						inputImage = input.Resize(480d / input.Height, Emgu.CV.CvEnum.Inter.Cubic);
+				rawInputBuffer = image;
+				OnNewInputImage(rawInputBuffer.ToImage<Bgr, byte>());
+			}
+		}
 
-						if (RotateImage180) {
-							inputImage._Flip(Emgu.CV.CvEnum.FlipType.Horizontal);
-							inputImage._Flip(Emgu.CV.CvEnum.FlipType.Vertical);
-						}
-
-						return true;
-					}
-
-					return false;
+		private void Timer_OnTimeElapsed(object sender, ElapsedEventArgs e) {
+			if (Monitor.TryEnter(inputLock)) {
+				try {
+					if (!InputStream.IsOpened) InputStream_OnStreamEnded(InputStream);
+					else OnNewInputImage(rawInputBuffer.ToImage<Bgr, byte>());
+				} finally {
+					// Ensure that the lock is released.
+					Monitor.Exit(inputLock);
 				}
 			}
+		}
+
+		private void InputStream_OnStreamEnded(ImageStream sender) {
+			lock (inputLock) {
+				inputTimer.Stop();
+				rawImage = null;
+				OnNewInputImage(null);
+				//TODO special event for empty frames
+			}
+		}
+
+		private void OnNewInputImage(Image<Bgr, byte> image) {
+			if (image != null) {
+				lock (visionLock) {
+					//FPS tick
+					SetFPSCounter(InputStream.FPS); //Display target FPS?
+					SetNativeResolutionText(image.Size);
+
+					rawImage = image;
+
+					//Scale image so Height = 480, but still keeps aspect ratio.
+					inputImage = rawImage.Resize(480d / rawImage.Height, Emgu.CV.CvEnum.Inter.Cubic); //TODO put size in ApplicationSetttings
+
+					if (RotateImage180) {
+						inputImage._Flip(Emgu.CV.CvEnum.FlipType.Horizontal);
+						inputImage._Flip(Emgu.CV.CvEnum.FlipType.Vertical);
+					}
+
+					processVision();
+				}
+			} else {
+				//Reset FPS
+				SetNativeResolutionText?.Invoke(new Size(0, 0));
+				lock (visionLock) {
+					RawImage = null;
+					InputImage = null;
+					GrayscaleImage = null;
+					ThresholdImage = null;
+					WarpedImage = null;
+					CannyImage = null;
+				}
+			}
+
+			NewFrameFinished?.Invoke(this); //TODO lol
 		}
 
 		//Does all the necessary processing on images to properly detect shapes.
@@ -229,18 +224,6 @@ namespace RobotArmUR2.VisionProcessing {
 			foreach (RotatedRect square in shapes.Squares) {
 				image.Draw(square, SquareColor, thickness);
 				image.Draw(new CircleF(square.Center, 2), SquareColor, thickness);
-			}
-		}
-
-		public void start() { if(!captureThread.IsAlive) captureThread.Start(); }
-
-		public void stop() {
-			if (captureThread.IsAlive) {
-				lock (exitLock) {
-					//Safely let the thread know to exit.
-					exitThread = true;
-				}
-				captureThread.Join(); //Wait for the thread to finish before closing.
 			}
 		}
 

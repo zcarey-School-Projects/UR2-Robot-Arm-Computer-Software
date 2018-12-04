@@ -63,6 +63,7 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Management" />
+    <Reference Include="System.ServiceModel" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -86,6 +87,7 @@
     <Compile Include="Util\Calibration\RobotSettings.Designer.cs">
       <DependentUpon>RobotSettings.cs</DependentUpon>
     </Compile>
+    <Compile Include="Util\ImageStream.cs" />
     <Compile Include="Util\Setting.cs" />
     <Compile Include="Util\EmguPictureBox.cs" />
     <Compile Include="RobotControl\Commands\EndMoveCommand.cs" />
@@ -112,11 +114,6 @@
     <Compile Include="Util\Calibration\Robot\RobotCalibration.cs" />
     <Compile Include="Util\Calibration\Robot\RobotCalibrationPoint.cs" />
     <Compile Include="Util\FPSCounter.cs" />
-    <Compile Include="Util\InputHandling\CameraInput.cs" />
-    <Compile Include="Util\InputHandling\FileInput.cs" />
-    <Compile Include="Util\InputHandling\ImageInput.cs" />
-    <Compile Include="Util\InputHandling\InputHandler.cs" />
-    <Compile Include="Util\InputHandling\VideoInput.cs" />
     <Compile Include="Util\Serial\SerialCommand.cs" />
     <Compile Include="Util\Calibration\Paper\PaperCalibrater.cs">
       <SubType>Form</SubType>
