@@ -108,7 +108,7 @@ namespace RobotArmUR2.VisionProcessing {
 		public delegate void SetNativeResolutionTextHandler(Size size); 
 		public event SetNativeResolutionTextHandler SetNativeResolutionText;
 
-		public delegate void SetFPSCounterHandler(float FPS);
+		public delegate void SetFPSCounterHandler(float CurrentFPS, float TargetFPS);
 		public event SetFPSCounterHandler SetFPSCounter;
 
 		public delegate void NewFrameFinishedHandler(Vision vision);
@@ -121,15 +121,11 @@ namespace RobotArmUR2.VisionProcessing {
 			InputStream.OnNewImage += InputStream_OnNewImage;
 			inputTimer.Elapsed += Timer_OnTimeElapsed;
 			inputTimer.AutoReset = true;
-
-			Console.WriteLine("Have OpenCL: " + CvInvoke.HaveOpenCL);
-			Console.WriteLine("Compatible GPU: " + CvInvoke.HaveOpenCLCompatibleGpuDevice);
-			Console.WriteLine("Are we using OpenCL: " + CvInvoke.UseOpenCL);
 		}
 
 		private void InputStream_OnNewImage(ImageStream stream, Mat image) {
-			lock (inputLock) {
-				inputTimer.Interval = Math.Max(16, stream.TargetFPS * 3f); //TODO dont let mbe 0
+			lock (inputLock) { 
+				inputTimer.Interval = Math.Max(1000/120, stream.TargetFPS * 3f);
 				inputTimer.Start();
 
 				rawInputBuffer = image;
@@ -154,7 +150,6 @@ namespace RobotArmUR2.VisionProcessing {
 				inputTimer.Stop();
 				rawImage = null;
 				OnNewInputImage(null);
-				//TODO special event for empty frames
 			}
 		}
 
@@ -162,7 +157,7 @@ namespace RobotArmUR2.VisionProcessing {
 			if (image != null) {
 				lock (visionLock) {
 					//FPS tick
-					SetFPSCounter(InputStream.FPS); //Display target FPS?
+					SetFPSCounter?.Invoke(InputStream.FPS, InputStream.TargetFPS); //Display target FPS?
 					SetNativeResolutionText(image.Size);
 
 					rawImage = image;

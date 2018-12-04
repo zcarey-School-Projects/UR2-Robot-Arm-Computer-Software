@@ -59,7 +59,7 @@ namespace RobotArmUR2.Util{
 		public Size Size { get { lock (streamLock) { if (capture == null) return new Size(0, 0); else return new Size(capture.Width, capture.Height); } } }
 
 		/// <value>Whether or not there is an opened input source.</value>
-		public bool IsOpened { get { lock (streamLock) { if (capture == null) return false; else return capture.IsOpened; } } }
+		public bool IsOpened { get { lock (streamLock) { if (capture == null) return false; else return capture.IsOpened; } } } 
 
 		/// <value>The target FPS defined by the input source.</value>
 		public float TargetFPS { get; private set; } = 0f;
@@ -190,9 +190,9 @@ namespace RobotArmUR2.Util{
 		/// Closes the input and fires onStreamEnded event.
 		/// </summary>
 		public void Stop() {
-			lock (streamLock) {
-				Dispose();
-				lock (listenerLock) { //Ensures that event is fired only after image grabbed by capture is finished sending.
+			lock (listenerLock) {//Ensures that event is fired only after image grabbed by capture is finished sending. 
+				lock (streamLock) {
+					Dispose();
 					OnStreamEnded?.Invoke(this); //TODO Call all events like this
 				}
 			}

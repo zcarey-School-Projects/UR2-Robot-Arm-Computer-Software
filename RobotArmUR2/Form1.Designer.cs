@@ -42,6 +42,9 @@
 			this.goToHomeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.paperPositionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.robotPositionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.robotToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.imageToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
 			this.AutoConnect = new System.Windows.Forms.Button();
 			this.RGBValues = new System.Windows.Forms.Label();
 			this.ClickLocation = new System.Windows.Forms.Label();
@@ -60,9 +63,7 @@
 			this.Rotate180Checkbox = new System.Windows.Forms.CheckBox();
 			this.ThresholdValue = new System.Windows.Forms.TrackBar();
 			this.ThresholdValueLabel = new System.Windows.Forms.Label();
-			this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.robotToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.imageToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+			this.TargetFpsStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
 			this.menuStrip1.SuspendLayout();
 			this.statusStrip1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.RotateRightVisual)).BeginInit();
@@ -199,6 +200,28 @@
 			this.robotPositionToolStripMenuItem.Text = "Robot Position";
 			this.robotPositionToolStripMenuItem.Click += new System.EventHandler(this.robotPositionToolStripMenuItem_Click);
 			// 
+			// settingsToolStripMenuItem
+			// 
+			this.settingsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.robotToolStripMenuItem,
+            this.imageToolStripMenuItem1});
+			this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
+			this.settingsToolStripMenuItem.Size = new System.Drawing.Size(74, 24);
+			this.settingsToolStripMenuItem.Text = "Settings";
+			// 
+			// robotToolStripMenuItem
+			// 
+			this.robotToolStripMenuItem.Name = "robotToolStripMenuItem";
+			this.robotToolStripMenuItem.Size = new System.Drawing.Size(126, 26);
+			this.robotToolStripMenuItem.Text = "Robot";
+			this.robotToolStripMenuItem.Click += new System.EventHandler(this.robotToolStripMenuItem_Click);
+			// 
+			// imageToolStripMenuItem1
+			// 
+			this.imageToolStripMenuItem1.Name = "imageToolStripMenuItem1";
+			this.imageToolStripMenuItem1.Size = new System.Drawing.Size(126, 26);
+			this.imageToolStripMenuItem1.Text = "Image";
+			// 
 			// AutoConnect
 			// 
 			this.AutoConnect.Location = new System.Drawing.Point(12, 415);
@@ -261,7 +284,8 @@
 			// 
 			this.statusStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
 			this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.FpsStatusLabel});
+            this.FpsStatusLabel,
+            this.TargetFpsStatusLabel});
 			this.statusStrip1.Location = new System.Drawing.Point(0, 449);
 			this.statusStrip1.Name = "statusStrip1";
 			this.statusStrip1.Size = new System.Drawing.Size(1005, 25);
@@ -270,6 +294,7 @@
 			// 
 			// FpsStatusLabel
 			// 
+			this.FpsStatusLabel.Margin = new System.Windows.Forms.Padding(0, 3, 20, 2);
 			this.FpsStatusLabel.Name = "FpsStatusLabel";
 			this.FpsStatusLabel.Size = new System.Drawing.Size(79, 20);
 			this.FpsStatusLabel.Text = "000.00 FPS";
@@ -372,27 +397,11 @@
 			this.ThresholdValueLabel.TabIndex = 32;
 			this.ThresholdValueLabel.Text = "Threshold: ";
 			// 
-			// settingsToolStripMenuItem
+			// TargetFpsStatusLabel
 			// 
-			this.settingsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.robotToolStripMenuItem,
-            this.imageToolStripMenuItem1});
-			this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
-			this.settingsToolStripMenuItem.Size = new System.Drawing.Size(74, 24);
-			this.settingsToolStripMenuItem.Text = "Settings";
-			// 
-			// robotToolStripMenuItem
-			// 
-			this.robotToolStripMenuItem.Name = "robotToolStripMenuItem";
-			this.robotToolStripMenuItem.Size = new System.Drawing.Size(216, 26);
-			this.robotToolStripMenuItem.Text = "Robot";
-			this.robotToolStripMenuItem.Click += new System.EventHandler(this.robotToolStripMenuItem_Click);
-			// 
-			// imageToolStripMenuItem1
-			// 
-			this.imageToolStripMenuItem1.Name = "imageToolStripMenuItem1";
-			this.imageToolStripMenuItem1.Size = new System.Drawing.Size(216, 26);
-			this.imageToolStripMenuItem1.Text = "Image";
+			this.TargetFpsStatusLabel.Name = "TargetFpsStatusLabel";
+			this.TargetFpsStatusLabel.Size = new System.Drawing.Size(127, 20);
+			this.TargetFpsStatusLabel.Text = "Target FPS: 000.00";
 			// 
 			// Form1
 			// 
@@ -480,6 +489,7 @@
 		private System.Windows.Forms.ToolStripMenuItem settingsToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem robotToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem imageToolStripMenuItem1;
+		private System.Windows.Forms.ToolStripStatusLabel TargetFpsStatusLabel;
 	}
 }
 

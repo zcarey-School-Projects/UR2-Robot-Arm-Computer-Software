@@ -51,7 +51,7 @@ namespace RobotArmUR2
 			vision.SetFPSCounter += VisionUI_SetFPSCounter;
 			vision.NewFrameFinished += VisionUI_NewFrameFinished;
 
-			paperCalibrater = new PaperCalibrater(/*this, vision*/);
+			paperCalibrater = new PaperCalibrater(vision);
 			robotSettings = new RobotSettings(robot);
 		}
 
@@ -62,12 +62,13 @@ namespace RobotArmUR2
 
 		private void Form1_FormClosing(object sender, FormClosingEventArgs e) {
 			vision.InputStream.Stop();
-			vision.NewFrameFinished -= VisionUI_NewFrameFinished;
-			vision.SetFPSCounter -= VisionUI_SetFPSCounter;
-			vision.SetNativeResolutionText -= VisionUI_SetNativeResolutionText; //TODO needed?
+			//vision.NewFrameFinished -= VisionUI_NewFrameFinished;
+			//vision.SetFPSCounter -= VisionUI_SetFPSCounter;
+			//vision.SetNativeResolutionText -= VisionUI_SetNativeResolutionText; //TODO needed?
 			Properties.Settings.Default.Save();
 		}
-		
+
+		#region Vision Events
 		private void VisionUI_NewFrameFinished(Vision vision) {
 			origImage.Image = vision.InputImage; //grabs image before continuing, therefore should be thread safe.
 			threshImage.Image = vision.ThresholdImage;
@@ -76,10 +77,49 @@ namespace RobotArmUR2
 			Image<Bgr, byte> warped = vision.WarpedImage.Convert<Bgr, byte>();
 			vision.DrawShapes(warped, ApplicationSettings.TriangleHighlightColor, ApplicationSettings.SquareHighlightColor, ApplicationSettings.ShapeHighlightThickness);
 			warpedImage.Image = warped;
-
-			paperCalibrater.NewFrameFinished(vision);
 		}
 
+		private void VisionUI_SetFPSCounter(float CurrentFPS, float TargetFPS) {
+			BeginInvoke(new Action(() => { //Thread safe, baby
+				FpsStatusLabel.Text = CurrentFPS.ToString("N2").PadLeft(6) + " FPS"; //Converts FPS to a string with 2 decimals, with at most 3 digits
+				TargetFpsStatusLabel.Text = "Target FPS: " + TargetFPS.ToString("N2").PadLeft(6);
+			}));
+		}
+
+		private void VisionUI_SetNativeResolutionText(Size resolution) {
+			BeginInvoke(new Action(() => { //Thread safety!
+				ResolutionText.Text = "Native Resolution: " + resolution.Width + " x " + resolution.Height;
+			}));
+		}
+		#endregion
+
+		#region Robot Events
+		private void Robot_OnProgramStateChanged(bool running) {
+			BeginInvoke(new Action(() => {
+				AutoConnect.Enabled = !running;
+				menuStrip1.Enabled = !running;
+				Stack.Text = (running ? "Cancel" : "Stack!");
+			}));
+		}
+
+		private void Robot_OnManualControlChanged(Rotation rotation, Extension extension) {
+			BeginInvoke(new Action(() => {
+				RotateLeftVisual.Image = ((rotation == Rotation.CCW) ? Properties.Resources.RotateLeft : Properties.Resources.RotateLeftOff);
+				RotateRightVisual.Image = ((rotation == Rotation.CW) ? Properties.Resources.RotateRight : Properties.Resources.RotateRightOff);
+				ExtendVisual.Image = ((extension == Extension.Outward) ? Properties.Resources.Extend : Properties.Resources.ExtendOff);
+				RetractVisual.Image = ((extension == Extension.Inward) ? Properties.Resources.Retract : Properties.Resources.RetractOff);
+			}));
+		}
+
+		private void RobotInterface_OnConnectionChanged(bool isConnected, string portName) {
+			BeginInvoke(new Action(() => {
+				RobotConnected.CheckState = (isConnected ? CheckState.Checked : CheckState.Unchecked);
+				RobotPort.Text = "Port: " + portName;
+			}));
+		}
+		#endregion
+
+		#region User Input Selection
 		private void screenshotToolStripMenuItem_Click(object sender, EventArgs e) {
 			vision.InputStream.PromptUserSaveScreenshot();
 		}
@@ -99,6 +139,7 @@ namespace RobotArmUR2
 		private void CameraMenu1_Click(object sender, EventArgs e) { changeCamera(1); }
 
 		private void Camera2Menu_Click(object sender, EventArgs e) { changeCamera(2); }
+		#endregion
 
 		private void AutoConnect_Click(object sender, EventArgs e) {
 			if (!robot.Interface.ConnectToRobot()) {
@@ -152,51 +193,15 @@ namespace RobotArmUR2
 		private void Form1_KeyUp(object sender, KeyEventArgs e) {
 			robot.ManualControlKeyEvent(e.KeyCode, false);
 		}
-		
-		private void Robot_OnManualControlChanged(Rotation rotation, Extension extension) {
-			BeginInvoke(new Action(() => {
-				RotateLeftVisual.Image = ((rotation == Rotation.CCW) ? Properties.Resources.RotateLeft : Properties.Resources.RotateLeftOff);
-				RotateRightVisual.Image = ((rotation == Rotation.CW) ? Properties.Resources.RotateRight : Properties.Resources.RotateRightOff);
-				ExtendVisual.Image = ((extension == Extension.Outward) ? Properties.Resources.Extend : Properties.Resources.ExtendOff);
-				RetractVisual.Image = ((extension == Extension.Inward) ? Properties.Resources.Retract : Properties.Resources.RetractOff);
-			}));
-		}
-
-		private void RobotInterface_OnConnectionChanged(bool isConnected, string portName) {
-			BeginInvoke(new Action(() => {
-				RobotConnected.CheckState = (isConnected ? CheckState.Checked : CheckState.Unchecked);
-				RobotPort.Text = "Port: " + portName;
-			}));
-		}
 
 		private void robotPositionToolStripMenuItem_Click(object sender, EventArgs e) {
 			robotCalibrater.ShowDialog();
-		}
-
-		private void Robot_OnProgramStateChanged(bool running) {
-			BeginInvoke(new Action(() => {
-				AutoConnect.Enabled = !running;
-				menuStrip1.Enabled = !running;
-				Stack.Text = (running ? "Cancel" : "Stack!");
-			}));
 		}
 		
 		private void Stack_Click(object sender, EventArgs e) {
 			if(!robot.RunProgram(new StackingProgram(vision))) {
 				robot.CancelProgram();
 			}
-		}
-
-		private void VisionUI_SetFPSCounter(float fps) {
-			BeginInvoke(new Action(() => { //Thread safe, baby
-				FpsStatusLabel.Text = fps.ToString("N2").PadLeft(6); //Converts FPS to a string with 2 decimals, with at most 3 digits
-			}));
-		}
-
-		private void VisionUI_SetNativeResolutionText(Size resolution) {
-			BeginInvoke(new Action(() => { //Thread safety!
-				ResolutionText.Text = "Native Resolution: " + resolution.Width + " x " + resolution.Height;
-			}));
 		}
 
 		private void Rotate180Checkbox_CheckedChanged(object sender, EventArgs e) {

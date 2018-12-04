@@ -13,9 +13,11 @@ namespace RobotArmUR2.Util.Calibration.Paper {
 		private volatile bool autoDetectPaper = false;
 		private volatile bool isOpen = false;
 
-		public PaperCalibrater() {
+		public PaperCalibrater(Vision vision) {
 			InitializeComponent();
 			picture = new EmguPictureBox<Bgr, byte>(this, PaperPicture);
+
+			vision.NewFrameFinished += Vision_OnNewFrameFinished;
 		}
 
 		private void PaperCalibrater_Load(object sender, EventArgs e) {
@@ -28,7 +30,7 @@ namespace RobotArmUR2.Util.Calibration.Paper {
 			ApplicationSettings.PaperCalibration.SaveSettings();
 		}
 
-		public void NewFrameFinished(Vision vision) { 
+		private void Vision_OnNewFrameFinished(Vision vision) { 
 			if (!isOpen) return; //Only update image if window is open.
 			if (autoDetectPaper) {
 				autoDetectPaper = false;
