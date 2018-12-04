@@ -28,7 +28,7 @@ namespace RobotArmUR2.Util.Calibration.Paper {
 			ApplicationSettings.PaperCalibration.SaveSettings();
 		}
 
-		public void NewFrameFinished(Vision vision) { //TODO this needs to be called.
+		public void NewFrameFinished(Vision vision) { 
 			if (!isOpen) return; //Only update image if window is open.
 			if (autoDetectPaper) {
 				autoDetectPaper = false;

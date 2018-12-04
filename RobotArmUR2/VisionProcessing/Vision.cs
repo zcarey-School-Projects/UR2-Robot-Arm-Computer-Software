@@ -115,7 +115,7 @@ namespace RobotArmUR2.VisionProcessing {
 		public byte GrayscaleThreshold { get; set; } = (byte)(255 / 2);
 
 		#region Events and Handlers
-		public delegate void SetNativeResolutionTextHandler(Size size); //TODO Names
+		public delegate void SetNativeResolutionTextHandler(Size size); 
 		public event SetNativeResolutionTextHandler SetNativeResolutionText;
 
 		public delegate void SetFPSCounterHandler(float FPS);
