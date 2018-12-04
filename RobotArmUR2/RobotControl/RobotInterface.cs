@@ -11,8 +11,9 @@ using Util.Serial;
 
 namespace RobotArmUR2 { //TODO fix namespaces
 	public class RobotInterface {
-		private static readonly object timerLock = new object();
-		private static readonly object settingsLock = new object();
+		private static readonly object timerLock = new object(); //Allows easy stopping of the timer.
+		private static readonly object settingsLock = new object(); //Prevents manual events mishaps
+		private static readonly object connectionLock = new object(); //Stop sending commands while attempting a connect.
 
 		private SerialCommunicator serial = new SerialCommunicator();
 		private Timer comTimer = new Timer(1000/20); //20 times per second
@@ -43,22 +44,21 @@ namespace RobotArmUR2 { //TODO fix namespaces
 		}
 
 		public bool ConnectToRobot() {
-			//TODO add locks
-			DisableManualControl();
-			if (serial.AutoConnect("CH340")) {
-				//Console.WriteLine("Connected Device: " + name); //TODO move to form
-				lock (settingsLock) {
-					//TODO send robot "onConnect" command, which enables fan, steppers, etc
-					StopAll();
-					PowerMagnetOff();
-					RaiseServo();
-					//GoToHome()
-					EnableManualControl();
-					
-					return true;
+			lock (connectionLock) {
+				DisableManualControl();
+				if (serial.AutoConnect("CH340")) {
+					lock (settingsLock) {
+						//TODO send robot "onConnect" command, which enables fan, steppers, etc
+						StopAll();
+						PowerMagnetOff();
+						RaiseServo();
+						EnableManualControl();
+
+						return true;
+					}
 				}
-			} 
-			return false;
+				return false;
+			}
 		}
 
 		private void resetManualMoveVars() {
@@ -71,56 +71,62 @@ namespace RobotArmUR2 { //TODO fix namespaces
 		}
 
 		public void DisableManualControl() {
-			lock (timerLock) { //Wait for onTimerTick to finish if it hasn't
-				if (manualControlEnabled == false) return; //Already disabled
-				manualControlEnabled = false;
-				StopAll(); //Stop all movement
+			lock (connectionLock) {
+				lock (timerLock) { //Wait for onTimerTick to finish if it hasn't
+					if (manualControlEnabled == false) return; //Already disabled
+					manualControlEnabled = false;
+					StopAll(); //Stop all movement
+				}
 			}
 		}
 
 		public void EnableManualControl() {
-			lock (timerLock) {
-				if (manualControlEnabled) return; //Already enabled
-				resetManualMoveVars();
-				manualControlEnabled = true;
+			lock (connectionLock) {
+				lock (timerLock) {
+					if (manualControlEnabled) return; //Already enabled
+					resetManualMoveVars();
+					manualControlEnabled = true;
+				}
 			}
 		}
 
 		private void onTimerTick(object sender, EventArgs e) {
-			lock (timerLock) {
-				#region Manual Control
-				if (manualControlEnabled) {
-					SerialCommand moveCommand = null;
-					SerialCommand magnetCommand = null;
-					SerialCommand servoCommand = null;
+			lock (connectionLock) {
+				lock (timerLock) {
+					#region Manual Control
+					if (manualControlEnabled) {
+						SerialCommand moveCommand = null;
+						SerialCommand magnetCommand = null;
+						SerialCommand servoCommand = null;
 
-					lock (settingsLock) {
-						if ((setRotation != Rotation.None) || (setExtension != Extension.None)) {
-							wasMoving = true;
-							moveCommand = new ManualMoveCommand(setRotation, setExtension);
-						} else if (wasMoving) {
-							wasMoving = false;
-							moveCommand = new EndMoveCommand();
+						lock (settingsLock) {
+							if ((setRotation != Rotation.None) || (setExtension != Extension.None)) {
+								wasMoving = true;
+								moveCommand = new ManualMoveCommand(setRotation, setExtension);
+							} else if (wasMoving) {
+								wasMoving = false;
+								moveCommand = new EndMoveCommand();
+							}
+
+							if (setMagnetState != null) magnetCommand = new SetMagnetCommand((bool)setMagnetState);
+							setMagnetState = null;
+
+							if (setServoState != null) servoCommand = new MoveServoCommand((bool)setServoState);
+							setServoState = null;
 						}
 
-						if (setMagnetState != null) magnetCommand = new SetMagnetCommand((bool)setMagnetState);
-						setMagnetState = null;
-
-						if (setServoState != null) servoCommand = new MoveServoCommand((bool)setServoState);
-						setServoState = null;
+						if (moveCommand != null) serial.SendCommand(moveCommand);
+						if (magnetCommand != null) serial.SendCommand(magnetCommand);
+						if (servoCommand != null) serial.SendCommand(servoCommand);
 					}
+					#endregion
 
-					if (moveCommand != null) serial.SendCommand(moveCommand);
-					if (magnetCommand != null) serial.SendCommand(magnetCommand);
-					if (servoCommand != null) serial.SendCommand(servoCommand);
-				}
-				#endregion
-
-				lock (settingsLock) {
-					if(setBasePrescale != null || setCarriagePrescale != null) {
-						serial.SendCommand(new SetPrescaleCommand(setBasePrescale, setCarriagePrescale));
-						setBasePrescale = null;
-						setCarriagePrescale = null;
+					lock (settingsLock) {
+						if (setBasePrescale != null || setCarriagePrescale != null) {
+							serial.SendCommand(new SetPrescaleCommand(setBasePrescale, setCarriagePrescale));
+							setBasePrescale = null;
+							setCarriagePrescale = null;
+						}
 					}
 				}
 			}
@@ -178,9 +184,11 @@ namespace RobotArmUR2 { //TODO fix namespaces
 		}
 
 		private bool sendBasicCommand(SerialCommand command) {
-			object response = serial.SendCommand(command);
-			if ((response != null) && (response is bool) && ((bool)response == true)) return true;
-			else return false;
+			lock (connectionLock) {
+				object response = serial.SendCommand(command);
+				if ((response != null) && (response is bool) && ((bool)response == true)) return true;
+				else return false;
+			}
 		}
 
 		public bool StopAll() {
@@ -188,11 +196,13 @@ namespace RobotArmUR2 { //TODO fix namespaces
 		}
 
 		public RobotPoint GetPosition() {
-			object response = serial.SendCommand(new GetPositionCommand());
-			if(response is RobotPoint) {
-				return (RobotPoint)response;
-			} else {
-				return null;
+			lock (connectionLock) {
+				object response = serial.SendCommand(new GetPositionCommand());
+				if (response is RobotPoint) {
+					return (RobotPoint)response;
+				} else {
+					return null;
+				}
 			}
 		}
 
