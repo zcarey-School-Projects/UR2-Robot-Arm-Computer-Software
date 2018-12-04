@@ -1,8 +1,8 @@
-﻿using RobotArmUR2.VisionProcessing;
+﻿using RobotArmUR2.Util;
+using RobotArmUR2.Util.Calibration.Robot;
 using System;
-using System.Drawing;
 
-namespace RobotArmUR2 {
+namespace RobotArmUR2.RobotControl {
 	public abstract class RobotProgram {
 
 		public RobotProgram() {

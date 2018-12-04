@@ -1,19 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace RobotArmUR2 {
+namespace RobotArmUR2.Util.Calibration {
 	public partial class RobotSettings : Form {
 
-		private Robot robot;
+		private RobotControl.Robot robot;
 
-		public RobotSettings(Robot robot) {
+		public RobotSettings(RobotControl.Robot robot) {
 			this.robot = robot;
 			InitializeComponent();
 

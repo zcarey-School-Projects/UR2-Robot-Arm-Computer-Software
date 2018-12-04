@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace RobotHelpers {
+namespace RobotHelpers.Util {
 	public class FPSCounter {
 
 		public float FPS { get; private set; }

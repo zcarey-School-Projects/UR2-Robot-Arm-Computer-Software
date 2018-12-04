@@ -1,5 +1,5 @@
 ﻿using System;
-using Util.Serial;
+using RobotArmUR2.Util.Serial;
 
 namespace RobotArmUR2.RobotControl.Commands {
 	class GoToHomeCommand : SerialCommand {

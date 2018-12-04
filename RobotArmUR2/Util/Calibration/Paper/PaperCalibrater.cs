@@ -2,11 +2,10 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
-using RobotArmUR2.VisionProcessing;
 using Emgu.CV.Structure;
-using Emgu.CV.CvEnum;
+using RobotArmUR2.VisionProcessing;
 
-namespace RobotArmUR2 {
+namespace RobotArmUR2.Util.Calibration.Paper {
 	public partial class PaperCalibrater : Form {
 
 		private PaperPoint draggingPoint = null;
@@ -29,7 +28,7 @@ namespace RobotArmUR2 {
 			ApplicationSettings.PaperCalibration.SaveSettings();
 		}
 
-		public void NewFrameFinished(Vision vision) {
+		public void NewFrameFinished(Vision vision) { //TODO this needs to be called.
 			if (!isOpen) return; //Only update image if window is open.
 			if (autoDetectPaper) {
 				autoDetectPaper = false;

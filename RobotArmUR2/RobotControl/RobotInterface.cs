@@ -1,7 +1,8 @@
 ﻿using RobotArmUR2.RobotControl.Commands;
+using RobotArmUR2.Util;
+using RobotArmUR2.Util.Serial;
 using System;
 using System.Timers;
-using Util.Serial;
 
 /*
  To add new manual control command, add a variable (at top of class),
@@ -9,7 +10,7 @@ using Util.Serial;
  and add to onTimerTick to actually send command.
  */
 
-namespace RobotArmUR2 { //TODO fix namespaces
+namespace RobotArmUR2.RobotControl { 
 	public class RobotInterface {
 		private static readonly object timerLock = new object(); //Allows easy stopping of the timer.
 		private static readonly object settingsLock = new object(); //Prevents manual events mishaps
@@ -31,7 +32,7 @@ namespace RobotArmUR2 { //TODO fix namespaces
 
 		#region Events and Handlers
 		//Simply pass along event from SerialCommunicator
-		public event Util.Serial.SerialCommunicator.ConnectionChangedHandler OnConnectionChanged {
+		public event SerialCommunicator.ConnectionChangedHandler OnConnectionChanged {
 			add { serial.OnConnectionChanged += value; }
 			remove { serial.OnConnectionChanged += value; }
 		}

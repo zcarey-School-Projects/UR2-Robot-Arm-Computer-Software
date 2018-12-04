@@ -1,4 +1,5 @@
-﻿namespace RobotArmUR2 {
+﻿
+namespace RobotArmUR2.Util.Calibration.Paper {
 	partial class PaperCalibrater {
 		/// <summary>
 		/// Required designer variable.

@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace RobotArmUR2.VisionProcessing {
+namespace RobotArmUR2.Util {
 	public class PaperPoint {
 
 		public float X { get; set; }

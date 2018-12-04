@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Windows.Forms;
 
-namespace RobotArmUR2 {
+namespace RobotArmUR2.RobotControl {
 	public class Robot {
 		private static readonly object programLock = new object();
 		

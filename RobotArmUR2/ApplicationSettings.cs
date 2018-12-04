@@ -1,6 +1,8 @@
 ﻿using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
-using RobotArmUR2.VisionProcessing;
+using RobotArmUR2.Util;
+using RobotArmUR2.Util.Calibration.Paper;
+using RobotArmUR2.Util.Calibration.Robot;
 using System.Drawing;
 using System.Windows.Forms;
 

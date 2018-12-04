@@ -1,16 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 using Emgu.CV;
 using Emgu.CV.Structure;
-using RobotArmUR2.Robot_Programs;
+using RobotArmUR2.RobotControl;
+using RobotArmUR2.RobotControl.Programs;
+using RobotArmUR2.Util;
+using RobotArmUR2.Util.Calibration;
+using RobotArmUR2.Util.Calibration.Paper;
+using RobotArmUR2.Util.Calibration.Robot;
 using RobotArmUR2.VisionProcessing;
 using RobotHelpers.InputHandling;
 
 namespace RobotArmUR2
 {
-	public partial class Form1 : Form, IVisionUI
+	public partial class Form1 : Form
 	{
 
 		private Vision vision;
@@ -43,8 +47,10 @@ namespace RobotArmUR2
 			vision = new Vision(/*paperCalibrater*/);
 			//vision.setCamera(Default_Camera_Index);
 			vision.InputStream = new ImageInput("DebugImages\\Test Table.jpg");
-			//vision.SetUIListener(this);
-			vision.UIListener = this;
+
+			vision.SetNativeResolutionText += VisionUI_SetNativeResolutionText;
+			vision.SetFPSCounter += VisionUI_SetFPSCounter;
+			vision.NewFrameFinished += VisionUI_NewFrameFinished;
 
 			paperCalibrater = new PaperCalibrater(/*this, vision*/);
 			robotSettings = new RobotSettings(robot);
@@ -60,7 +66,7 @@ namespace RobotArmUR2
 			vision.stop();
 		}
 		
-		public void VisionUI_NewFrameFinished(Vision vision) {
+		private void VisionUI_NewFrameFinished(Vision vision) {
 			origImage.Image = vision.InputImage; //grabs image before continuing, therefore should be thread safe.
 			threshImage.Image = vision.ThresholdImage;
 			//threshImage.Image = vision.CannyImage;
@@ -181,13 +187,13 @@ namespace RobotArmUR2
 			}
 		}
 
-		public void VisionUI_SetFPSCounter(float fps) {
+		private void VisionUI_SetFPSCounter(float fps) {
 			BeginInvoke(new Action(() => { //Thread safe, baby
 				FpsStatusLabel.Text = fps.ToString("N2").PadLeft(6); //Converts FPS to a string with 2 decimals, with at most 3 digits
 			}));
 		}
 
-		public void VisionUI_SetNativeResolutionText(Size resolution) {
+		private void VisionUI_SetNativeResolutionText(Size resolution) {
 			BeginInvoke(new Action(() => { //Thread safety!
 				ResolutionText.Text = "Native Resolution: " + resolution.Width + " x " + resolution.Height;
 			}));

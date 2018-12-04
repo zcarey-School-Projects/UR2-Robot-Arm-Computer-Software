@@ -1,6 +1,6 @@
 ﻿using System.Drawing;
 
-namespace RobotArmUR2.VisionProcessing {
+namespace RobotArmUR2.Util.Calibration.Paper {
 	public class PaperCalibration {
 
 		public PaperCalibrationPoint BottomLeft { get; } = new PaperCalibrationPoint(nameof(Properties.Settings.Default.PaperPointBLX), nameof(Properties.Settings.Default.PaperPointBLY));

@@ -3,7 +3,7 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace RobotArmUR2 {
+namespace RobotArmUR2.Util {
 	public class EmguPictureBox<TColor, TDepth> where TColor : struct, IColor where TDepth : new() {
 
 		private static readonly object pictureLock = new object();

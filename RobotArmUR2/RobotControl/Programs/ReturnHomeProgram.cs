@@ -1,5 +1,5 @@
 ﻿
-namespace RobotArmUR2.Robot_Programs {
+namespace RobotArmUR2.RobotControl.Programs {
 	public class ReturnHomeProgram : RobotProgram {
 
 		public ReturnHomeProgram() {

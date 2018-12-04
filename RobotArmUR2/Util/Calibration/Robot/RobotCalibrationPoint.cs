@@ -1,13 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+﻿using System.Windows.Forms;
 
-namespace RobotArmUR2 {
+namespace RobotArmUR2.Util.Calibration.Robot {
 	public class RobotCalibrationPoint : RobotPoint {
 
 		private Setting<float> rotationSetting;

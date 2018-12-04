@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace RobotArmUR2 {
+﻿
+namespace RobotArmUR2.Util {
 	public class RobotPoint {
 
 		public float Rotation { get; set; }

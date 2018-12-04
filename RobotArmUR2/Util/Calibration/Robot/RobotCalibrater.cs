@@ -1,13 +1,12 @@
-﻿using RobotArmUR2.Robot_Programs;
-using System;
+﻿using System;
 using System.Windows.Forms;
 
-namespace RobotArmUR2 {
+namespace RobotArmUR2.Util.Calibration.Robot {
 	public partial class RobotCalibrater : Form {
 
-		private Robot robot;
+		private RobotControl.Robot robot;
 
-		public RobotCalibrater(Robot robot) {
+		public RobotCalibrater(RobotControl.Robot robot) {
 			this.robot = robot;
 			InitializeComponent();
 		}

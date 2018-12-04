@@ -2,7 +2,7 @@
 using System.Configuration;
 using System.Reflection;
 
-namespace RobotArmUR2 {
+namespace RobotArmUR2.Util {
 	public class Setting<T> where T : struct {
 
 		private PropertyInfo property;

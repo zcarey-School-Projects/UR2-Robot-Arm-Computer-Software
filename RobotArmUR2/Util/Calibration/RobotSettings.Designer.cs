@@ -1,4 +1,4 @@
-﻿namespace RobotArmUR2 {
+﻿namespace RobotArmUR2.Util.Calibration {
 	partial class RobotSettings {
 		/// <summary>
 		/// Required designer variable.

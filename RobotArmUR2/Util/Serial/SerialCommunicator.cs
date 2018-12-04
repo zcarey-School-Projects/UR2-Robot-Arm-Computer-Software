@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.IO;
 using System.IO.Ports;
 using System.Management;
 using System.Threading;
 
-namespace Util.Serial {
+namespace RobotArmUR2.Util.Serial {
 	public class SerialCommunicator {
 		private static readonly object serialLock = new object();
 		private SerialPort serial;

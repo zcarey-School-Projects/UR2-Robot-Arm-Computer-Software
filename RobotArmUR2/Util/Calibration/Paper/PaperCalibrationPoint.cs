@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+﻿using System.Windows.Forms;
 
-namespace RobotArmUR2.VisionProcessing {
+namespace RobotArmUR2.Util.Calibration.Paper {
 	public class PaperCalibrationPoint : PaperPoint {
 
 		private Setting<float> xSetting;

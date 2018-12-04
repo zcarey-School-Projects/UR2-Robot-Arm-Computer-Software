@@ -1,11 +1,8 @@
-﻿using Emgu.CV;
-using Emgu.CV.Structure;
+﻿using RobotArmUR2.Util;
 using RobotArmUR2.VisionProcessing;
-using System.Collections.Generic;
-using System.Drawing;
 using System.Threading;
 
-namespace RobotArmUR2.Robot_Programs {
+namespace RobotArmUR2.RobotControl.Programs {
 	public class StackingProgram : RobotProgram {
 
 		private Vision vision;

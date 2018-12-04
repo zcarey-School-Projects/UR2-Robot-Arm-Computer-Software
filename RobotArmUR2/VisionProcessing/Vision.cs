@@ -1,23 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using Emgu.CV;
+﻿using Emgu.CV;
 using Emgu.CV.Structure;
 using System.Threading;
 using System.Drawing;
 using RobotHelpers.InputHandling;
-using RobotHelpers;
-using Emgu.CV.Util;
+using RobotHelpers.Util;
 
-namespace RobotArmUR2.VisionProcessing{
+namespace RobotArmUR2.VisionProcessing {
 
 	public class Vision {
 
 		private static readonly object exitLock = new object();
 		private static readonly object inputLock = new object(); //Protects changing the input stream while trying to input a new image.
 		private static readonly object visionLock = new object(); //Protects accessing images while new ones are being processed.
-
-		private VisionUIInvoker uiListener = new VisionUIInvoker();
-		public IVisionUI UIListener { get => uiListener.Listener; set => uiListener.Listener = value; }
 
 		private InputHandler inputStream;
 		public InputHandler InputStream {
@@ -120,6 +114,17 @@ namespace RobotArmUR2.VisionProcessing{
 		public bool RotateImage180 { get; set; } = false;
 		public byte GrayscaleThreshold { get; set; } = (byte)(255 / 2);
 
+		#region Events and Handlers
+		public delegate void SetNativeResolutionTextHandler(Size size); //TODO Names
+		public event SetNativeResolutionTextHandler SetNativeResolutionText;
+
+		public delegate void SetFPSCounterHandler(float FPS);
+		public event SetFPSCounterHandler SetFPSCounter;
+
+		public delegate void NewFrameFinishedHandler(Vision vision);
+		public event NewFrameFinishedHandler NewFrameFinished;
+		#endregion
+
 
 		private volatile bool exitThread = false;
 		private Thread captureThread;
@@ -143,7 +148,7 @@ namespace RobotArmUR2.VisionProcessing{
 				lock (visionLock) { //While we are changing images around, we dont want the images to be accessed.
 					if (!inputImages()) {
 						fpsCounter.Reset();
-						uiListener.SetNativeResolutionText(new Size(0, 0));
+						SetNativeResolutionText(new Size(0, 0));
 						lock (visionLock) {
 							RawImage = null;
 							InputImage = null;
@@ -155,13 +160,13 @@ namespace RobotArmUR2.VisionProcessing{
 						Thread.Sleep(1); //Keeps the thread from going mach 3 when there is no input, but still fast enough that it isn't "stalling" the pogram.
 					} else {
 						fpsCounter.Tick();
-						uiListener.SetNativeResolutionText(RawImage.Size);
+						SetNativeResolutionText(RawImage.Size);
 						processVision();
 					}
 				}
 
-				uiListener.SetFPSCounter(fpsCounter.FPS);
-				uiListener.NewFrameFinished(this);
+				SetFPSCounter(fpsCounter.FPS);
+				NewFrameFinished(this);
 			}
 
 			exitThread = false;

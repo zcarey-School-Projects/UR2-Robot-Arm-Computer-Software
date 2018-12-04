@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Util.Serial;
+using RobotArmUR2.Util.Serial;
 
 namespace RobotArmUR2.RobotControl.Commands {
 	class SetPrescaleCommand : SerialCommand {
