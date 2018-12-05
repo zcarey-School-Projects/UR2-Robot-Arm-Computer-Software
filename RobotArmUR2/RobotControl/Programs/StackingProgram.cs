@@ -23,7 +23,9 @@ namespace RobotArmUR2.RobotControl.Programs {
 		}
 		
 		public override bool ProgramStep(RobotInterface serial) {
-			DetectedShapes shapes = vision.DetectedShapes; 
+			VisionImages images = vision.Images;
+			if (images == null || images.Shapes == null) return false;
+			DetectedShapes shapes = images.Shapes; 
 			if (shapes.RelativeTrianglePoints.Count > 0) {
 				PaperPoint center = shapes.RelativeTrianglePoints[0];
 				if (!stackShape(serial, center)) return false;

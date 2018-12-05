@@ -39,17 +39,22 @@ namespace RobotArmUR2.VisionProcessing {
 		/// </summary>
 		public Image<Gray, byte> Canny { get; private set; } = null;
 
-		public VisionImages() {
+		/// <summary>
+		/// Same as Warped, but with detected shapes drawn on top.
+		/// </summary>
+		public Image<Bgr, byte> WarpedWithShapes { get; private set; } = null;
 
-		}
+		public DetectedShapes Shapes { get; private set; } = null;
 
-		public VisionImages(Image<Bgr, byte> raw, Image<Bgr, byte> input, Image<Gray, byte> grayscale, Image<Gray, byte> threshold, Image<Gray, byte> warped, Image<Gray, byte> canny) {
+		public VisionImages(Image<Bgr, byte> raw, Image<Bgr, byte> input, Image<Gray, byte> grayscale, Image<Gray, byte> threshold, Image<Gray, byte> warped, Image<Gray, byte> canny, Image<Bgr, byte> warpedWithShapes, DetectedShapes shapes) {
 			this.Raw = raw;
 			this.Input = input;
 			this.Grayscale = grayscale;
 			this.Threshold = threshold;
 			this.Warped = warped;
 			this.Canny = canny;
+			this.WarpedWithShapes = warpedWithShapes;
+			this.Shapes = shapes;
 		}
 
 	}

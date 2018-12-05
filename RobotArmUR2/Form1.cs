@@ -43,9 +43,8 @@ namespace RobotArmUR2
 
 			//Initialize vision and assign it's events
 			vision = new Vision();
-			vision.SetNativeResolutionText += VisionUI_SetNativeResolutionText;
 			vision.SetFPSCounter += VisionUI_SetFPSCounter;
-			vision.NewFrameFinished += VisionUI_NewFrameFinished;
+			vision.OnNewFrameProcessed += VisionUI_NewFrameFinished;
 
 			//Initialize robot and it's events
 			robot = new Robot();
@@ -73,20 +72,27 @@ namespace RobotArmUR2
 
 		#region Vision Events
 		//Event fires every time a new image is grabbed.
-		private void VisionUI_NewFrameFinished(Vision vision) {
-			VisionImages images = vision.Images;
+		private void VisionUI_NewFrameFinished(Vision vision, VisionImages images) {
+			string resolutionText = "Native Resolution: 0 x 0 ";
+			Image<Bgr, byte> leftImage = null;
+			Image<Gray, byte> middleImage = null;
+			Image<Bgr, byte> rightImage = null;
+
+			if (images != null) {
+				if(images.Raw != null) resolutionText = "Native Resolution: " + images.Raw.Width + " x " + images.Raw.Height;
+				leftImage = images.Input;
+				middleImage = images.Threshold;
+				rightImage = images.WarpedWithShapes;
+			}
+
+			BeginInvoke(new Action(() => {
+				ResolutionText.Text = resolutionText;
+			}));
 
 			//Draw a few images for the user
-			LeftPictureBox.Image = images.Input; 
-			MiddlePictureBox.Image = images.Threshold;
-
-			//Draw detected shapes onto the image then display it.
-			if (images.Warped == null) RightPictureBox.Image = null;
-			else {
-				Image<Bgr, byte> warped = images.Warped.Convert<Bgr, byte>();
-				vision.DrawShapes(warped, ApplicationSettings.TriangleHighlightColor, ApplicationSettings.SquareHighlightColor, ApplicationSettings.ShapeHighlightThickness);
-				RightPictureBox.Image = warped;
-			}
+			LeftPictureBox.Image = leftImage;
+			MiddlePictureBox.Image = middleImage;
+			RightPictureBox.Image = rightImage;
 		}
 
 		//Event fires when a new FPS is calculated 
@@ -95,13 +101,6 @@ namespace RobotArmUR2
 			BeginInvoke(new Action(() => { //Thread safe, baby
 				FpsStatusLabel.Text = CurrentFPS.ToString("N2").PadLeft(6) + " FPS"; //Converts FPS to a string with 2 decimals, with at most 3 digits
 				TargetFpsStatusLabel.Text = "Target FPS: " + TargetFPS.ToString("N2").PadLeft(6);
-			}));
-		}
-
-		//Fires with the current size of the input image.
-		private void VisionUI_SetNativeResolutionText(Size resolution) {
-			BeginInvoke(new Action(() => { //Thread safety!
-				ResolutionText.Text = "Native Resolution: " + resolution.Width + " x " + resolution.Height;
 			}));
 		}
 		#endregion

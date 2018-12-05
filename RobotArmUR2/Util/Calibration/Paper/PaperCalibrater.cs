@@ -17,7 +17,7 @@ namespace RobotArmUR2.Util.Calibration.Paper {
 			InitializeComponent();
 			picture = new EmguPictureBox<Bgr, byte>(this, PaperPicture);
 
-			vision.NewFrameFinished += Vision_OnNewFrameFinished;
+			vision.OnNewFrameProcessed += Vision_OnNewFrameFinished;
 		}
 
 		private void PaperCalibrater_Load(object sender, EventArgs e) {
@@ -30,16 +30,16 @@ namespace RobotArmUR2.Util.Calibration.Paper {
 			ApplicationSettings.PaperCalibration.SaveSettings();
 		}
 
-		private void Vision_OnNewFrameFinished(Vision vision) { 
+		private void Vision_OnNewFrameFinished(Vision vision, VisionImages images) { 
 			if (!isOpen) return; //Only update image if window is open.
-			if (autoDetectPaper) {
+			if (autoDetectPaper && images != null) {
 				autoDetectPaper = false;
-				detectPaper(vision);
+				detectPaper(vision, images);
 			}
 
-			if (vision.Images.Input == null) picture.Image = null;
+			if (images == null || images.Input == null) picture.Image = null;
 			else {
-				Image<Bgr, byte> img = vision.Images.Input.Copy();
+				Image<Bgr, byte> img = images.Input.Copy();
 				Image<Bgr, byte> rect = img.CopyBlank();
 
 				Point[] paperPoints = ApplicationSettings.PaperCalibration.ToArray(rect.Size); //{BottomLeft, TopLeft, TopRight, BottomRight}
@@ -134,12 +134,11 @@ namespace RobotArmUR2.Util.Calibration.Paper {
 			autoDetectPaper = true;
 		}
 
-		private void detectPaper(Vision vision) {
-			RotatedRect? auto = vision.AutoDetectPaper();//TODO check for image null
-			Size imgSize = vision.Images.Grayscale.Size; //TODO do we need this?
-			if (auto == null) {
-				MessageBox.Show("Could not find the paper.", "Error", MessageBoxButtons.OK);
-			} else {
+		private void detectPaper(Vision vision, VisionImages images) {
+			RotatedRect? auto = vision.AutoDetectPaper(images);
+			Size imgSize = vision.Images.Input.Size; //TODO do we need this?
+				
+			if(auto != null){
 				RotatedRect bounds = (RotatedRect)auto;
 				double d = Math.Sqrt(Math.Pow(bounds.Size.Width / 2, 2) + Math.Pow(bounds.Size.Height / 2, 2));
 				double radAngle = Math.Abs(bounds.Angle * Math.PI / 180);
@@ -156,6 +155,8 @@ namespace RobotArmUR2.Util.Calibration.Paper {
 
 				ApplicationSettings.PaperCalibration.TopLeft.SetPoint(new PointF(bounds.Center.X - deltaX, bounds.Center.Y - deltaY), imgSize);
 				ApplicationSettings.PaperCalibration.BottomRight.SetPoint(new PointF(bounds.Center.X + deltaX, bounds.Center.Y + deltaY), imgSize);
+			}else{
+				MessageBox.Show("Could not find the paper.", "Error", MessageBoxButtons.OK);
 			}
 		}
 	}

@@ -110,6 +110,18 @@ namespace RobotArmUR2.VisionProcessing {
 			else return CvInvoke.MinAreaRect(largestContour);
 		}
 
+		public static void DrawShapes<TColor, TDepth>(Image<TColor, TDepth> image, DetectedShapes shapes, TColor TriangleColor, TColor SquareColor, int thickness = 2) where TColor : struct, IColor where TDepth : new() {
+			foreach (Triangle2DF triangle in shapes.Triangles) {
+				image.Draw(triangle, TriangleColor, thickness);
+				image.Draw(new CircleF(triangle.Centeroid, 2), TriangleColor, thickness);
+			}
+
+			foreach (RotatedRect square in shapes.Squares) {
+				image.Draw(square, SquareColor, thickness);
+				image.Draw(new CircleF(square.Center, 2), SquareColor, thickness);
+			}
+		}
+
 		//Class allows to go through contours using foreach
 		private class ContourList : IEnumerable {
 			public VectorOfVectorOfPoint Contours { get; private set; }
