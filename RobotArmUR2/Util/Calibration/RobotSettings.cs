@@ -24,7 +24,7 @@ namespace RobotArmUR2.Util.Calibration {
 		}
 
 		private void RobotSettings_Load(object sender, EventArgs e) {
-			
+			//TODO move form into folder
 		}
 
 		private void BasePrescaleSlider_Scroll(object sender, EventArgs e) {

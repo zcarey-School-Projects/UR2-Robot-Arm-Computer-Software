@@ -26,6 +26,7 @@ namespace RobotArmUR2.VisionProcessing {
 
 		public Vision() {
 			InputStream.OnNewImage += InputStream_OnNewImage;
+			InputStream.OnStreamEnded += InputStream_OnStreamEnded;
 		}
 
 		private void InputStream_OnNewImage(ImageStream stream, Mat image) {
@@ -41,9 +42,8 @@ namespace RobotArmUR2.VisionProcessing {
 		}
 
 		private void InputStream_OnStreamEnded(ImageStream sender) {
-			lock (inputLock) {
-				OnNewInputImage(null);
-			}
+			Images = null;
+			OnNewFrameProcessed?.Invoke(this, null);
 		}
 
 		private void OnNewInputImage(Image<Bgr, byte> image) {

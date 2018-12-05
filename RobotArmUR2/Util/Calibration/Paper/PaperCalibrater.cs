@@ -32,13 +32,14 @@ namespace RobotArmUR2.Util.Calibration.Paper {
 
 		private void Vision_OnNewFrameFinished(Vision vision, VisionImages images) { 
 			if (!isOpen) return; //Only update image if window is open.
-			if (autoDetectPaper && images != null) {
-				autoDetectPaper = false;
-				detectPaper(vision, images);
-			}
 
 			if (images == null || images.Input == null) picture.Image = null;
 			else {
+				if (autoDetectPaper) {
+					autoDetectPaper = false;
+					detectPaper(vision, images);
+				}
+
 				Image<Bgr, byte> img = images.Input.Copy();
 				Image<Bgr, byte> rect = img.CopyBlank();
 

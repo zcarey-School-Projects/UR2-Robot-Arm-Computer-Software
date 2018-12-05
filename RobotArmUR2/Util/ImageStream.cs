@@ -74,11 +74,14 @@ namespace RobotArmUR2.Util {
 		private FPSCounter fpsCounter = new FPSCounter(); //Calculates the FPS.
 
 		#region Events and Handlers
-		public delegate void NewImageHandler(ImageStream sender, Mat image);
+		public delegate void NewImageHandler(ImageStream sender, Mat image); //Called when a new image is parsed.
 		public event NewImageHandler OnNewImage;
 
-		public delegate void StreamEndedHandler(ImageStream sender);
+		public delegate void StreamEndedHandler(ImageStream sender); //Called when the current stream ends and is closed.
 		public event StreamEndedHandler OnStreamEnded;
+
+		//public delegate void NullImageHandler(ImageStream sender);
+		//public event NullImageHandler OnNullImage();
 		#endregion
 
 		/// <value>The image width of the image from the current input source.</value>
@@ -182,11 +185,7 @@ namespace RobotArmUR2.Util {
 					}
 
 					if (streamType == StreamType.None) {
-						TargetFPS = 120;
 						waitMS = (1000 / 120);
-						FPS = 0;
-						fpsCounter.Reset(); //TODO make FPS usefull
-						OnNewImage?.Invoke(this, null);
 					} else if (!isPlaying) {
 						if (imageBuffer != null) {
 							TargetFPS = imageFPS;
@@ -196,7 +195,7 @@ namespace RobotArmUR2.Util {
 						}
 					} else {
 						Mat newImage = new Mat();
-						if (capture.Grab() && capture.Retrieve(newImage)) {
+						if (capture.Grab() && capture.Retrieve(newImage)) {//Access violation exception
 							//Source is still open.
 							this.imageBuffer = newImage;
 							if (streamType == StreamType.Image) {
@@ -206,7 +205,9 @@ namespace RobotArmUR2.Util {
 								float targetFPS = (float)capture.GetCaptureProperty(CapProp.Fps);
 								TargetFPS = targetFPS;
 								waitMS = ((int)(1000 / targetFPS));
-							} else {
+							} else if (streamType == StreamType.Camera) {
+								TargetFPS = (float)capture.GetCaptureProperty(CapProp.Fps);
+							} else { 
 								throw new NotImplementedException(); //TODO exception
 							}
 							FPS = fpsCounter.Tick();
@@ -226,7 +227,7 @@ namespace RobotArmUR2.Util {
 								TargetFPS = 0;
 								FPS = 0;
 								fpsCounter.Reset();
-								OnNewImage?.Invoke(this, null);
+								OnStreamEnded?.Invoke(this);
 							}
 
 						}
