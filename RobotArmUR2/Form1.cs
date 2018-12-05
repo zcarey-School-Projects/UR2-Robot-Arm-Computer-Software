@@ -27,7 +27,7 @@ namespace RobotArmUR2
 		private RobotSettings robotSettings;
 		
 		//Custom PictureBox wrappers that make using them simpler
-		private EmguPictureBox<Bgr, byte> LeftPictureBox; //TODO can i put constructor here?
+		private EmguPictureBox<Bgr, byte> LeftPictureBox;
 		private EmguPictureBox<Gray, byte> MiddlePictureBox;
 		private EmguPictureBox<Bgr, byte> RightPictureBox;
 
@@ -35,11 +35,9 @@ namespace RobotArmUR2
 		{
 			InitializeComponent();
 
-			LeftPictureBox = new EmguPictureBox<Bgr, byte>(this, Image1);
-			MiddlePictureBox = new EmguPictureBox<Gray, byte>(this, Image2);
-			RightPictureBox = new EmguPictureBox<Bgr, byte>(this, Image3);
-
-			Properties.Settings.Default.Reload(); //TODO do i need this?
+			LeftPictureBox = new EmguPictureBox<Bgr, byte>(this, LeftImage);
+			MiddlePictureBox = new EmguPictureBox<Gray, byte>(this, MiddleImage);
+			RightPictureBox = new EmguPictureBox<Bgr, byte>(this, RightImage);
 
 			//Initialize vision and assign it's events
 			vision = new Vision();
@@ -192,10 +190,9 @@ namespace RobotArmUR2
 			}
 		}
 
-		//TODO rename PictureBoxes and events to left/middle/right
 		//When the left-most picture box is clicked, display the mouse's click position and image color
 		//TODO make thread safe
-		private void OriginalImage_MouseClick(object sender, MouseEventArgs e) {
+		private void LeftImage_MouseClick(object sender, MouseEventArgs e) {
 
 			string rVal = "   ";
 			string gVal = "   ";

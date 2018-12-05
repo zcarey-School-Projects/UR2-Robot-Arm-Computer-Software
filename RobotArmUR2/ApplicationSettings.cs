@@ -66,5 +66,8 @@ namespace RobotArmUR2 {
 			Properties.Settings.Default.Save();
 		}
 
+		static ApplicationSettings() {
+			Properties.Settings.Default.Reload(); //Just to be sure the saved data is loaded.
+		}
 	}
 }

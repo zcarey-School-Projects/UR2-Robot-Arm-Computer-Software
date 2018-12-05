@@ -53,26 +53,26 @@
 			this.Stack = new System.Windows.Forms.Button();
 			this.statusStrip1 = new System.Windows.Forms.StatusStrip();
 			this.FpsStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
+			this.TargetFpsStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
 			this.RotateRightVisual = new System.Windows.Forms.PictureBox();
 			this.RotateLeftVisual = new System.Windows.Forms.PictureBox();
 			this.RetractVisual = new System.Windows.Forms.PictureBox();
 			this.ExtendVisual = new System.Windows.Forms.PictureBox();
-			this.Image3 = new System.Windows.Forms.PictureBox();
-			this.Image2 = new System.Windows.Forms.PictureBox();
-			this.Image1 = new System.Windows.Forms.PictureBox();
+			this.RightImage = new System.Windows.Forms.PictureBox();
+			this.MiddleImage = new System.Windows.Forms.PictureBox();
+			this.LeftImage = new System.Windows.Forms.PictureBox();
 			this.Rotate180Checkbox = new System.Windows.Forms.CheckBox();
 			this.ThresholdValue = new System.Windows.Forms.TrackBar();
 			this.ThresholdValueLabel = new System.Windows.Forms.Label();
-			this.TargetFpsStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
 			this.menuStrip1.SuspendLayout();
 			this.statusStrip1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.RotateRightVisual)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.RotateLeftVisual)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.RetractVisual)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.ExtendVisual)).BeginInit();
-			((System.ComponentModel.ISupportInitialize)(this.Image3)).BeginInit();
-			((System.ComponentModel.ISupportInitialize)(this.Image2)).BeginInit();
-			((System.ComponentModel.ISupportInitialize)(this.Image1)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.RightImage)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.MiddleImage)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.LeftImage)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.ThresholdValue)).BeginInit();
 			this.SuspendLayout();
 			// 
@@ -299,6 +299,12 @@
 			this.FpsStatusLabel.Size = new System.Drawing.Size(79, 20);
 			this.FpsStatusLabel.Text = "000.00 FPS";
 			// 
+			// TargetFpsStatusLabel
+			// 
+			this.TargetFpsStatusLabel.Name = "TargetFpsStatusLabel";
+			this.TargetFpsStatusLabel.Size = new System.Drawing.Size(127, 20);
+			this.TargetFpsStatusLabel.Text = "Target FPS: 000.00";
+			// 
 			// RotateRightVisual
 			// 
 			this.RotateRightVisual.Image = global::RobotArmUR2.Properties.Resources.RotateRightOff;
@@ -339,33 +345,33 @@
 			this.ExtendVisual.TabIndex = 17;
 			this.ExtendVisual.TabStop = false;
 			// 
-			// Image3
+			// RightImage
 			// 
-			this.Image3.Location = new System.Drawing.Point(664, 31);
-			this.Image3.Name = "Image3";
-			this.Image3.Size = new System.Drawing.Size(320, 240);
-			this.Image3.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-			this.Image3.TabIndex = 5;
-			this.Image3.TabStop = false;
+			this.RightImage.Location = new System.Drawing.Point(664, 31);
+			this.RightImage.Name = "RightImage";
+			this.RightImage.Size = new System.Drawing.Size(320, 240);
+			this.RightImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+			this.RightImage.TabIndex = 5;
+			this.RightImage.TabStop = false;
 			// 
-			// Image2
+			// MiddleImage
 			// 
-			this.Image2.Location = new System.Drawing.Point(338, 31);
-			this.Image2.Name = "Image2";
-			this.Image2.Size = new System.Drawing.Size(320, 240);
-			this.Image2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-			this.Image2.TabIndex = 2;
-			this.Image2.TabStop = false;
+			this.MiddleImage.Location = new System.Drawing.Point(338, 31);
+			this.MiddleImage.Name = "MiddleImage";
+			this.MiddleImage.Size = new System.Drawing.Size(320, 240);
+			this.MiddleImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+			this.MiddleImage.TabIndex = 2;
+			this.MiddleImage.TabStop = false;
 			// 
-			// Image1
+			// LeftImage
 			// 
-			this.Image1.Location = new System.Drawing.Point(12, 31);
-			this.Image1.Name = "Image1";
-			this.Image1.Size = new System.Drawing.Size(320, 240);
-			this.Image1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-			this.Image1.TabIndex = 0;
-			this.Image1.TabStop = false;
-			this.Image1.MouseClick += new System.Windows.Forms.MouseEventHandler(this.OriginalImage_MouseClick);
+			this.LeftImage.Location = new System.Drawing.Point(12, 31);
+			this.LeftImage.Name = "LeftImage";
+			this.LeftImage.Size = new System.Drawing.Size(320, 240);
+			this.LeftImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+			this.LeftImage.TabIndex = 0;
+			this.LeftImage.TabStop = false;
+			this.LeftImage.MouseClick += new System.Windows.Forms.MouseEventHandler(this.LeftImage_MouseClick);
 			// 
 			// Rotate180Checkbox
 			// 
@@ -397,12 +403,6 @@
 			this.ThresholdValueLabel.TabIndex = 32;
 			this.ThresholdValueLabel.Text = "Threshold: ";
 			// 
-			// TargetFpsStatusLabel
-			// 
-			this.TargetFpsStatusLabel.Name = "TargetFpsStatusLabel";
-			this.TargetFpsStatusLabel.Size = new System.Drawing.Size(127, 20);
-			this.TargetFpsStatusLabel.Text = "Target FPS: 000.00";
-			// 
 			// Form1
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -422,10 +422,10 @@
 			this.Controls.Add(this.ClickLocation);
 			this.Controls.Add(this.RGBValues);
 			this.Controls.Add(this.AutoConnect);
-			this.Controls.Add(this.Image3);
-			this.Controls.Add(this.Image2);
+			this.Controls.Add(this.RightImage);
+			this.Controls.Add(this.MiddleImage);
 			this.Controls.Add(this.ResolutionText);
-			this.Controls.Add(this.Image1);
+			this.Controls.Add(this.LeftImage);
 			this.Controls.Add(this.menuStrip1);
 			this.KeyPreview = true;
 			this.MainMenuStrip = this.menuStrip1;
@@ -443,9 +443,9 @@
 			((System.ComponentModel.ISupportInitialize)(this.RotateLeftVisual)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.RetractVisual)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.ExtendVisual)).EndInit();
-			((System.ComponentModel.ISupportInitialize)(this.Image3)).EndInit();
-			((System.ComponentModel.ISupportInitialize)(this.Image2)).EndInit();
-			((System.ComponentModel.ISupportInitialize)(this.Image1)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.RightImage)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.MiddleImage)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.LeftImage)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.ThresholdValue)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
@@ -454,7 +454,7 @@
 
 		#endregion
 		private System.Windows.Forms.Label ResolutionText;
-		private System.Windows.Forms.PictureBox Image2;
+		private System.Windows.Forms.PictureBox MiddleImage;
 		private System.Windows.Forms.MenuStrip menuStrip1;
 		private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem saveToolStripMenuItem;
@@ -465,7 +465,7 @@
 		private System.Windows.Forms.ToolStripMenuItem Camera0Menu;
 		private System.Windows.Forms.ToolStripMenuItem Camera1Menu;
 		private System.Windows.Forms.ToolStripMenuItem Camera2Menu;
-		private System.Windows.Forms.PictureBox Image3;
+		private System.Windows.Forms.PictureBox RightImage;
 		private System.Windows.Forms.Button AutoConnect;
 		private System.Windows.Forms.ToolStripMenuItem calibrateToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem goToHomeToolStripMenuItem;
@@ -482,7 +482,7 @@
 		private System.Windows.Forms.Button Stack;
 		private System.Windows.Forms.StatusStrip statusStrip1;
 		private System.Windows.Forms.ToolStripStatusLabel FpsStatusLabel;
-		private System.Windows.Forms.PictureBox Image1;
+		private System.Windows.Forms.PictureBox LeftImage;
 		private System.Windows.Forms.CheckBox Rotate180Checkbox;
 		private System.Windows.Forms.TrackBar ThresholdValue;
 		private System.Windows.Forms.Label ThresholdValueLabel;
