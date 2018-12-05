@@ -13,8 +13,6 @@ namespace RobotArmUR2.VisionProcessing {
 		private static readonly object inputLock = new object(); //Protects changing the input stream while trying to input a new image.
 
 		public ImageStream InputStream { get; } = new ImageStream();
-		private System.Timers.Timer inputTimer = new System.Timers.Timer();
-		private Mat rawInputBuffer;
 
 		public VisionImages Images { get; private set; }
 
@@ -28,39 +26,22 @@ namespace RobotArmUR2.VisionProcessing {
 
 		public Vision() {
 			InputStream.OnNewImage += InputStream_OnNewImage;
-			inputTimer.Elapsed += Timer_OnTimeElapsed;
-			inputTimer.AutoReset = true;
 		}
 
 		private void InputStream_OnNewImage(ImageStream stream, Mat image) {
 			lock (inputLock) {
 				if (image == null) {
 					Console.WriteLine("Ended!");
+					//OnNewInputImage(null); //TODO fix
 					return;
 				}
-				inputTimer.Interval = Math.Max(1000/120, stream.TargetFPS * 3f);
-				inputTimer.Start();
 
-				rawInputBuffer = image;
-				OnNewInputImage(rawInputBuffer.ToImage<Bgr, byte>());
-			}
-		}
-
-		private void Timer_OnTimeElapsed(object sender, ElapsedEventArgs e) {
-			if (Monitor.TryEnter(inputLock)) {
-				try {
-					if (!InputStream.IsOpened) InputStream_OnStreamEnded(InputStream);
-					else OnNewInputImage(rawInputBuffer.ToImage<Bgr, byte>());
-				} finally {
-					// Ensure that the lock is released.
-					Monitor.Exit(inputLock);
-				}
+				OnNewInputImage(image.ToImage<Bgr, byte>());
 			}
 		}
 
 		private void InputStream_OnStreamEnded(ImageStream sender) {
 			lock (inputLock) {
-				inputTimer.Stop();
 				OnNewInputImage(null);
 			}
 		}

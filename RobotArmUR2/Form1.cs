@@ -86,7 +86,7 @@ namespace RobotArmUR2
 				middleImage = images.Threshold;
 				rightImage = images.WarpedWithShapes;
 			}
-
+			
 			BeginInvoke(new Action(() => {
 				ResolutionText.Text = resolutionText;
 				FpsStatusLabel.Text = CurrentFPS.ToString("N2").PadLeft(6) + " FPS"; //Converts FPS to a string with 2 decimals, with at most 3 digits

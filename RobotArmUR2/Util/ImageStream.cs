@@ -182,9 +182,15 @@ namespace RobotArmUR2.Util {
 					}
 
 					if (streamType == StreamType.None) {
+						TargetFPS = 120;
 						waitMS = (1000 / 120);
+						FPS = 0;
+						fpsCounter.Reset(); //TODO make FPS usefull
+						OnNewImage?.Invoke(this, null);
 					} else if (!isPlaying) {
 						if (imageBuffer != null) {
+							TargetFPS = imageFPS;
+							FPS = fpsCounter.Tick();
 							OnNewImage?.Invoke(this, imageBuffer);
 							waitMS = ((int)(1000 / imageFPS));
 						}
@@ -193,17 +199,22 @@ namespace RobotArmUR2.Util {
 						if (capture.Grab() && capture.Retrieve(newImage)) {
 							//Source is still open.
 							this.imageBuffer = newImage;
-							OnNewImage?.Invoke(this, newImage);
 							if (streamType == StreamType.Image) {
-								float targetFPS = (float)capture.GetCaptureProperty(CapProp.Fps);
-								Console.WriteLine("Image Target: {0}", targetFPS);
+								TargetFPS = imageFPS;
 								waitMS = ((int)(1000 / imageFPS));
 							} else if (streamType == StreamType.Video) {
 								float targetFPS = (float)capture.GetCaptureProperty(CapProp.Fps);
+								TargetFPS = targetFPS;
 								waitMS = ((int)(1000 / targetFPS));
+							} else {
+								throw new NotImplementedException(); //TODO exception
 							}
+							FPS = fpsCounter.Tick();
+							OnNewImage?.Invoke(this, newImage);
 						} else if (streamType == StreamType.Image && imageBuffer != null) {
 							//An image source was loaded, and we already grabbed the image.
+							TargetFPS = imageFPS;
+							FPS = fpsCounter.Tick(); //TODO just put tick into a "SendNewImage" method?
 							OnNewImage?.Invoke(this, imageBuffer);
 							waitMS = ((int)(1000 / imageFPS));
 						} else {
@@ -212,6 +223,9 @@ namespace RobotArmUR2.Util {
 								this.imageBuffer = null;
 								this.streamType = StreamType.None;
 								//TODO OnStream End
+								TargetFPS = 0;
+								FPS = 0;
+								fpsCounter.Reset();
 								OnNewImage?.Invoke(this, null);
 							}
 
