@@ -63,8 +63,8 @@ namespace RobotArmUR2
 
 		private void Form1_FormClosing(object sender, FormClosingEventArgs e) {
 			//Stop grabbing new images and disconnect the robot.
+			robot.Interface.Disconnect(); //Stops robot movement and such.
 			vision.InputStream.Stop();
-			//TODO disconnect robot.
 		}
 
 		#region Vision Events
@@ -191,24 +191,23 @@ namespace RobotArmUR2
 		}
 
 		//When the left-most picture box is clicked, display the mouse's click position and image color
-		//TODO make thread safe
 		private void LeftImage_MouseClick(object sender, MouseEventArgs e) {
-
 			string rVal = "   ";
 			string gVal = "   ";
 			string bVal = "   ";
 			string x = "    ";
 			string y = "    ";
 
+			Image<Bgr, byte> img = LeftPictureBox.Image;
 			Point? hit = LeftPictureBox.GetImagePoint(new Point(e.X, e.Y));
 			if (hit != null) {
 				Point pos = (Point)hit;
 				x = pos.X.ToString().PadLeft(4);
 				y = pos.Y.ToString().PadLeft(4);
 				try {
-					rVal = LeftPictureBox.Image.Data[pos.Y, pos.X, 2].ToString().PadLeft(3);
-					gVal = LeftPictureBox.Image.Data[pos.Y, pos.X, 1].ToString().PadLeft(3);
-					bVal = LeftPictureBox.Image.Data[pos.Y, pos.X, 0].ToString().PadLeft(3);
+					rVal = img.Data[pos.Y, pos.X, 2].ToString().PadLeft(3);
+					gVal = img.Data[pos.Y, pos.X, 1].ToString().PadLeft(3);
+					bVal = img.Data[pos.Y, pos.X, 0].ToString().PadLeft(3);
 				} catch (IndexOutOfRangeException) {
 					rVal = "   ";
 					gVal = "   ";
@@ -232,7 +231,7 @@ namespace RobotArmUR2
 
 		//When RotateImage checkbox is changed, set the property in the input class
 		private void Rotate180Checkbox_CheckedChanged(object sender, EventArgs e) {
-			vision.RotateImage180 = Rotate180Checkbox.Checked;//TODO ImageStream?
+			vision.RotateImage180 = Rotate180Checkbox.Checked;
 		}
 
 		//When user changes threshold, apply the new value to the image.

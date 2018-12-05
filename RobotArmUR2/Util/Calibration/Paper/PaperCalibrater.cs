@@ -136,7 +136,7 @@ namespace RobotArmUR2.Util.Calibration.Paper {
 
 		private void detectPaper(Vision vision, VisionImages images) {
 			RotatedRect? auto = vision.AutoDetectPaper(images);
-			Size imgSize = vision.Images.Input.Size; //TODO do we need this?
+			Size imgSize = vision.Images.Input.Size;
 				
 			if(auto != null){
 				RotatedRect bounds = (RotatedRect)auto;

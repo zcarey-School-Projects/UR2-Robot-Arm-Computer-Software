@@ -25,7 +25,7 @@ namespace RobotArmUR2.RobotControl.Commands {
 				if (c == 'E') return true;
 				else if (c != 'W') {
 					Console.WriteLine(GetName() + ": Invalid wait response, assuming communication error.");
-					serial.close();
+					serial.Close();
 					return false;
 				}
 

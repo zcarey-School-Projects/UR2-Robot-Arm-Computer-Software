@@ -27,9 +27,9 @@ namespace RobotArmUR2.Util.Serial {
 			serial.ErrorReceived += closeEvent;
 		}
 
-		private void closeEvent(object sender, EventArgs args) { if(serial.IsOpen) close(); OnConnectionChanged(false, null); }
+		private void closeEvent(object sender, EventArgs args) { if(serial.IsOpen) Close(); OnConnectionChanged(false, null); }
 
-		public void close() {
+		public void Close() {
 			lock (serialLock) {
 				serial.Close(); //Also throws a closeEvent?
 				//OnConnectionChanged(false, null);
@@ -38,7 +38,7 @@ namespace RobotArmUR2.Util.Serial {
 
 		public bool Open(String portName) {
 			lock (serialLock) {
-				if (serial.IsOpen) close();
+				if (serial.IsOpen) Close();
 				serial.PortName = portName;
 				try {
 					serial.Open();
@@ -63,7 +63,7 @@ namespace RobotArmUR2.Util.Serial {
 
 		public bool AutoConnect(string deviceName) {
 			lock (serialLock) { //Not necessary, but will stop communication while looking for a connection.
-				close();
+				Close();
 				ManagementObjectCollection manObjReturn = new ManagementObjectSearcher("SELECT * FROM Win32_PnPEntity WHERE ConfigManagerErrorCode = 0").Get();
 
 				foreach (ManagementObject manObj in manObjReturn) {
@@ -103,7 +103,7 @@ namespace RobotArmUR2.Util.Serial {
 					serial.WriteLine("<" + command + ";" + commandArgs); //Since we are using WriteLine, the ">" character gets written automatically
 					string response = serial.ReadLine();
 					if (!response.StartsWith("<" + command + ";")) {
-						close(); 
+						Close(); 
 						return null;
 					}
 					string paramString = response.Substring(command.Length + 2);
@@ -123,7 +123,7 @@ namespace RobotArmUR2.Util.Serial {
 					Console.Error.WriteLine("\nA timeout occured while writing/reading serial port: " + e.Message);
 					Console.WriteLine("The serial port will be closed.");
 					Console.Error.WriteLine(e.StackTrace + '\n');
-					close();
+					Close();
 					return null;
 				}
 			}
@@ -147,7 +147,7 @@ namespace RobotArmUR2.Util.Serial {
 					Console.Error.WriteLine("\nA timeout occured while writing/reading serial port: " + e.Message);
 					Console.WriteLine("The serial port will be closed.");
 					Console.Error.WriteLine(e.StackTrace + '\n');
-					close();
+					Close();
 					return false;
 				}
 			}
@@ -172,7 +172,7 @@ namespace RobotArmUR2.Util.Serial {
 					Console.Error.WriteLine("\nA timeout occured while writing/reading serial port: " + e.Message);
 					Console.WriteLine("The serial port will be closed.");
 					Console.Error.WriteLine(e.StackTrace + '\n');
-					close();
+					Close();
 					return null;
 				}
 			}

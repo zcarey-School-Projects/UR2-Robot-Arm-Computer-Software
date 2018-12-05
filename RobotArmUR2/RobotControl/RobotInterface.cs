@@ -62,6 +62,15 @@ namespace RobotArmUR2.RobotControl {
 			}
 		}
 
+		public void Disconnect() {
+			lock (connectionLock) {
+				DisableManualControl();
+				StopAll();
+				PowerMagnetOff();
+				serial.Close(); ;
+			}
+		}
+
 		private void resetManualMoveVars() {
 			lock (settingsLock) {
 				setMagnetState = null;
