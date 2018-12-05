@@ -33,7 +33,11 @@ namespace RobotArmUR2.VisionProcessing {
 		}
 
 		private void InputStream_OnNewImage(ImageStream stream, Mat image) {
-			lock (inputLock) { 
+			lock (inputLock) {
+				if (image == null) {
+					Console.WriteLine("Ended!");
+					return;
+				}
 				inputTimer.Interval = Math.Max(1000/120, stream.TargetFPS * 3f);
 				inputTimer.Start();
 

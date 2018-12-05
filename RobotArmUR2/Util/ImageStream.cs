@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Threading;
 using System.Windows.Forms;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 
-namespace RobotArmUR2.Util{
+namespace RobotArmUR2.Util {
 
 	/// <summary>
 	/// Allows easier use of various input sources. Loads images from camera, images (including animated GIFs), and videos.
@@ -17,26 +18,57 @@ namespace RobotArmUR2.Util{
 
 		//Locks that help with race conditions.
 		private static readonly object streamLock = new object();
-		private static readonly object listenerLock = new object();
+		private static readonly object captureLock = new object();
+		//private static readonly object listenerLock = new object();
 
 		//Used to prompt the user to open/save files
 		private static OpenFileDialog openDialog;
 		private static SaveFileDialog saveDialog;
 
+		private static string[][] imageFileExtensions = new string[][] {
+			new string[]{ ".bmp", "Bmp" },
+			new string[]{ ".emf", "Emf" },
+			new string[]{ ".exif", "Exif" },
+			new string[]{ ".gif", "Gif" },
+			new string[]{ ".ico", "Icon" },
+			new string[]{ ".jpeg", "Jpeg" },
+			new string[]{ ".jpg", "Jpg" },
+			new string[]{ ".png", "Png" },
+			new string[]{ ".tiff", "Tiff" },
+		};
+
+		private static string[] videoFileExtensions = new string[] { ".mkv", ".flv", ".f4v", ".ogv", ".ogg", ".gifv", ".mng", ".avi", ".mov", ".wmv", ".rm", ".rmvb", ".asf", ".amv", ".mp4", ".m4p", ".m4v", ".m4v", ".svi" };
+
 		//Sets up the file dialogs
 		static ImageStream() {
+			string openFilter = "Media Files (Image, Video)|";
+			foreach (string[] extNames in imageFileExtensions) {
+				openFilter += "*" + extNames[0] + ";";
+			}
+			foreach(string ext in videoFileExtensions) {
+				openFilter += "*" + ext + ";";
+			}
+			openFilter = openFilter.TrimEnd(';');
+
 			openDialog = new OpenFileDialog();
 			openDialog.RestoreDirectory = true;
-			openDialog.Filter = "Media Files (Image, Video)|*.bmp;*.emf;*.exif;*.gif;*.ico;*.jpeg;*.jpg;*.png;*.tiff;*.mkv;*.flv;*.f4v;*.ogv;*.ogg;*.gifv;*.mng;*.avi;*.mov;*.wmv;*.rm;*.rmvb;*.asf;*.amv;*.mp4;*.m4p;*.m4v;*.m4v;*.svi|All (*.*)|*.*";
+			openDialog.Filter = openFilter;
+
+			string saveFilter = "";
+			foreach(string[] extNames in imageFileExtensions) {
+				saveFilter += extNames[1] + "(*" + extNames[0] + ")|*" + extNames[0] + "|";
+			}
+			saveFilter = saveFilter.TrimEnd('|');
 
 			saveDialog = new SaveFileDialog();
 			saveDialog.RestoreDirectory = true;
 			saveDialog.AddExtension = true;
-			saveDialog.Filter = "BMP (*.bmp)|*.bmp|EMF (*.emf)|*.emf|EXIF (*.exif)|*.exif|GIF (*.gif)|*.gif|Icon(*.ico)|*.ico|JPEG (*.jpeg)|*.jpeg|PNG (*.png)|*.png|TIFF (*.tiff)|*.tiff|WMF (*.wmf)|*.wmf|All (*.*)|*.*";
-			saveDialog.FilterIndex = 6;
+			saveDialog.Filter = saveFilter;
+			saveDialog.FilterIndex = 7;
 		}
 
 		private VideoCapture capture; //EmguCV class that assists in loading camera/files
+		private StreamType streamType = StreamType.None;
 		private Mat imageBuffer; //The last image that was grabbed, used for taking screenshots
 		private Stopwatch timer = new Stopwatch(); //Used to set the correct FPS for video playback.
 		private FPSCounter fpsCounter = new FPSCounter(); //Calculates the FPS.
@@ -97,13 +129,20 @@ namespace RobotArmUR2.Util{
 		}
 		private bool flipVertical = false;
 
+		private Thread GrabbingThread;
+		private volatile bool exitThread = false;
+		private volatile bool isPlaying = false;
+		private float imageFPS = 15; //TODO public
 
 		//TODO add capture type (camera, video, image)
 		//TODO add auto-loop option
 		//TODO add option to artificially change FPS (i.e. camera runs at 60 fps, but you selected  15 fps)
 
 		public ImageStream() {
-			
+			GrabbingThread = new Thread(ImageGrabbingLoop);
+			GrabbingThread.Name = "Image Grabbing Thread";
+			GrabbingThread.IsBackground = true;
+			GrabbingThread.Start();
 		}
 		
 		~ImageStream() {
@@ -117,6 +156,9 @@ namespace RobotArmUR2.Util{
 		/// Unlike most implementations of Dispose, the class can still be used after calling Dispose().
 		/// </remarks>
 		public void Dispose() {
+			exitThread = true;
+			GrabbingThread.Join();
+			GrabbingThread = null;
 			lock (streamLock) {
 				if (capture != null) capture.Dispose();
 				capture = null;
@@ -126,6 +168,61 @@ namespace RobotArmUR2.Util{
 			}
 		}
 
+		private void ImageGrabbingLoop() {
+			while (!exitThread) {
+				int waitMS = 0;
+				lock (captureLock) {
+					StreamType streamType = StreamType.None;
+					bool isPlaying = false;
+					Mat imageBuffer = null;
+					lock (streamLock) {
+						streamType = this.streamType;
+						isPlaying = this.isPlaying;
+						imageBuffer = this.imageBuffer;
+					}
+
+					if (streamType == StreamType.None) {
+						waitMS = (1000 / 120);
+					} else if (!isPlaying) {
+						if (imageBuffer != null) {
+							OnNewImage?.Invoke(this, imageBuffer);
+							waitMS = ((int)(1000 / imageFPS));
+						}
+					} else {
+						Mat newImage = new Mat();
+						if (capture.Grab() && capture.Retrieve(newImage)) {
+							//Source is still open.
+							this.imageBuffer = newImage;
+							OnNewImage?.Invoke(this, newImage);
+							if (streamType == StreamType.Image) {
+								float targetFPS = (float)capture.GetCaptureProperty(CapProp.Fps);
+								Console.WriteLine("Image Target: {0}", targetFPS);
+								waitMS = ((int)(1000 / imageFPS));
+							} else if (streamType == StreamType.Video) {
+								float targetFPS = (float)capture.GetCaptureProperty(CapProp.Fps);
+								waitMS = ((int)(1000 / targetFPS));
+							}
+						} else if (streamType == StreamType.Image && imageBuffer != null) {
+							//An image source was loaded, and we already grabbed the image.
+							OnNewImage?.Invoke(this, imageBuffer);
+							waitMS = ((int)(1000 / imageFPS));
+						} else {
+							lock (streamLock) {
+								//Source must be closed.
+								this.imageBuffer = null;
+								this.streamType = StreamType.None;
+								//TODO OnStream End
+								OnNewImage?.Invoke(this, null);
+							}
+
+						}
+					}
+				}
+
+				if (waitMS > 0) Thread.Sleep(waitMS);
+			}
+		}
+		/*
 		//Method event listener that fires when a new image is grabbed from source.
 		private void onNewImage(object sender, EventArgs e) {
 			int delayTime = 0;
@@ -134,7 +231,7 @@ namespace RobotArmUR2.Util{
 				timer.Restart();
 				FPS = fpsCounter.Tick();
 				lock (streamLock) {
-					if (capture == null || !capture.IsOpened /*|| capture.Ptr == IntPtr.Zero*/) return;
+					if (capture == null || !capture.IsOpened ) return;
 					capture.Retrieve(imageBuffer); //Documentation says gray image, but actually retrieves a colored image. //TODO nullptr checks
 					TargetFPS = (float)capture.GetCaptureProperty(CapProp.Fps);
 					tempBuffer = imageBuffer;
@@ -159,7 +256,8 @@ namespace RobotArmUR2.Util{
 				Thread.Sleep(delayTime);
 			}
 		}
-
+	*/
+		#region Stream Controls
 		/// <summary>
 		/// Starts or resumes the selected input source and starts grabbing images. 
 		/// When an image is grabbed, onNewImage is fired.
@@ -167,12 +265,14 @@ namespace RobotArmUR2.Util{
 		/// <returns>true if the source was successfully started.</returns>
 		public bool Play() {
 			lock (streamLock) {
-				if (capture != null && capture.IsOpened) {
-					capture.Start();
-					return true;
-				} else {
-					return false;
-				}
+				/*	if (capture != null && capture.IsOpened) {
+						capture.Start();
+						return true;
+					} else {
+						return false;
+					}*/
+				isPlaying = true;
+				return true;
 			}
 
 		}
@@ -182,7 +282,8 @@ namespace RobotArmUR2.Util{
 		/// </summary>
 		public void Pause() {
 			lock (streamLock) {
-				capture.Stop();
+				//capture.Stop
+				isPlaying = false;
 			}
 		}
 
@@ -190,22 +291,35 @@ namespace RobotArmUR2.Util{
 		/// Closes the input and fires onStreamEnded event.
 		/// </summary>
 		public void Stop() {
-			lock (listenerLock) {//Ensures that event is fired only after image grabbed by capture is finished sending. 
+			/*lock (listenerLock) {//Ensures that event is fired only after image grabbed by capture is finished sending. 
 				lock (streamLock) {
 					Dispose();
 					OnStreamEnded?.Invoke(this); //TODO Call all events like this
 				}
+			}*/
+			lock (captureLock) {
+				lock (streamLock) {
+					capture = null;
+					isPlaying = false;
+					streamType = StreamType.None;
+					imageBuffer = null;
+				}
 			}
 		}
+		#endregion
 
+		#region Input Source Selection
 		/// <summary>
 		/// Selects the default camera as the source.
 		/// </summary>
 		public void SelectCamera() {
-			lock (streamLock) {
-				Stop();
-				capture = new VideoCapture();
-				setupCapture();
+			lock (captureLock) {
+				lock (streamLock) {
+					//Stop();
+					capture = new VideoCapture();
+					setupCapture();
+					streamType = StreamType.Camera;
+				}
 			}
 		}
 
@@ -214,10 +328,13 @@ namespace RobotArmUR2.Util{
 		/// </summary>
 		/// <param name="index">Index of camera to be selected.</param>
 		public void SelectCamera(int index) {
-			lock (streamLock) {
-				Stop();
-				capture = new VideoCapture(index);
-				setupCapture();
+			lock (captureLock) {
+				lock (streamLock) {
+					//Stop();
+					capture = new VideoCapture(index);
+					setupCapture();
+					streamType = StreamType.Camera;
+				}
 			}
 		}
 
@@ -226,15 +343,58 @@ namespace RobotArmUR2.Util{
 		/// </summary>
 		/// <param name="filepath">Full path to the file to be loaded.</param>
 		/// <returns>true if the file was successfully loaded.</returns>
-		public bool LoadFile(string filepath) {
+		public bool LoadFile(string filepath) { //TODO method too big
 			if (filepath == null) return false;
-			lock (streamLock) {
-				if (!File.Exists(filepath)) return false; //Wait until here to check if file exists, in case we had to wait for the lock to be released.
-				Stop();
-				capture = new VideoCapture(filepath);
-				setupCapture();
-				return true;
+			lock (captureLock) {
+				lock (streamLock) {
+					if (!File.Exists(filepath)) return false; //Wait until here to check if file exists, in case we had to wait for the lock to be released.
+					streamType = StreamType.None;
+					string ext = Path.GetExtension(filepath).ToLower();
+					if(ext == ".gif") {
+						try {
+							using (Image img = Image.FromFile(filepath)) {
+								if (!img.RawFormat.Equals(ImageFormat.Gif)) return false;
+								FrameDimension dimension = new FrameDimension(img.FrameDimensionsList[0]);
+								int frameCount = img.GetFrameCount(dimension);
+
+								if (frameCount == 1) streamType = StreamType.Image;
+								else if (frameCount > 1) streamType = StreamType.Video;
+								else return false;
+
+								capture = new VideoCapture(filepath);
+								setupCapture();
+								return true;
+							}
+						} catch {
+							return false;
+						}
+					} else {
+						foreach(string[] extNames in imageFileExtensions) {
+							if (ext == extNames[0]) {
+								streamType = StreamType.Image;
+								break;
+							}
+						}
+
+						if(streamType == StreamType.None) {
+							foreach(string extName in videoFileExtensions) {
+								if(ext == extName) {
+									streamType = StreamType.Video;
+									break;
+								}
+							}
+						}
+
+						if (streamType != StreamType.None) {
+							capture = new VideoCapture(filepath);
+							setupCapture();
+							return true;
+						}
+					}
+				}
 			}
+
+			return false;
 		}
 
 		/// <summary>
@@ -260,12 +420,16 @@ namespace RobotArmUR2.Util{
 
 		//Sets up a capture so it is ready to use.
 		private void setupCapture() {
-			capture.ImageGrabbed += onNewImage;
+			//capture.ImageGrabbed += onNewImage;
 			capture.FlipHorizontal = flipHorizontal;
 			capture.FlipVertical = flipVertical;
-			imageBuffer = new Mat();
+			//imageBuffer = new Mat();
+			imageBuffer = null;
+			isPlaying = false;
 		}
+		#endregion
 
+		#region Save Screenshots
 		//Captures a screenshot, returns null if it can't
 		private Mat captureScreenshot() {
 			Mat screenshot = new Mat();
@@ -286,10 +450,13 @@ namespace RobotArmUR2.Util{
 		/// <param name="filepath">The full path to where the file should be saved.</param>
 		/// <returns>true if the screenshot was successfully saved.</returns>
 		public bool SaveScreenshot(string filepath) {
-			if (filepath == null) return false;
 			Mat screenshot = captureScreenshot();
-			if (screenshot == null) return false;
-			screenshot.Save(filepath);
+			return SaveScreenshot(screenshot, filepath);
+		}
+
+		public bool SaveScreenshot(Mat img, string filepath) {
+			if (img == null || filepath == null) return false;
+			img.Save(filepath);
 			return true;
 		}
 
@@ -299,7 +466,22 @@ namespace RobotArmUR2.Util{
 		/// <param name="filepath">Relative path to save location in solution files.</param>
 		/// <returns>true if successfully saved.</returns>
 		public bool SaveLocalScreenshot(string filepath) {
-			return SaveScreenshot(System.IO.Directory.GetCurrentDirectory() + "\\" + filepath); //NOTE: '\\' translates to '\' in a string, because it is a special character.
+			return SaveLocalScreenshot(System.IO.Directory.GetCurrentDirectory() + "\\" + filepath); //NOTE: '\\' translates to '\' in a string, because it is a special character.
+		}
+
+		public bool SaveLocalScreenshot(Mat img, string filepath) {
+			return SaveScreenshot(img, System.IO.Directory.GetCurrentDirectory() + "\\" + filepath); //NOTE: '\\' translates to '\' in a string, because it is a special character.
+		}
+
+		public bool PromptUserSaveScreenshot(Mat img) {
+			if (img == null) return false;
+
+			if (saveDialog.ShowDialog() == DialogResult.OK) {
+				img.Save(saveDialog.FileName);
+				return true;
+			} else {
+				return false;
+			}
 		}
 
 		/// <summary>
@@ -308,14 +490,15 @@ namespace RobotArmUR2.Util{
 		/// <returns>true if successfully saved, also returns false if user cancelled operation.</returns>
 		public bool PromptUserSaveScreenshot() {
 			Mat screenshot = captureScreenshot();
-			if (screenshot == null) return false;
+			return PromptUserSaveScreenshot(screenshot);
+		}
+		#endregion
 
-			if(saveDialog.ShowDialog() == DialogResult.OK) {
-				screenshot.Save(saveDialog.FileName);
-				return true;
-			} else {
-				return false;
-			}
+		private enum StreamType {
+			None,
+			Camera,
+			Image,
+			Video
 		}
 
 	}
