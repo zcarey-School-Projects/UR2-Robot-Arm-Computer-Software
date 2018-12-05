@@ -74,14 +74,19 @@ namespace RobotArmUR2
 		#region Vision Events
 		//Event fires every time a new image is grabbed.
 		private void VisionUI_NewFrameFinished(Vision vision) {
+			VisionImages images = vision.Images;
+
 			//Draw a few images for the user
-			LeftPictureBox.Image = vision.InputImage; 
-			MiddlePictureBox.Image = vision.ThresholdImage;
+			LeftPictureBox.Image = images.Input; 
+			MiddlePictureBox.Image = images.Threshold;
 
 			//Draw detected shapes onto the image then display it.
-			Image<Bgr, byte> warped = vision.WarpedImage.Convert<Bgr, byte>();
-			vision.DrawShapes(warped, ApplicationSettings.TriangleHighlightColor, ApplicationSettings.SquareHighlightColor, ApplicationSettings.ShapeHighlightThickness);
-			RightPictureBox.Image = warped;
+			if (images.Warped == null) RightPictureBox.Image = null;
+			else {
+				Image<Bgr, byte> warped = images.Warped.Convert<Bgr, byte>();
+				vision.DrawShapes(warped, ApplicationSettings.TriangleHighlightColor, ApplicationSettings.SquareHighlightColor, ApplicationSettings.ShapeHighlightThickness);
+				RightPictureBox.Image = warped;
+			}
 		}
 
 		//Event fires when a new FPS is calculated 

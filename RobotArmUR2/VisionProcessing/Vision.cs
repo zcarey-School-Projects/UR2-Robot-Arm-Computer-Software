@@ -11,92 +11,13 @@ namespace RobotArmUR2.VisionProcessing {
 	public class Vision {
 
 		private static readonly object inputLock = new object(); //Protects changing the input stream while trying to input a new image.
-		private static readonly object visionLock = new object(); //Protects accessing images while new ones are being processed.
 
 		public ImageStream InputStream { get; } = new ImageStream();
 		private System.Timers.Timer inputTimer = new System.Timers.Timer();
 		private Mat rawInputBuffer;
 
-		#region Image Properties
-		private Image<Bgr, byte> rawImage = new Image<Bgr, byte>(1, 1); //Full pixel size, non-edited
-		public Image<Bgr, byte> RawImage {
-			get {
-				lock (visionLock) { return rawImage; }
-			}
-			private set {
-				lock (visionLock) {
-					if (value == null) rawImage = new Image<Bgr, byte>(1, 1);
-					else rawImage = value;
-				}
-			}
-		} 
-
-		private Image<Bgr, byte> inputImage = new Image<Bgr, byte>(1, 1); //Resized raw image for better memory usage
-		public Image<Bgr, byte> InputImage {
-			get {
-				lock (visionLock) { return inputImage; }
-			}
-			private set {
-				lock (visionLock) {
-					if (value == null) inputImage = new Image<Bgr, byte>(1, 1);
-					else inputImage = value;
-				}
-			}
-		} 
-
-		private Image<Gray, byte> grayscaleImage = new Image<Gray, byte>(1, 1); //Grayscaled InputImage
-		public Image<Gray, byte> GrayscaleImage {
-			get {
-				lock (visionLock) { return grayscaleImage; }
-			}
-			private set {
-				lock (visionLock) {
-					if (value == null) grayscaleImage = new Image<Gray, byte>(1, 1);
-					else grayscaleImage = value;
-				}
-			}
-		}
-
-		private Image<Gray, byte> thresholdImage = new Image<Gray, byte>(1, 1);//Thresholded Greyscale Image to either a black/white, no gray
-		public Image<Gray, byte> ThresholdImage {
-			get {
-				lock (visionLock) { return thresholdImage; }
-			}
-			private set {
-				lock (visionLock) {
-					if (value == null) thresholdImage = new Image<Gray, byte>(1, 1);
-					else thresholdImage = value;
-				}
-			}
-		}
-
-		private Image<Gray, byte> warpedImage = new Image<Gray, byte>(1, 1); //Warped image so the corners of the paper are in the corner of the image.
-		public Image<Gray, byte> WarpedImage {
-			get {
-				lock (visionLock) { return warpedImage; }
-			}
-			private set {
-				lock (visionLock) {
-					if (value == null) warpedImage = new Image<Gray, byte>(1, 1);
-					else warpedImage = value;
-				}
-			}
-		}
-
-		private Image<Gray, byte> cannyImage = new Image<Gray, byte>(1, 1); //Canny edges in image form detected from ThresholdImage
-		public Image<Gray, byte> CannyImage {
-			get {
-				lock (visionLock) { return cannyImage; }
-			}
-			private set {
-				lock (visionLock) {
-					if (value == null)cannyImage = new Image<Gray, byte>(1, 1);
-					else cannyImage = value;
-				}
-			}
-		}
-
-		#endregion
+		private VisionImages images = new VisionImages();
+		public VisionImages Images { get => images; private set { if (value == null) images = new VisionImages(); else images = value; } }
 
 		private DetectedShapes detecetdShapes = new DetectedShapes();
 		public DetectedShapes DetectedShapes { get => detecetdShapes; private set { if (value == null) detecetdShapes = new DetectedShapes(); else detecetdShapes = value; } }
@@ -148,63 +69,50 @@ namespace RobotArmUR2.VisionProcessing {
 		private void InputStream_OnStreamEnded(ImageStream sender) {
 			lock (inputLock) {
 				inputTimer.Stop();
-				rawImage = null;
 				OnNewInputImage(null);
 			}
 		}
 
 		private void OnNewInputImage(Image<Bgr, byte> image) {
+			Image<Bgr, byte> rawImage = null;
+			Image<Bgr, byte> inputImage = null;
+			Image<Gray, byte> grayImage = null;
+			Image<Gray, byte> thresholdImage = null;
+			Image<Gray, byte> warpedImage = null;
+			Image<Gray, byte> cannyImage = null;
 			if (image != null) {
-				lock (visionLock) {
-					//FPS tick
-					SetFPSCounter?.Invoke(InputStream.FPS, InputStream.TargetFPS); //Display target FPS?
-					SetNativeResolutionText(image.Size);
+				SetFPSCounter?.Invoke(InputStream.FPS, InputStream.TargetFPS); //Display target FPS?
+				SetNativeResolutionText?.Invoke(image.Size);
 
-					rawImage = image;
+				rawImage = image;
 
-					//Scale image so Height = 480, but still keeps aspect ratio.
-					inputImage = rawImage.Resize(480d / rawImage.Height, Emgu.CV.CvEnum.Inter.Cubic); //TODO put size in ApplicationSetttings
+				//Scale image so Height = 480, but still keeps aspect ratio.
+				inputImage = rawImage.Resize(480d / rawImage.Height, Emgu.CV.CvEnum.Inter.Cubic); //TODO put size in ApplicationSetttings
 
-					if (RotateImage180) {
-						inputImage._Flip(Emgu.CV.CvEnum.FlipType.Horizontal);
-						inputImage._Flip(Emgu.CV.CvEnum.FlipType.Vertical);
-					}
-
-					processVision();
+				if (RotateImage180) {
+					inputImage._Flip(Emgu.CV.CvEnum.FlipType.Horizontal);
+					inputImage._Flip(Emgu.CV.CvEnum.FlipType.Vertical);
 				}
+
+				grayImage = ImageProcessing.GetGrayImage(inputImage);
+				thresholdImage = ImageProcessing.GetThresholdImage(grayImage, new Gray(GrayscaleThreshold), new Gray(255));
+				warpedImage = ImageProcessing.GetWarpedImage(thresholdImage, ApplicationSettings.PaperCalibration);
+				UMat edges = ImageProcessing.EdgeDetection(warpedImage);
+				cannyImage = ImageProcessing.GetEdgeImage<Gray, byte>(edges);
+				DetectedShapes = ImageProcessing.DetectShapes(edges);
 			} else {
-				//Reset FPS
 				SetNativeResolutionText?.Invoke(new Size(0, 0));
-				lock (visionLock) {
-					RawImage = null;
-					InputImage = null;
-					GrayscaleImage = null;
-					ThresholdImage = null;
-					WarpedImage = null;
-					CannyImage = null;
-				}
+				SetFPSCounter?.Invoke(0, InputStream.TargetFPS);
 			}
 
+			Images = new VisionImages(rawImage, inputImage, grayImage, thresholdImage, warpedImage, cannyImage);
 			NewFrameFinished?.Invoke(this); //TODO lol
 		}
 
-		//Does all the necessary processing on images to properly detect shapes.
-		private void processVision() {
-			lock (visionLock) {
-				GrayscaleImage = ImageProcessing.GetGrayImage(InputImage);
-				ThresholdImage = ImageProcessing.GetThresholdImage(GrayscaleImage, new Gray(GrayscaleThreshold), new Gray(255));
-				WarpedImage = ImageProcessing.GetWarpedImage(ThresholdImage, ApplicationSettings.PaperCalibration);
-				UMat edges = ImageProcessing.EdgeDetection(WarpedImage);
-				CannyImage = ImageProcessing.GetEdgeImage<Gray, byte>(edges);
-				DetectedShapes = ImageProcessing.DetectShapes(edges);
-			}
-		}
-
 		public RotatedRect? AutoDetectPaper() {
-			Image<Gray, byte> workingImage = ImageProcessing.GetGrayImage(InputImage);
+			Image<Gray, byte> workingImage = ImageProcessing.GetGrayImage(Images.Input);
 			workingImage = ImageProcessing.GetThresholdImage(workingImage, new Gray(GrayscaleThreshold), new Gray(255));
 			UMat edges = ImageProcessing.EdgeDetection(workingImage);
-			//DetectShapes();
 
 			return ImageProcessing.DetectPaper(edges);
 		}

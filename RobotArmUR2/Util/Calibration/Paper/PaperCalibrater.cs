@@ -37,40 +37,43 @@ namespace RobotArmUR2.Util.Calibration.Paper {
 				detectPaper(vision);
 			}
 
-			Image<Bgr, byte> img = vision.InputImage;
-			Image<Bgr, byte> rect = img.CopyBlank();
+			if (vision.Images.Input == null) picture.Image = null;
+			else {
+				Image<Bgr, byte> img = vision.Images.Input.Copy();
+				Image<Bgr, byte> rect = img.CopyBlank();
 
-			Point[] paperPoints = ApplicationSettings.PaperCalibration.ToArray(rect.Size); //{BottomLeft, TopLeft, TopRight, BottomRight}
-			rect.FillConvexPoly(paperPoints, ApplicationSettings.PaperROIMaskColor);
-			CvInvoke.AddWeighted(img, 1 - ApplicationSettings.PaperROIMaskTransparency, rect, ApplicationSettings.PaperROIMaskTransparency, 0, img);
+				Point[] paperPoints = ApplicationSettings.PaperCalibration.ToArray(rect.Size); //{BottomLeft, TopLeft, TopRight, BottomRight}
+				rect.FillConvexPoly(paperPoints, ApplicationSettings.PaperROIMaskColor);
+				CvInvoke.AddWeighted(img, 1 - ApplicationSettings.PaperROIMaskTransparency, rect, ApplicationSettings.PaperROIMaskTransparency, 0, img);
 
-			foreach (PointF point in ApplicationSettings.PaperCalibration.ToArray(rect.Size.Width, rect.Size.Height)) {
-				img.Draw(new CircleF(point, ApplicationSettings.PaperROICircleRadius), ApplicationSettings.PaperROICircleColor, ApplicationSettings.PaperROICircleThickness);
+				foreach (PointF point in ApplicationSettings.PaperCalibration.ToArray(rect.Size.Width, rect.Size.Height)) {
+					img.Draw(new CircleF(point, ApplicationSettings.PaperROICircleRadius), ApplicationSettings.PaperROICircleColor, ApplicationSettings.PaperROICircleThickness);
+				}
+
+				#region Draw Text next to circles
+				PointF textPoint = ApplicationSettings.PaperCalibration.BottomLeft.GetAdjustedCoord(rect.Size.Width, rect.Size.Height);
+				textPoint.X += ApplicationSettings.PaperROICircleRadius;
+				textPoint.Y -= ApplicationSettings.PaperROICircleRadius;
+				img.Draw("Bottom Left", Point.Round(textPoint), ApplicationSettings.PaperROIFont, ApplicationSettings.PaperROIFontScale, ApplicationSettings.PaperROIFontColor, ApplicationSettings.PaperROIFontThickness);
+
+				textPoint = ApplicationSettings.PaperCalibration.TopLeft.GetAdjustedCoord(rect.Size.Width, rect.Size.Height);
+				textPoint.X += ApplicationSettings.PaperROICircleRadius;
+				textPoint.Y += ApplicationSettings.PaperROICircleRadius;
+				img.Draw("Top Left", Point.Round(textPoint), ApplicationSettings.PaperROIFont, ApplicationSettings.PaperROIFontScale, ApplicationSettings.PaperROIFontColor, ApplicationSettings.PaperROIFontThickness);
+
+				textPoint = ApplicationSettings.PaperCalibration.TopRight.GetAdjustedCoord(rect.Size.Width, rect.Size.Height);
+				textPoint.X -= ApplicationSettings.PaperROICircleRadius;
+				textPoint.Y += ApplicationSettings.PaperROICircleRadius;
+				img.Draw("Top Right", Point.Round(textPoint), ApplicationSettings.PaperROIFont, ApplicationSettings.PaperROIFontScale, ApplicationSettings.PaperROIFontColor, ApplicationSettings.PaperROIFontThickness);
+
+				textPoint = ApplicationSettings.PaperCalibration.BottomRight.GetAdjustedCoord(rect.Size.Width, rect.Size.Height);
+				textPoint.X -= ApplicationSettings.PaperROICircleRadius;
+				textPoint.Y -= ApplicationSettings.PaperROICircleRadius;
+				img.Draw("Bottom Right", Point.Round(textPoint), ApplicationSettings.PaperROIFont, ApplicationSettings.PaperROIFontScale, ApplicationSettings.PaperROIFontColor, ApplicationSettings.PaperROIFontThickness);
+				#endregion
+
+				picture.Image = img;
 			}
-
-			#region Draw Text next to circles
-			PointF textPoint = ApplicationSettings.PaperCalibration.BottomLeft.GetAdjustedCoord(rect.Size.Width, rect.Size.Height);
-			textPoint.X += ApplicationSettings.PaperROICircleRadius;
-			textPoint.Y -= ApplicationSettings.PaperROICircleRadius;
-			img.Draw("Bottom Left", Point.Round(textPoint), ApplicationSettings.PaperROIFont, ApplicationSettings.PaperROIFontScale, ApplicationSettings.PaperROIFontColor, ApplicationSettings.PaperROIFontThickness);
-
-			textPoint = ApplicationSettings.PaperCalibration.TopLeft.GetAdjustedCoord(rect.Size.Width, rect.Size.Height);
-			textPoint.X += ApplicationSettings.PaperROICircleRadius;
-			textPoint.Y += ApplicationSettings.PaperROICircleRadius;
-			img.Draw("Top Left", Point.Round(textPoint), ApplicationSettings.PaperROIFont, ApplicationSettings.PaperROIFontScale, ApplicationSettings.PaperROIFontColor, ApplicationSettings.PaperROIFontThickness);
-
-			textPoint = ApplicationSettings.PaperCalibration.TopRight.GetAdjustedCoord(rect.Size.Width, rect.Size.Height);
-			textPoint.X -= ApplicationSettings.PaperROICircleRadius;
-			textPoint.Y += ApplicationSettings.PaperROICircleRadius;
-			img.Draw("Top Right", Point.Round(textPoint), ApplicationSettings.PaperROIFont, ApplicationSettings.PaperROIFontScale, ApplicationSettings.PaperROIFontColor, ApplicationSettings.PaperROIFontThickness);
-
-			textPoint = ApplicationSettings.PaperCalibration.BottomRight.GetAdjustedCoord(rect.Size.Width, rect.Size.Height);
-			textPoint.X -= ApplicationSettings.PaperROICircleRadius;
-			textPoint.Y -= ApplicationSettings.PaperROICircleRadius;
-			img.Draw("Bottom Right", Point.Round(textPoint), ApplicationSettings.PaperROIFont, ApplicationSettings.PaperROIFontScale, ApplicationSettings.PaperROIFontColor, ApplicationSettings.PaperROIFontThickness);
-			#endregion
-
-			picture.Image = img;
 		}
 
 		private PaperPoint getClosestPaperPoint(Point mousePoint, double minimumDistance = double.MaxValue) {
@@ -132,8 +135,8 @@ namespace RobotArmUR2.Util.Calibration.Paper {
 		}
 
 		private void detectPaper(Vision vision) {
-			RotatedRect? auto = vision.AutoDetectPaper();
-			Size imgSize = vision.GrayscaleImage.Size;
+			RotatedRect? auto = vision.AutoDetectPaper();//TODO check for image null
+			Size imgSize = vision.Images.Grayscale.Size; //TODO do we need this?
 			if (auto == null) {
 				MessageBox.Show("Could not find the paper.", "Error", MessageBoxButtons.OK);
 			} else {

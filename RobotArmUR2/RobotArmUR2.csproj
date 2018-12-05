@@ -134,6 +134,7 @@
     <Compile Include="Util\Calibration\Paper\PaperCalibrationPoint.cs" />
     <Compile Include="Util\PaperPoint.cs" />
     <Compile Include="VisionProcessing\Vision.cs" />
+    <Compile Include="VisionProcessing\VisionImages.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
