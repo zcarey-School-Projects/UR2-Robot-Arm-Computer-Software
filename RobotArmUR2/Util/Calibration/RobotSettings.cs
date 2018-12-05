@@ -53,5 +53,13 @@ namespace RobotArmUR2.Util.Calibration {
 			ApplicationSettings.SaveSettings();
 			MessageBox.Show("Successfully saved."); //It lies. Just lets user now the button worked.
 		}
+
+		private void RobotSettings_KeyDown(object sender, KeyEventArgs e) {
+			robot.ManualControlKeyEvent(e.KeyCode, true);
+		}
+
+		private void RobotSettings_KeyUp(object sender, KeyEventArgs e) {
+			robot.ManualControlKeyEvent(e.KeyCode, false);
+		}
 	}
 }

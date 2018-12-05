@@ -11,7 +11,7 @@ namespace RobotArmUR2.RobotControl.Programs {
 		}
 
 		public override bool ProgramStep(RobotInterface serial) {
-			return serial.ReturnHome();
+			return !serial.ReturnHome();
 		}
 
 		public override void ProgramCancelled(RobotInterface serial) {

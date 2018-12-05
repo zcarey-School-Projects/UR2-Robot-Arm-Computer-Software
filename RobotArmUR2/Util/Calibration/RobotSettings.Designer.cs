@@ -90,10 +90,13 @@
 			this.Controls.Add(this.BasePrescaleLabel);
 			this.Controls.Add(this.BasePrescaleSlider);
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+			this.KeyPreview = true;
 			this.MaximizeBox = false;
 			this.Name = "RobotSettings";
 			this.Text = "RobotSettings";
 			this.Load += new System.EventHandler(this.RobotSettings_Load);
+			this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.RobotSettings_KeyDown);
+			this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.RobotSettings_KeyUp);
 			((System.ComponentModel.ISupportInitialize)(this.CarriagePrescaleSlider)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.BasePrescaleSlider)).EndInit();
 			this.ResumeLayout(false);

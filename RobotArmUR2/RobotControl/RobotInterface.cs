@@ -41,7 +41,7 @@ namespace RobotArmUR2.RobotControl {
 		public RobotInterface() {
 			comTimer.Elapsed += onTimerTick;
 			comTimer.AutoReset = true;
-			//manualTimer.Start();
+			comTimer.Start();
 		}
 
 		public bool ConnectToRobot() {
@@ -182,7 +182,7 @@ namespace RobotArmUR2.RobotControl {
 				setBasePrescale = prescale;
 			}
 		}
-
+		//TODO send motor prescales on connect
 		public void SetCarriagePrescale(byte prescale) {
 			if(prescale > 20) {
 				Console.Error.WriteLine("Carriage prescale out of range, not sending: " + prescale);
