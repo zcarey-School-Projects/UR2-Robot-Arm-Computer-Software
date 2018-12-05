@@ -43,7 +43,6 @@ namespace RobotArmUR2
 
 			//Initialize vision and assign it's events
 			vision = new Vision();
-			vision.SetFPSCounter += VisionUI_SetFPSCounter;
 			vision.OnNewFrameProcessed += VisionUI_NewFrameFinished;
 
 			//Initialize robot and it's events
@@ -77,9 +76,14 @@ namespace RobotArmUR2
 			Image<Bgr, byte> leftImage = null;
 			Image<Gray, byte> middleImage = null;
 			Image<Bgr, byte> rightImage = null;
+			float CurrentFPS = 0;
+			float TargetFPS = vision.InputStream.TargetFPS;
 
 			if (images != null) {
-				if(images.Raw != null) resolutionText = "Native Resolution: " + images.Raw.Width + " x " + images.Raw.Height;
+				if (images.Raw != null) {
+					resolutionText = "Native Resolution: " + images.Raw.Width + " x " + images.Raw.Height;
+					CurrentFPS = vision.InputStream.FPS;
+				}
 				leftImage = images.Input;
 				middleImage = images.Threshold;
 				rightImage = images.WarpedWithShapes;
@@ -87,21 +91,14 @@ namespace RobotArmUR2
 
 			BeginInvoke(new Action(() => {
 				ResolutionText.Text = resolutionText;
+				FpsStatusLabel.Text = CurrentFPS.ToString("N2").PadLeft(6) + " FPS"; //Converts FPS to a string with 2 decimals, with at most 3 digits
+				TargetFpsStatusLabel.Text = "Target FPS: " + TargetFPS.ToString("N2").PadLeft(6);
 			}));
 
 			//Draw a few images for the user
 			LeftPictureBox.Image = leftImage;
 			MiddlePictureBox.Image = middleImage;
 			RightPictureBox.Image = rightImage;
-		}
-
-		//Event fires when a new FPS is calculated 
-		//TODO do we REALLY need to put this here? Does it need its own event?
-		private void VisionUI_SetFPSCounter(float CurrentFPS, float TargetFPS) {
-			BeginInvoke(new Action(() => { //Thread safe, baby
-				FpsStatusLabel.Text = CurrentFPS.ToString("N2").PadLeft(6) + " FPS"; //Converts FPS to a string with 2 decimals, with at most 3 digits
-				TargetFpsStatusLabel.Text = "Target FPS: " + TargetFPS.ToString("N2").PadLeft(6);
-			}));
 		}
 		#endregion
 

@@ -22,9 +22,6 @@ namespace RobotArmUR2.VisionProcessing {
 		public byte GrayscaleThreshold { get; set; } = (byte)(255 / 2);
 
 		#region Events and Handlers
-		public delegate void SetFPSCounterHandler(float CurrentFPS, float TargetFPS); //TODO is this needed?
-		public event SetFPSCounterHandler SetFPSCounter;
-
 		public delegate void NewFrameFinishedHandler(Vision sender, VisionImages outputs);
 		public event NewFrameFinishedHandler OnNewFrameProcessed;
 		#endregion
@@ -68,8 +65,6 @@ namespace RobotArmUR2.VisionProcessing {
 			VisionImages output = null;
 
 			if (image != null) {
-				SetFPSCounter?.Invoke(InputStream.FPS, InputStream.TargetFPS); //Display target FPS?
-
 				//Scale image so Height = 480, but still keeps aspect ratio.
 				Image<Bgr, byte> inputImage = image.Resize(480d / image.Height, Emgu.CV.CvEnum.Inter.Cubic); //TODO put size in ApplicationSetttings
 				if (RotateImage180) {
@@ -87,8 +82,6 @@ namespace RobotArmUR2.VisionProcessing {
 				ImageProcessing.DrawShapes(warpedShapes, shapes, ApplicationSettings.TriangleHighlightColor, ApplicationSettings.SquareHighlightColor, ApplicationSettings.ShapeHighlightThickness);
 
 				output = new VisionImages(image, inputImage, grayImage, threshImage, warpedImage, cannyImage, warpedShapes, shapes);
-			} else {
-				SetFPSCounter?.Invoke(0, InputStream.TargetFPS);
 			}
 
 			Images = output;
