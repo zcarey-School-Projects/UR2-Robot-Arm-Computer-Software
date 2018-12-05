@@ -9,6 +9,11 @@ using System.Windows.Forms;
 namespace RobotArmUR2 {
 	public static class ApplicationSettings {
 
+		/// <summary>
+		/// After an image is grabbed, the height it will be scaled to for vision processing. Smaller numbers will run faster and with less memory, but also less accurate.
+		/// </summary>
+		public static double WorkingImageScaledHeight { get; } = 480d;
+
 		#region Visuals
 		private static Bgr trigColor = new Bgr(Color.Yellow);
 		public static Bgr TriangleHighlightColor { get => new Bgr(trigColor.Blue, trigColor.Green, trigColor.Red); }

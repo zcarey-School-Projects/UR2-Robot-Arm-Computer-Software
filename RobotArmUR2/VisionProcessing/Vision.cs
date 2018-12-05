@@ -65,8 +65,7 @@ namespace RobotArmUR2.VisionProcessing {
 			VisionImages output = null;
 
 			if (image != null) {
-				//Scale image so Height = 480, but still keeps aspect ratio.
-				Image<Bgr, byte> inputImage = image.Resize(480d / image.Height, Emgu.CV.CvEnum.Inter.Cubic); //TODO put size in ApplicationSetttings
+				Image<Bgr, byte> inputImage = image.Resize(ApplicationSettings.WorkingImageScaledHeight / image.Height, Emgu.CV.CvEnum.Inter.Cubic); //Scale image so Height = 480, but still keeps aspect ratio.
 				if (RotateImage180) {
 					inputImage._Flip(Emgu.CV.CvEnum.FlipType.Horizontal);
 					inputImage._Flip(Emgu.CV.CvEnum.FlipType.Vertical);
