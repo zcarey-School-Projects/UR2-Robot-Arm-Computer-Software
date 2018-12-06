@@ -174,7 +174,9 @@ namespace RobotArmUR2.Util {
 		private void ImageGrabbingLoop() {
 			while (!exitThread) {
 				int waitMS = 0;
+				timer.Restart();
 				lock (captureLock) {
+					//Safely and quickly grab current settings
 					StreamType streamType = StreamType.None;
 					bool isPlaying = false;
 					Mat imageBuffer = null;
@@ -184,59 +186,75 @@ namespace RobotArmUR2.Util {
 						imageBuffer = this.imageBuffer;
 					}
 
-					if (streamType == StreamType.None) {
-						waitMS = (1000 / 120);
-					} else if (!isPlaying) {
-						if (imageBuffer != null) {
-							TargetFPS = imageFPS;
-							FPS = fpsCounter.Tick();
-							OnNewImage?.Invoke(this, imageBuffer);
-							waitMS = ((int)(1000 / imageFPS));
+					//Check state
+					if(streamType == StreamType.None) {
+						waitMS = (1000 / 120); //Nothing to capture, just wait for another input.
+					}else if (!isPlaying) { //check if paused
+						if(imageBuffer != null) { //If paused and there is a buffered image, keep sending it
+							waitMS = fireNewFrame(StreamType.Image, imageBuffer);
 						}
+					}else if(streamType == StreamType.Image && imageBuffer != null) { //Streaming an image that has already been loaded
+						waitMS = fireNewFrame(streamType, imageBuffer);
 					} else {
-						Mat newImage = new Mat();
-						if (capture.Grab() && capture.Retrieve(newImage)) {//Access violation exception
-							//Source is still open.
-							this.imageBuffer = newImage;
-							if (streamType == StreamType.Image) {
-								TargetFPS = imageFPS;
-								waitMS = ((int)(1000 / imageFPS));
-							} else if (streamType == StreamType.Video) {
-								float targetFPS = (float)capture.GetCaptureProperty(CapProp.Fps);
-								TargetFPS = targetFPS;
-								waitMS = ((int)(1000 / targetFPS));
-							} else if (streamType == StreamType.Camera) {
-								TargetFPS = (float)capture.GetCaptureProperty(CapProp.Fps);
-							} else { 
-								throw new NotImplementedException(); //TODO exception
-							}
-							FPS = fpsCounter.Tick();
-							OnNewImage?.Invoke(this, newImage);
-						} else if (streamType == StreamType.Image && imageBuffer != null) {
-							//An image source was loaded, and we already grabbed the image.
-							TargetFPS = imageFPS;
-							FPS = fpsCounter.Tick(); //TODO just put tick into a "SendNewImage" method?
-							OnNewImage?.Invoke(this, imageBuffer);
-							waitMS = ((int)(1000 / imageFPS));
-						} else {
-							lock (streamLock) {
-								//Source must be closed.
-								this.imageBuffer = null;
-								this.streamType = StreamType.None;
-								//TODO OnStream End
-								TargetFPS = 0;
-								FPS = 0;
-								fpsCounter.Reset();
-								OnStreamEnded?.Invoke(this);
-							}
-
-						}
+						waitMS = grabImage(streamType);
 					}
 				}
-
-				if (waitMS > 0) Thread.Sleep(waitMS);
+				long millis = timer.ElapsedMilliseconds;
+				timer.Stop();
+				if ((waitMS > 0) && (millis < waitMS)) {
+					int ms = (int)millis;
+					waitMS -= ms;
+					if(waitMS > 0) Thread.Sleep(waitMS);
+				}
 			}
 		}
+
+		private float getTargetFPS(StreamType type) {
+			switch (type) {
+				case StreamType.Image: return imageFPS;
+				case StreamType.Video:
+				case StreamType.Camera:
+					return (float)capture.GetCaptureProperty(CapProp.Fps);
+				default: return 0;
+			}
+		}
+
+		private int fireNewFrame(StreamType type, Mat image) { //Returns "delayMS" value
+			int delayMS = 0;
+			float targetFps = getTargetFPS(type);
+			TargetFPS = targetFps;
+			if (type != StreamType.Camera /*&& TargetFPS != 0*/) delayMS = (int)(1000 / targetFps);
+			FPS = fpsCounter.Tick();
+			OnNewImage?.Invoke(this, image);
+			return delayMS;
+		}
+
+		private int grabImage(StreamType streamType) { //Returns Target FPS is ms
+			if (streamType == StreamType.None) throw new NotImplementedException();
+			lock (captureLock) {
+				int waitMS = 0;
+				Mat newImage = new Mat();
+				if (capture.Grab() && capture.Retrieve(newImage)) {//TODO Access violation exception
+					//Source is still open.
+					this.imageBuffer = newImage;
+					waitMS = fireNewFrame(streamType, newImage);
+				} else {
+					lock (streamLock) {
+						//Source must be closed.
+						this.imageBuffer = null;
+						this.streamType = StreamType.None;
+						TargetFPS = 0;
+						FPS = 0;
+						fpsCounter.Reset();
+						OnStreamEnded?.Invoke(this);
+						waitMS = 1000 / 120;
+					}
+
+				}
+				return waitMS;
+			}
+		}
+
 		/*
 		//Method event listener that fires when a new image is grabbed from source.
 		private void onNewImage(object sender, EventArgs e) {
@@ -441,6 +459,9 @@ namespace RobotArmUR2.Util {
 			//imageBuffer = new Mat();
 			imageBuffer = null;
 			isPlaying = false;
+			fpsCounter.Reset();
+			FPS = 0;
+			TargetFPS = 0;
 		}
 		#endregion
 
