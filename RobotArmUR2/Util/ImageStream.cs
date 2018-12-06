@@ -15,61 +15,68 @@ namespace RobotArmUR2.Util {
 	/// Also has functions to prompt the user to load a file, or save a screenshot.
 	/// </summary>
 	public class ImageStream : IDisposable {
-
-		//Locks that help with race conditions.
 		private static readonly object streamLock = new object();
 		private static readonly object captureLock = new object();
-		//private static readonly object listenerLock = new object();
 
 		//Used to prompt the user to open/save files
 		private static OpenFileDialog openDialog;
 		private static SaveFileDialog saveDialog;
 
-		private static string[][] imageFileExtensions = new string[][] {
-			new string[]{ ".bmp", "Bmp" },
-			new string[]{ ".emf", "Emf" },
-			new string[]{ ".exif", "Exif" },
-			new string[]{ ".gif", "Gif" },
-			new string[]{ ".ico", "Icon" },
-			new string[]{ ".jpeg", "Jpeg" },
-			new string[]{ ".jpg", "Jpg" },
-			new string[]{ ".png", "Png" },
-			new string[]{ ".tiff", "Tiff" },
+		private static string[,] imageFileExtensions = {
+			{ ".bmp", "Bmp" }, 
+			{ ".emf", "Emf" },
+			{ ".exif", "Exif" },
+			{ ".gif", "Gif" },
+			{ ".ico", "Icon" },
+			{ ".jpeg", "Jpeg" },
+			{ ".jpg", "Jpg" },
+			{ ".png", "Png" },
+			{ ".tiff", "Tiff" }
 		};
 
 		private static string[] videoFileExtensions = new string[] { ".mkv", ".flv", ".f4v", ".ogv", ".ogg", ".gifv", ".mng", ".avi", ".mov", ".wmv", ".rm", ".rmvb", ".asf", ".amv", ".mp4", ".m4p", ".m4v", ".m4v", ".svi" };
 
 		//Sets up the file dialogs
 		static ImageStream() {
-			string openFilter = "Media Files (Image, Video)|";
-			foreach (string[] extNames in imageFileExtensions) {
-				openFilter += "*" + extNames[0] + ";";
-			}
-			foreach(string ext in videoFileExtensions) {
-				openFilter += "*" + ext + ";";
-			}
-			openFilter = openFilter.TrimEnd(';');
-
 			openDialog = new OpenFileDialog();
 			openDialog.RestoreDirectory = true;
+
+			string openFilter = "Media Files (Image, Video)|";
+			imageFileExtensions.GetLength(0);
+			for(int i = 0; i < imageFileExtensions.GetLength(0); i++) {
+				imageFileExtensions[i, 0] = imageFileExtensions[i, 0].ToLower();
+				openFilter += "*" + imageFileExtensions[i, 0] + ";";
+			}
+			for(int i = 0; i < videoFileExtensions.Length; i++) {
+				videoFileExtensions[i] = videoFileExtensions[i].ToLower();
+				openFilter += "*" + videoFileExtensions[i] + ";";
+			}
+			openFilter = openFilter.TrimEnd(';');
 			openDialog.Filter = openFilter;
 
-			string saveFilter = "";
-			foreach(string[] extNames in imageFileExtensions) {
-				saveFilter += extNames[1] + "(*" + extNames[0] + ")|*" + extNames[0] + "|";
-			}
-			saveFilter = saveFilter.TrimEnd('|');
 
 			saveDialog = new SaveFileDialog();
 			saveDialog.RestoreDirectory = true;
 			saveDialog.AddExtension = true;
+
+			string saveFilter = "";
+			string ext;
+			for(int i = 0; i < imageFileExtensions.GetLength(0); i++) {
+				ext = imageFileExtensions[i, 0];
+				if(ext == ".png") saveDialog.FilterIndex = i + 1;
+				saveFilter += imageFileExtensions[i, 1] + "(*" + ext + ")|*" + ext + "|";
+			}
+			saveFilter = saveFilter.TrimEnd('|');
 			saveDialog.Filter = saveFilter;
-			saveDialog.FilterIndex = 7;
 		}
 
+		private Thread grabbingThread; //New thread that continously tries to grab images from the source.
 		private VideoCapture capture; //EmguCV class that assists in loading camera/files
-		private StreamType streamType = StreamType.None;
 		private Mat imageBuffer; //The last image that was grabbed, used for taking screenshots
+
+		private volatile bool exitThread = false;
+		private volatile bool isPlaying = false;
+
 		private Stopwatch timer = new Stopwatch(); //Used to set the correct FPS for video playback.
 		private FPSCounter fpsCounter = new FPSCounter(); //Calculates the FPS.
 
@@ -79,34 +86,44 @@ namespace RobotArmUR2.Util {
 
 		public delegate void StreamEndedHandler(ImageStream sender); //Called when the current stream ends and is closed.
 		public event StreamEndedHandler OnStreamEnded;
-
-		//public delegate void NullImageHandler(ImageStream sender);
-		//public event NullImageHandler OnNullImage();
 		#endregion
 
-		/// <value>The image width of the image from the current input source.</value>
+		#region Properties
+		/// <summary>
+		/// The image width of the image from the current input source.
+		/// </summary>
 		public int Width { get { lock (streamLock) { if (capture == null) return 0; else return capture.Width; } } }
 
-		/// <value>The image height of the image from the current input source.</value>
+		/// <summary>
+		/// The image height of the image from the current input source.
+		/// </summary>
 		public int Height { get { lock (streamLock) { if (capture == null) return 0; else return capture.Height; } } }
 
-		/// <value>The width and height of the image from the current input source.</value>
+		/// <summary>
+		/// The width and height of the image from the current input source.
+		/// </summary>
 		public Size Size { get { lock (streamLock) { if (capture == null) return new Size(0, 0); else return new Size(capture.Width, capture.Height); } } }
 
-		/// <value>Whether or not there is an opened input source.</value>
-		public bool IsOpened { get { lock (streamLock) { if (capture == null) return false; else return capture.IsOpened; } } } 
+		/// <summary>
+		/// Whether or not there is an opened input source.
+		/// </summary>
+		public bool IsOpened { get { lock (streamLock) { return capture != null; } } }
 
-		/// <value>The target FPS defined by the input source.</value>
+		/// <summary>
+		/// The target FPS defined by the input source.
+		/// </summary>
 		public float TargetFPS { get; private set; } = 0f;
 
-		/// <value>The estimated measured FPS that is being achieved. Not accurate, but close.</value>
+		/// <summary>
+		/// The estimated measured FPS that is being achieved. Not accurate, but close.
+		/// </summary>
 		public float FPS { get; private set; } = 0f;
 
-		/// <value>Whether or not the input image should be flipped horizontally.</value>
+		/// <summary>
+		/// Whether or not the input image should be flipped horizontally.
+		/// </summary>
 		public bool FlipHorizontal {
-			get {
-				return flipHorizontal;
-			}
+			get { return flipHorizontal; }
 
 			set {
 				lock (streamLock) {
@@ -117,11 +134,11 @@ namespace RobotArmUR2.Util {
 		}
 		private bool flipHorizontal = false;
 
-		/// <value>Whether or not the input image should be flipped vertically.</value>
+		/// <summary>
+		/// Whether or not the input image should be flipped vertically.
+		/// </summary>
 		public bool FlipVertical {
-			get {
-				return flipVertical;
-			}
+			get { return flipVertical; }
 
 			set {
 				lock (streamLock) {
@@ -132,20 +149,21 @@ namespace RobotArmUR2.Util {
 		}
 		private bool flipVertical = false;
 
-		private Thread GrabbingThread;
-		private volatile bool exitThread = false;
-		private volatile bool isPlaying = false;
-		private float imageFPS = 15; //TODO public
+		public float ImageFps { get => imageFPS; set { if (value >= 0) imageFPS = value; } }
+		private float imageFPS = 15;
 
-		//TODO add capture type (camera, video, image)
+		public StreamType StreamSource { get => streamType; }
+		private StreamType streamType = StreamType.None;
+		#endregion
+
 		//TODO add auto-loop option
 		//TODO add option to artificially change FPS (i.e. camera runs at 60 fps, but you selected  15 fps)
 
 		public ImageStream() {
-			GrabbingThread = new Thread(ImageGrabbingLoop);
-			GrabbingThread.Name = "Image Grabbing Thread";
-			GrabbingThread.IsBackground = true;
-			GrabbingThread.Start();
+			grabbingThread = new Thread(ImageGrabbingLoop);
+			grabbingThread.Name = "Image Grabbing Thread";
+			grabbingThread.IsBackground = true;
+			grabbingThread.Start();
 		}
 		
 		~ImageStream() {
@@ -159,9 +177,9 @@ namespace RobotArmUR2.Util {
 		/// Unlike most implementations of Dispose, the class can still be used after calling Dispose().
 		/// </remarks>
 		public void Dispose() {
-			exitThread = true;
-			GrabbingThread.Join();
-			GrabbingThread = null;
+			exitThread = true;//TODO on stream end
+			grabbingThread.Join();
+			grabbingThread = null;
 			lock (streamLock) {
 				if (capture != null) capture.Dispose();
 				capture = null;
@@ -171,6 +189,7 @@ namespace RobotArmUR2.Util {
 			}
 		}
 
+		#region Image Grabbing Thread
 		private void ImageGrabbingLoop() {
 			while (!exitThread) {
 				int waitMS = 0;
@@ -209,26 +228,6 @@ namespace RobotArmUR2.Util {
 			}
 		}
 
-		private float getTargetFPS(StreamType type) {
-			switch (type) {
-				case StreamType.Image: return imageFPS;
-				case StreamType.Video:
-				case StreamType.Camera:
-					return (float)capture.GetCaptureProperty(CapProp.Fps);
-				default: return 0;
-			}
-		}
-
-		private int fireNewFrame(StreamType type, Mat image) { //Returns "delayMS" value
-			int delayMS = 0;
-			float targetFps = getTargetFPS(type);
-			TargetFPS = targetFps;
-			if (type != StreamType.Camera /*&& TargetFPS != 0*/) delayMS = (int)(1000 / targetFps);
-			FPS = fpsCounter.Tick();
-			OnNewImage?.Invoke(this, image);
-			return delayMS;
-		}
-
 		private int grabImage(StreamType streamType) { //Returns Target FPS is ms
 			if (streamType == StreamType.None) throw new NotImplementedException();
 			lock (captureLock) {
@@ -255,41 +254,27 @@ namespace RobotArmUR2.Util {
 			}
 		}
 
-		/*
-		//Method event listener that fires when a new image is grabbed from source.
-		private void onNewImage(object sender, EventArgs e) {
-			int delayTime = 0;
-			lock (listenerLock) {
-				Mat tempBuffer = null;
-				timer.Restart();
-				FPS = fpsCounter.Tick();
-				lock (streamLock) {
-					if (capture == null || !capture.IsOpened ) return;
-					capture.Retrieve(imageBuffer); //Documentation says gray image, but actually retrieves a colored image. //TODO nullptr checks
-					TargetFPS = (float)capture.GetCaptureProperty(CapProp.Fps);
-					tempBuffer = imageBuffer;
-				}
-
-				if (tempBuffer != null) OnNewImage?.Invoke(this, tempBuffer); //Use temp buffer so imageBuffer can be modified without cause for threading concern.
-				
-				if(TargetFPS != 0) {
-					delayTime = (int)(1000.0 / TargetFPS); //The total time between frames
-					long timerMS = timer.ElapsedMilliseconds; //Time it took us to proccess one frame
-					if(timerMS <= delayTime) {
-						delayTime -= (int)timerMS;
-					} else {
-						delayTime = 0;
-					}
-				}
-			}
-
-			if (delayTime < 0) delayTime = 1000 / 15; //Default to 15 FPS for overflow errors
-			if(delayTime > 0) {
-				if (delayTime > (1000 / 15)) delayTime = 1000 / 15; //Anything slower that 15 FPS we don't want to allow.
-				Thread.Sleep(delayTime);
+		private float getTargetFPS(StreamType type) {
+			switch (type) {
+				case StreamType.Image: return imageFPS;
+				case StreamType.Video:
+				case StreamType.Camera:
+					return (float)capture.GetCaptureProperty(CapProp.Fps);
+				default: return 0;
 			}
 		}
-	*/
+
+		private int fireNewFrame(StreamType type, Mat image) { //Returns "delayMS" value
+			int delayMS = 0;
+			float targetFps = getTargetFPS(type);
+			TargetFPS = targetFps;
+			if (type != StreamType.Camera /*&& TargetFPS != 0*/) delayMS = (int)(1000 / targetFps);
+			FPS = fpsCounter.Tick();
+			OnNewImage?.Invoke(this, image);
+			return delayMS;
+		}
+		#endregion
+
 		#region Stream Controls
 		/// <summary>
 		/// Starts or resumes the selected input source and starts grabbing images. 
@@ -342,6 +327,8 @@ namespace RobotArmUR2.Util {
 		#endregion
 
 		#region Input Source Selection
+
+		#region Select Camera
 		/// <summary>
 		/// Selects the default camera as the source.
 		/// </summary>
@@ -370,6 +357,41 @@ namespace RobotArmUR2.Util {
 				}
 			}
 		}
+		#endregion
+
+		#region Load Files
+		private bool loadGifFromFile(string filepath) {
+			try {
+				using (Image img = Image.FromFile(filepath)) {
+					if (!img.RawFormat.Equals(ImageFormat.Gif)) return false;
+					FrameDimension dimension = new FrameDimension(img.FrameDimensionsList[0]);
+					int frameCount = img.GetFrameCount(dimension);
+
+					if (frameCount == 1) streamType = StreamType.Image;
+					else if (frameCount > 1) streamType = StreamType.Video;
+					else return false;
+
+					capture = new VideoCapture(filepath);
+					setupCapture();
+					return true;
+				}
+			} catch {
+				return false;
+			}
+		}
+
+		private static StreamType checkExtension(string ext) {
+			ext = ext.ToLower();
+			for(int i = 0; i < imageFileExtensions.GetLength(0); i++) {
+				if (ext == imageFileExtensions[i, 0]) return StreamType.Image;
+			}
+
+			foreach (string extName in videoFileExtensions) {
+				if (ext == extName) return StreamType.Video;
+			}
+
+			return StreamType.None;
+		}
 
 		/// <summary>
 		/// Loads a file to be used as the source. Supports most image and video files.
@@ -384,40 +406,9 @@ namespace RobotArmUR2.Util {
 					streamType = StreamType.None;
 					string ext = Path.GetExtension(filepath).ToLower();
 					if(ext == ".gif") {
-						try {
-							using (Image img = Image.FromFile(filepath)) {
-								if (!img.RawFormat.Equals(ImageFormat.Gif)) return false;
-								FrameDimension dimension = new FrameDimension(img.FrameDimensionsList[0]);
-								int frameCount = img.GetFrameCount(dimension);
-
-								if (frameCount == 1) streamType = StreamType.Image;
-								else if (frameCount > 1) streamType = StreamType.Video;
-								else return false;
-
-								capture = new VideoCapture(filepath);
-								setupCapture();
-								return true;
-							}
-						} catch {
-							return false;
-						}
+						return loadGifFromFile(filepath);
 					} else {
-						foreach(string[] extNames in imageFileExtensions) {
-							if (ext == extNames[0]) {
-								streamType = StreamType.Image;
-								break;
-							}
-						}
-
-						if(streamType == StreamType.None) {
-							foreach(string extName in videoFileExtensions) {
-								if(ext == extName) {
-									streamType = StreamType.Video;
-									break;
-								}
-							}
-						}
-
+						streamType = checkExtension(ext);
 						if (streamType != StreamType.None) {
 							capture = new VideoCapture(filepath);
 							setupCapture();
@@ -450,13 +441,12 @@ namespace RobotArmUR2.Util {
 				return false;
 			}
 		}
+		#endregion
 
 		//Sets up a capture so it is ready to use.
 		private void setupCapture() {
-			//capture.ImageGrabbed += onNewImage;
 			capture.FlipHorizontal = flipHorizontal;
 			capture.FlipVertical = flipVertical;
-			//imageBuffer = new Mat();
 			imageBuffer = null;
 			isPlaying = false;
 			fpsCounter.Reset();
@@ -530,7 +520,7 @@ namespace RobotArmUR2.Util {
 		}
 		#endregion
 
-		private enum StreamType {
+		public enum StreamType {
 			None,
 			Camera,
 			Image,
