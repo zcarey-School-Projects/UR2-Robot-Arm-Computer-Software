@@ -249,6 +249,21 @@ namespace RobotArmUR2
 
 		#endregion
 
+		private void button1_Click(object sender, EventArgs e) {
+			vision.InputStream.Play();
+		}
+
+		private void button2_Click(object sender, EventArgs e) {
+			vision.InputStream.Pause();
+		}
+
+		private void button3_Click(object sender, EventArgs e) {
+			vision.InputStream.Stop();
+		}
+
+		private void button4_Click(object sender, EventArgs e) {
+			vision.InputStream.Dispose();
+		}
 	}
 
 }

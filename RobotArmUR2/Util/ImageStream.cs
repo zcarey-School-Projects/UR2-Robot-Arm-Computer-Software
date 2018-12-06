@@ -15,8 +15,15 @@ namespace RobotArmUR2.Util {
 	/// Also has functions to prompt the user to load a file, or save a screenshot.
 	/// </summary>
 	public class ImageStream : IDisposable {
-		private static readonly object streamLock = new object();
-		private static readonly object captureLock = new object();
+		/// <summary>
+		/// Used for checking if disposed or not
+		/// </summary>
+		private static readonly object streamLock = new object(); //TODO SHIT! For multiple objects this doesnt work!
+
+		/// <summary>
+		/// Prevent running while a frame is being grabbed.
+		/// </summary>
+		private static readonly object captureLock = new object(); 
 
 		//Used to prompt the user to open/save files
 		private static OpenFileDialog openDialog;
@@ -92,22 +99,22 @@ namespace RobotArmUR2.Util {
 		/// <summary>
 		/// The image width of the image from the current input source.
 		/// </summary>
-		public int Width { get { lock (streamLock) { if (capture == null) return 0; else return capture.Width; } } }
+		public int Width { get { lock (captureLock) { return (capture == null) ? 0 : capture.Width; } } } 
 
 		/// <summary>
 		/// The image height of the image from the current input source.
 		/// </summary>
-		public int Height { get { lock (streamLock) { if (capture == null) return 0; else return capture.Height; } } }
+		public int Height { get { lock (captureLock) { return (capture == null) ? 0 : capture.Height; } } }
 
 		/// <summary>
 		/// The width and height of the image from the current input source.
 		/// </summary>
-		public Size Size { get { lock (streamLock) { if (capture == null) return new Size(0, 0); else return new Size(capture.Width, capture.Height); } } }
+		public Size Size { get { lock (captureLock) { return (capture == null) ? (new Size(0, 0)) : (new Size(capture.Width, capture.Height)); } } }
 
 		/// <summary>
 		/// Whether or not there is an opened input source.
 		/// </summary>
-		public bool IsOpened { get { lock (streamLock) { return capture != null; } } }
+		public bool IsOpened { get { return capture != null; } }
 
 		/// <summary>
 		/// The target FPS defined by the input source.
@@ -126,7 +133,7 @@ namespace RobotArmUR2.Util {
 			get { return flipHorizontal; }
 
 			set {
-				lock (streamLock) {
+				lock (captureLock) { 
 					flipHorizontal = value;
 					if (capture != null) capture.FlipHorizontal = flipHorizontal;
 				}
@@ -141,7 +148,7 @@ namespace RobotArmUR2.Util {
 			get { return flipVertical; }
 
 			set {
-				lock (streamLock) {
+				lock (captureLock) {
 					flipVertical = value;
 					if (capture != null) capture.FlipVertical = flipVertical;
 				}
@@ -152,18 +159,19 @@ namespace RobotArmUR2.Util {
 		public float ImageFps { get => imageFPS; set { if (value >= 0) imageFPS = value; } }
 		private float imageFPS = 15;
 
-		public StreamType StreamSource { get => streamType; }
-		private StreamType streamType = StreamType.None;
+		public StreamType StreamSource { get; private set; } = StreamType.None;
 		#endregion
 
 		//TODO add auto-loop option
 		//TODO add option to artificially change FPS (i.e. camera runs at 60 fps, but you selected  15 fps)
 
 		public ImageStream() {
-			grabbingThread = new Thread(ImageGrabbingLoop);
-			grabbingThread.Name = "Image Grabbing Thread";
-			grabbingThread.IsBackground = true;
-			grabbingThread.Start();
+			lock (streamLock) {
+				grabbingThread = new Thread(imageGrabbingLoop);
+				grabbingThread.Name = "Image Grabbing Thread";
+				grabbingThread.IsBackground = true;
+				grabbingThread.Start();
+			}
 		}
 		
 		~ImageStream() {
@@ -171,109 +179,99 @@ namespace RobotArmUR2.Util {
 		}
 
 		/// <summary>
-		/// Stops the stream and releases any inputs that were being used. Image buffer is cleared and FPS is reset to zero.
+		/// Stops the grabbing thread and releases any inputs that were being used. Image buffer is cleared and FPS is reset to zero.
 		/// </summary>
 		/// <remarks>
-		/// Unlike most implementations of Dispose, the class can still be used after calling Dispose().
+		/// If a stream was running, calling this fires EndOfStream
 		/// </remarks>
 		public void Dispose() {
-			exitThread = true;//TODO on stream end
-			grabbingThread.Join();
-			grabbingThread = null;
+			Thread thread = grabbingThread;
 			lock (streamLock) {
-				if (capture != null) capture.Dispose();
-				capture = null;
-				//We do NOT want to dispose imageBuffer, in the case the image is being used elsewhere!
-				imageBuffer = null;
-				fpsCounter.Reset();
+				grabbingThread = null; //Signals to other functions that we are disposed
 			}
+			exitThread = true;//TODO on stream end
+			thread.Join();
+
+			StreamSource = StreamType.None;
+			if (capture != null) capture.Dispose();
+			capture = null;
+			imageBuffer = null; //We do NOT want to dispose imageBuffer, in the case the image is being used elsewhere!
+			fpsCounter = null;
+			timer.Stop();
+			timer = null;
 		}
 
 		#region Image Grabbing Thread
-		private void ImageGrabbingLoop() {
+		private void imageGrabbingLoop() {
 			while (!exitThread) {
-				int waitMS = 0;
+				StreamType effectiveSource = StreamType.None; //After settings, what the source effectivley is (i.e. is paused, acts as an iamge)
+				Mat newImage = null;
 				timer.Restart();
+
+				//Grab images and calculate wait time
 				lock (captureLock) {
-					//Safely and quickly grab current settings
-					StreamType streamType = StreamType.None;
-					bool isPlaying = false;
-					Mat imageBuffer = null;
-					lock (streamLock) {
-						streamType = this.streamType;
-						isPlaying = this.isPlaying;
-						imageBuffer = this.imageBuffer;
-					}
-
-					//Check state
-					if(streamType == StreamType.None) {
-						waitMS = (1000 / 120); //Nothing to capture, just wait for another input.
-					}else if (!isPlaying) { //check if paused
-						if(imageBuffer != null) { //If paused and there is a buffered image, keep sending it
-							waitMS = fireNewFrame(StreamType.Image, imageBuffer);
+					/*if(StreamSource == StreamType.None) {
+						waitMS = 1; //Nothing to capture, wait for another input to be selected.
+					}else */if (!isPlaying || (StreamSource == StreamType.Image && imageBuffer != null)) { //Streaming an image that has already been loaded OR paused stream
+						if (imageBuffer != null) { //Check for paused stream (!isPlaying)
+							effectiveSource = StreamType.Image;
+							newImage = imageBuffer;
 						}
-					}else if(streamType == StreamType.Image && imageBuffer != null) { //Streaming an image that has already been loaded
-						waitMS = fireNewFrame(streamType, imageBuffer);
-					} else {
-						waitMS = grabImage(streamType);
+					} else { //Attempt to grab a frame from the source.
+						newImage = new Mat();
+						if (grabImage(newImage)) {
+							//Source is still open.
+							effectiveSource = StreamSource;
+						} else {
+							//Source must be closed.
+							endStream();//TODO be sure 
+						}
 					}
+
+					if (effectiveSource == StreamType.None) TargetFPS = 0;
+					else {
+						TargetFPS = (effectiveSource == StreamType.Image) ? imageFPS : (float)capture.GetCaptureProperty(CapProp.Fps);
+						FPS = fpsCounter.Tick();
+					}
+
+					imageBuffer = (newImage == null || newImage.IsEmpty) ? null : newImage;
 				}
-				long millis = timer.ElapsedMilliseconds;
+
+				int delayMS = 0; //The target time to wait;
+
+				if (effectiveSource == StreamType.None) delayMS = 1;
+				else {
+					OnNewImage?.Invoke(this, newImage);
+					if (effectiveSource != StreamType.Camera) delayMS = (int)(1000 / TargetFPS);
+				}
+
+				//Wait the necessary time to acieve desired FPS
 				timer.Stop();
-				if ((waitMS > 0) && (millis < waitMS)) {
-					int ms = (int)millis;
-					waitMS -= ms;
-					if(waitMS > 0) Thread.Sleep(waitMS);
-				}
+				long millis = timer.ElapsedMilliseconds;
+				if (millis < delayMS && millis >= 0) delayMS -= (int)millis;
+				if (delayMS > 0) Thread.Sleep(delayMS);
 			}
 		}
 
-		private int grabImage(StreamType streamType) { //Returns Target FPS is ms
-			if (streamType == StreamType.None) throw new NotImplementedException();
-			lock (captureLock) {
-				int waitMS = 0;
-				Mat newImage = new Mat();
-				if (capture.Grab() && capture.Retrieve(newImage)) {//TODO Access violation exception
-					//Source is still open.
-					this.imageBuffer = newImage;
-					waitMS = fireNewFrame(streamType, newImage);
-				} else {
-					lock (streamLock) {
-						//Source must be closed.
-						this.imageBuffer = null;
-						this.streamType = StreamType.None;
-						TargetFPS = 0;
-						FPS = 0;
-						fpsCounter.Reset();
-						OnStreamEnded?.Invoke(this);
-						waitMS = 1000 / 120;
-					}
-
-				}
-				return waitMS;
-			}
-		}
-
-		private float getTargetFPS(StreamType type) {
-			switch (type) {
-				case StreamType.Image: return imageFPS;
-				case StreamType.Video:
-				case StreamType.Camera:
-					return (float)capture.GetCaptureProperty(CapProp.Fps);
-				default: return 0;
-			}
-		}
-
-		private int fireNewFrame(StreamType type, Mat image) { //Returns "delayMS" value
-			int delayMS = 0;
-			float targetFps = getTargetFPS(type);
-			TargetFPS = targetFps;
-			if (type != StreamType.Camera /*&& TargetFPS != 0*/) delayMS = (int)(1000 / targetFps);
-			FPS = fpsCounter.Tick();
-			OnNewImage?.Invoke(this, image);
-			return delayMS;
+		private bool grabImage(Mat outputImage) {
+			return capture.Grab() && capture.Retrieve(outputImage); //TODO Access violation exception
 		}
 		#endregion
+
+		private void endStream() {
+			lock (captureLock) {
+				lock (streamLock) {
+					imageBuffer = null;
+					TargetFPS = 0;
+					FPS = 0;
+					fpsCounter.Reset();
+					if(StreamSource != StreamType.None) { //Only fire event if the stream is closing, and wasnt already closed.
+						StreamSource = StreamType.None;
+						OnStreamEnded?.Invoke(this);
+					}
+				}
+			}
+		}
 
 		#region Stream Controls
 		/// <summary>
@@ -281,48 +279,22 @@ namespace RobotArmUR2.Util {
 		/// When an image is grabbed, onNewImage is fired.
 		/// </summary>
 		/// <returns>true if the source was successfully started.</returns>
-		public bool Play() {
-			lock (streamLock) {
-				/*	if (capture != null && capture.IsOpened) {
-						capture.Start();
-						return true;
-					} else {
-						return false;
-					}*/
-				isPlaying = true;
-				return true;
-			}
-
+		public void Play() {
+			isPlaying = true;
 		}
 
 		/// <summary>
 		/// Stops grabbing images from the source until resumed.
 		/// </summary>
 		public void Pause() {
-			lock (streamLock) {
-				//capture.Stop
-				isPlaying = false;
-			}
+			isPlaying = false;
 		}
 
 		/// <summary>
 		/// Closes the input and fires onStreamEnded event.
 		/// </summary>
 		public void Stop() {
-			/*lock (listenerLock) {//Ensures that event is fired only after image grabbed by capture is finished sending. 
-				lock (streamLock) {
-					Dispose();
-					OnStreamEnded?.Invoke(this); //TODO Call all events like this
-				}
-			}*/
-			lock (captureLock) {
-				lock (streamLock) {
-					capture = null;
-					isPlaying = false;
-					streamType = StreamType.None;
-					imageBuffer = null;
-				}
-			}
+			endStream();
 		}
 		#endregion
 
@@ -335,10 +307,10 @@ namespace RobotArmUR2.Util {
 		public void SelectCamera() {
 			lock (captureLock) {
 				lock (streamLock) {
-					//Stop();
+					if (grabbingThread == null) return;
 					capture = new VideoCapture();
+					StreamSource = StreamType.Camera;
 					setupCapture();
-					streamType = StreamType.Camera;
 				}
 			}
 		}
@@ -350,37 +322,34 @@ namespace RobotArmUR2.Util {
 		public void SelectCamera(int index) {
 			lock (captureLock) {
 				lock (streamLock) {
-					//Stop();
+					if (grabbingThread == null) return;
 					capture = new VideoCapture(index);
+					StreamSource = StreamType.Camera;
 					setupCapture();
-					streamType = StreamType.Camera;
 				}
 			}
 		}
 		#endregion
 
 		#region Load Files
-		private bool loadGifFromFile(string filepath) {
+		//Loads a gif image to read it's frame counts to check if should load as an image or video.
+		private static StreamType getGifStreamType(string filepath) {
 			try {
 				using (Image img = Image.FromFile(filepath)) {
-					if (!img.RawFormat.Equals(ImageFormat.Gif)) return false;
+					if (!img.RawFormat.Equals(ImageFormat.Gif)) return StreamType.None;
 					FrameDimension dimension = new FrameDimension(img.FrameDimensionsList[0]);
 					int frameCount = img.GetFrameCount(dimension);
 
-					if (frameCount == 1) streamType = StreamType.Image;
-					else if (frameCount > 1) streamType = StreamType.Video;
-					else return false;
-
-					capture = new VideoCapture(filepath);
-					setupCapture();
-					return true;
+					if (frameCount == 1) return StreamType.Image;
+					else if (frameCount > 1) return StreamType.Video;
+					else return StreamType.None;
 				}
 			} catch {
-				return false;
+				return StreamType.None;
 			}
 		}
 
-		private static StreamType checkExtension(string ext) {
+		private static StreamType getExtensionStreamType(string ext) {
 			ext = ext.ToLower();
 			for(int i = 0; i < imageFileExtensions.GetLength(0); i++) {
 				if (ext == imageFileExtensions[i, 0]) return StreamType.Image;
@@ -398,27 +367,28 @@ namespace RobotArmUR2.Util {
 		/// </summary>
 		/// <param name="filepath">Full path to the file to be loaded.</param>
 		/// <returns>true if the file was successfully loaded.</returns>
-		public bool LoadFile(string filepath) { //TODO method too big
-			if (filepath == null) return false;
+		public bool LoadFile(string filepath) {
 			lock (captureLock) {
 				lock (streamLock) {
-					if (!File.Exists(filepath)) return false; //Wait until here to check if file exists, in case we had to wait for the lock to be released.
-					streamType = StreamType.None;
+					if (grabbingThread == null) return false;
+					if (filepath == null || !File.Exists(filepath)) {//Wait until here to check if file exists, in case we had to wait for the lock to be released.
+						endStream(); //Failed to load, must end the current stream.
+						return false; 
+					}
+					
 					string ext = Path.GetExtension(filepath).ToLower();
-					if(ext == ".gif") {
-						return loadGifFromFile(filepath);
+					StreamSource = (ext == ".gif") ? getGifStreamType(filepath) : getExtensionStreamType(ext);
+
+					if (StreamSource != StreamType.None) {
+						capture = new VideoCapture(filepath);
+						setupCapture();
+						return true;
 					} else {
-						streamType = checkExtension(ext);
-						if (streamType != StreamType.None) {
-							capture = new VideoCapture(filepath);
-							setupCapture();
-							return true;
-						}
+						endStream();
+						return false;
 					}
 				}
 			}
-
-			return false;
 		}
 
 		/// <summary>
@@ -444,6 +414,7 @@ namespace RobotArmUR2.Util {
 		#endregion
 
 		//Sets up a capture so it is ready to use.
+		//Assumed to be called from inside a streamLock
 		private void setupCapture() {
 			capture.FlipHorizontal = flipHorizontal;
 			capture.FlipVertical = flipVertical;
@@ -458,13 +429,13 @@ namespace RobotArmUR2.Util {
 		#region Save Screenshots
 		//Captures a screenshot, returns null if it can't
 		private Mat captureScreenshot() {
-			Mat screenshot = new Mat();
-			lock (streamLock) {
-				if (imageBuffer == null) return null;
-				imageBuffer.CopyTo(screenshot);
+			Mat screenshot = imageBuffer; //Atomic thread-safe grab of the buffer
+			if (screenshot == null || screenshot.IsEmpty) return null;
+			else{
+				Mat copy = new Mat();
+				screenshot.CopyTo(copy);
+				return copy;
 			}
-			if (screenshot.IsEmpty) return null;
-			return screenshot;
 		}
 
 		/// <summary>
@@ -500,7 +471,7 @@ namespace RobotArmUR2.Util {
 		}
 
 		public bool PromptUserSaveScreenshot(Mat img) {
-			if (img == null) return false;
+			if (img == null || img.IsEmpty) return false;
 
 			if (saveDialog.ShowDialog() == DialogResult.OK) {
 				img.Save(saveDialog.FileName);
@@ -515,8 +486,7 @@ namespace RobotArmUR2.Util {
 		/// </summary>
 		/// <returns>true if successfully saved, also returns false if user cancelled operation.</returns>
 		public bool PromptUserSaveScreenshot() {
-			Mat screenshot = captureScreenshot();
-			return PromptUserSaveScreenshot(screenshot);
+			return PromptUserSaveScreenshot(captureScreenshot());
 		}
 		#endregion
 
