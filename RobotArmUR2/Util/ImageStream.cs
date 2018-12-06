@@ -23,7 +23,12 @@ namespace RobotArmUR2.Util {
 		/// <summary>
 		/// Prevent running while a frame is being grabbed.
 		/// </summary>
-		private static readonly object captureLock = new object(); 
+		private static readonly object captureLock = new object();
+
+		/// <summary>
+		/// Ensures Dispose is only being called by one thread at a time.
+		/// </summary>
+		private static readonly object disposeLock = new object();
 
 		//Used to prompt the user to open/save files
 		private static OpenFileDialog openDialog;
@@ -185,71 +190,82 @@ namespace RobotArmUR2.Util {
 		/// If a stream was running, calling this fires EndOfStream
 		/// </remarks>
 		public void Dispose() {
-			Thread thread = grabbingThread;
-			lock (streamLock) {
-				grabbingThread = null; //Signals to other functions that we are disposed
-			}
-			exitThread = true;//TODO on stream end
-			thread.Join();
+			lock (disposeLock) {
+				lock (streamLock) {
+					if (grabbingThread == null) return;
+				}
 
-			StreamSource = StreamType.None;
-			if (capture != null) capture.Dispose();
-			capture = null;
-			imageBuffer = null; //We do NOT want to dispose imageBuffer, in the case the image is being used elsewhere!
-			fpsCounter = null;
-			timer.Stop();
-			timer = null;
+				exitThread = true;//TODO on stream end
+				grabbingThread.Join();
+
+				Thread thread = grabbingThread;
+				lock (streamLock) {
+					grabbingThread = null; //Signals to other functions that we are disposed
+				}
+
+				StreamSource = StreamType.None;
+				if (capture != null) capture.Dispose();
+				capture = null;
+				imageBuffer = null; //We do NOT want to dispose imageBuffer, in the case the image is being used elsewhere!
+				fpsCounter = null;
+				timer.Stop();
+				timer = null;
+			}
 		}
 
 		#region Image Grabbing Thread
 		private void imageGrabbingLoop() {
-			while (!exitThread) {
-				StreamType effectiveSource = StreamType.None; //After settings, what the source effectivley is (i.e. is paused, acts as an iamge)
-				Mat newImage = null;
-				timer.Restart();
+			try {
+				while (!exitThread) {
+					StreamType effectiveSource = StreamType.None; //After settings, what the source effectivley is (i.e. is paused, acts as an iamge)
+					Mat newImage = null;
+					timer.Restart();
 
-				//Grab images and calculate wait time
-				lock (captureLock) {
-					/*if(StreamSource == StreamType.None) {
-						waitMS = 1; //Nothing to capture, wait for another input to be selected.
-					}else */if (!isPlaying || (StreamSource == StreamType.Image && imageBuffer != null)) { //Streaming an image that has already been loaded OR paused stream
-						if (imageBuffer != null) { //Check for paused stream (!isPlaying)
-							effectiveSource = StreamType.Image;
-							newImage = imageBuffer;
+					//Grab images and calculate wait time
+					lock (captureLock) {
+						if (StreamSource != StreamType.None) { //There is a source we want to read!
+							if (!isPlaying || (StreamSource == StreamType.Image && imageBuffer != null)) { //Streaming an image that has already been loaded OR paused stream
+								if (imageBuffer != null) { //Check for paused stream (!isPlaying)
+									effectiveSource = StreamType.Image;
+									newImage = imageBuffer;
+								}
+							} else { //Attempt to grab a frame from the source.
+								newImage = new Mat();
+								if (grabImage(newImage)) {
+									//Source is still open.
+									effectiveSource = StreamSource;
+								} else {
+									//Source must be closed.
+									endStream();//TODO be sure 
+								}
+							}
 						}
-					} else { //Attempt to grab a frame from the source.
-						newImage = new Mat();
-						if (grabImage(newImage)) {
-							//Source is still open.
-							effectiveSource = StreamSource;
-						} else {
-							//Source must be closed.
-							endStream();//TODO be sure 
+
+						if (effectiveSource == StreamType.None) TargetFPS = 0;
+						else {
+							TargetFPS = (effectiveSource == StreamType.Image) ? imageFPS : (float)capture.GetCaptureProperty(CapProp.Fps);
+							FPS = fpsCounter.Tick();
 						}
+
+						imageBuffer = (newImage == null || newImage.IsEmpty) ? null : newImage;
 					}
 
-					if (effectiveSource == StreamType.None) TargetFPS = 0;
+					int delayMS = 0; //The target time to wait;
+
+					if (effectiveSource == StreamType.None) delayMS = 1;
 					else {
-						TargetFPS = (effectiveSource == StreamType.Image) ? imageFPS : (float)capture.GetCaptureProperty(CapProp.Fps);
-						FPS = fpsCounter.Tick();
+						OnNewImage?.Invoke(this, newImage);
+						if (effectiveSource != StreamType.Camera) delayMS = (int)(1000 / TargetFPS);
 					}
 
-					imageBuffer = (newImage == null || newImage.IsEmpty) ? null : newImage;
+					//Wait the necessary time to acieve desired FPS
+					timer.Stop();
+					long millis = timer.ElapsedMilliseconds;
+					if (millis < delayMS && millis >= 0) delayMS -= (int)millis;
+					if (delayMS > 0) Thread.Sleep(delayMS);
 				}
-
-				int delayMS = 0; //The target time to wait;
-
-				if (effectiveSource == StreamType.None) delayMS = 1;
-				else {
-					OnNewImage?.Invoke(this, newImage);
-					if (effectiveSource != StreamType.Camera) delayMS = (int)(1000 / TargetFPS);
-				}
-
-				//Wait the necessary time to acieve desired FPS
-				timer.Stop();
-				long millis = timer.ElapsedMilliseconds;
-				if (millis < delayMS && millis >= 0) delayMS -= (int)millis;
-				if (delayMS > 0) Thread.Sleep(delayMS);
+			} finally {
+				endStream();
 			}
 		}
 
@@ -261,14 +277,18 @@ namespace RobotArmUR2.Util {
 		private void endStream() {
 			lock (captureLock) {
 				lock (streamLock) {
-					imageBuffer = null;
-					TargetFPS = 0;
-					FPS = 0;
-					fpsCounter.Reset();
-					if(StreamSource != StreamType.None) { //Only fire event if the stream is closing, and wasnt already closed.
-						StreamSource = StreamType.None;
-						OnStreamEnded?.Invoke(this);
-					}
+					if (grabbingThread == null) return;
+				}
+
+				if (capture != null) capture.Dispose();
+				capture = null;
+				imageBuffer = null;
+				TargetFPS = 0;
+				FPS = 0;
+				fpsCounter.Reset();
+				if(StreamSource != StreamType.None) { //Only fire event if the stream is closing, and wasnt already closed.
+					StreamSource = StreamType.None;
+					OnStreamEnded?.Invoke(this);
 				}
 			}
 		}
@@ -405,6 +425,9 @@ namespace RobotArmUR2.Util {
 		/// </summary>
 		/// <returns>true if the file was successfully loaded, also returns false if user cancelled operation.</returns>
 		public bool PromptUserLoadFile() {
+			lock (streamLock) {
+				if (grabbingThread == null) return false;
+			}
 			if (openDialog.ShowDialog() == DialogResult.OK) {
 				return LoadFile(openDialog.FileName);
 			} else {
@@ -451,7 +474,7 @@ namespace RobotArmUR2.Util {
 			return SaveScreenshot(screenshot, filepath);
 		}
 
-		public bool SaveScreenshot(Mat img, string filepath) {
+		public static bool SaveScreenshot(Mat img, string filepath) {
 			if (img == null || filepath == null) return false;
 			img.Save(filepath);
 			return true;
