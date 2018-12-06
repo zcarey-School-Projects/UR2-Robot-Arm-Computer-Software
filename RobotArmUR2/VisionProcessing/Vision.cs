@@ -27,6 +27,9 @@ namespace RobotArmUR2.VisionProcessing {
 		public Vision() {
 			InputStream.OnNewImage += InputStream_OnNewImage;
 			InputStream.OnStreamEnded += InputStream_OnStreamEnded;
+
+			//TODO make an option
+			InputStream.AutoLoop = true;
 		}
 
 		private void InputStream_OnNewImage(ImageStream stream, Mat image) {

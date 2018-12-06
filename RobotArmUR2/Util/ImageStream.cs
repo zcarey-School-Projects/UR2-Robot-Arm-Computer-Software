@@ -94,6 +94,7 @@ namespace RobotArmUR2.Util {
 		private FPSCounter fpsCounter = new FPSCounter(); //Calculates the FPS.
 		private Mat imageBuffer; //The last image that was grabbed, used for pausing, static images, and taking screenshots
 		private volatile bool isPaused = false; //Indicates if the stream is paused or not.
+		private string lastVideoFilePath = null; //Stores the last loaded video file path for auto-looping
 
 		#region Events and Handlers
 		/// <summary>
@@ -197,10 +198,15 @@ namespace RobotArmUR2.Util {
 		/// The currently selected source of the stream.
 		/// </summary>
 		public StreamType StreamSource { get; private set; } = StreamType.None;
+
+		/// <summary>
+		/// If set to true, video streams will repeat from the beginning when the end is reached.
+		/// </summary>
+		public bool AutoLoop { get; set; } = false;
 		#endregion
 
-		//TODO add auto-loop option
 		//TODO add option to artificially change FPS (i.e. camera runs at 60 fps, but you selected  15 fps)
+		//TODO make docs one liners
 
 		/// <summary>
 		/// Once created, a background thread is started that runs until the object is disposed.
@@ -261,6 +267,14 @@ namespace RobotArmUR2.Util {
 							} else { //Attempt to grab a frame from the source.
 								newImage = new Mat(); //Give a place for the grabbed image to go.
 								if (grabImage(newImage)) effectiveSource = StreamSource; //Source is still open.
+								else if ((StreamSource == StreamType.Video) && (lastVideoFilePath != null) && AutoLoop) {
+									capture.Dispose(); //Release the current video
+									if (LoadFile(lastVideoFilePath)) { //Attempt to reload the video.
+										Play();
+										continue; //We have to try and read a frame again.
+									}
+									else endStream(); //Could not load, end stream.
+								}
 								else endStream();//Source must be closed.
 							}
 						}
@@ -306,7 +320,6 @@ namespace RobotArmUR2.Util {
 				return false;
 			}
 		}
-		#endregion
 
 		/// <summary> Attempts to end the stream by disposing of the capture object, and setting all variables to default. Throws OnStreamEnd event.</summary>
 		private void endStream() {
@@ -320,6 +333,7 @@ namespace RobotArmUR2.Util {
 				imageBuffer = null;
 				TargetFPS = 0;
 				FPS = 0;
+				lastVideoFilePath = null;
 				fpsCounter.Reset();
 				if(StreamSource != StreamType.None) { //Only fire event if the stream is closing, and wasnt already closed.
 					StreamSource = StreamType.None;
@@ -327,6 +341,7 @@ namespace RobotArmUR2.Util {
 				}
 			}
 		}
+		#endregion
 
 		#region Stream Controls
 		/// <summary> Starts or resumes the selected stream and starts grabbing images. When an image is grabbed, onNewImage is fired. </summary>
@@ -428,6 +443,7 @@ namespace RobotArmUR2.Util {
 					if (StreamSource != StreamType.None) { //Setup the capture.
 						capture = new VideoCapture(filepath);
 						setupCapture();
+						if (StreamSource == StreamType.Video) lastVideoFilePath = filepath;
 						return true;
 					} else {
 						endStream();
@@ -467,6 +483,7 @@ namespace RobotArmUR2.Util {
 			fpsCounter.Reset();
 			FPS = 0;
 			TargetFPS = 0;
+			lastVideoFilePath = null;
 		}
 		#endregion
 
