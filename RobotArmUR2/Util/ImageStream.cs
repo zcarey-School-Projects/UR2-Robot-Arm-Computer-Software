@@ -98,7 +98,7 @@ namespace RobotArmUR2.Util {
 		private Stopwatch timer = new Stopwatch(); //Used to set the correct FPS for video playback.
 		private FPSCounter fpsCounter = new FPSCounter(); //Calculates the FPS.
 		private Mat imageBuffer; //The last image that was grabbed, used for pausing, static images, and taking screenshots
-		private volatile bool isPaused = false; //Indicates if the stream is paused or not.
+		private volatile bool isPaused = true; //Indicates if the stream is paused or not.
 		private string lastVideoFilePath = null; //Stores the last loaded video file path for auto-looping
 
 		#region Events and Handlers
@@ -227,10 +227,9 @@ namespace RobotArmUR2.Util {
 					StreamType effectiveSource = StreamType.None; //After settings, what the source is effectivley acting as (i.e. if paused, acts as an iamge)
 					Mat newImage = null; //Any new images grabbed that should be stored in the buffer
 					timer.Restart(); //Starts timing the time it takes to process the next frame.
-					//TODO I had changed isPlaying to isPaused, now all the logic is backwards
 					lock (captureLock) { //Lock to prevent a new source opening while grabbing a frame.
 						if (StreamSource != StreamType.None) { //There is a source we want to read!
-							if (!isPaused || (StreamSource == StreamType.Image && imageBuffer != null)) { //Streaming an image that has already been loaded OR the stream is paused
+							if (isPaused || (StreamSource == StreamType.Image && imageBuffer != null)) { //Streaming an image that has already been loaded OR the stream is paused
 								if (imageBuffer != null) { //Check for paused stream (!isPlaying) if there is a stored image. (if not, we just want to wait, not try and grab one)
 									effectiveSource = StreamType.Image;
 									newImage = imageBuffer;
@@ -315,12 +314,12 @@ namespace RobotArmUR2.Util {
 		#region Stream Controls
 		/// <summary> Starts or resumes the selected stream and starts grabbing images. When an image is grabbed, onNewImage is fired. </summary>
 		public void Play() {
-			isPaused = true;
+			isPaused = false;
 		}
 
 		/// <summary> Stops grabbing images from the source until resumed using Play(). Will continue firing onNewImage with the last grabbed image. </summary>
 		public void Pause() {
-			isPaused = false;
+			isPaused = true;
 		}
 
 		/// <summary> Closes the input and fires onStreamEnded event. </summary>
@@ -333,26 +332,30 @@ namespace RobotArmUR2.Util {
 
 		#region Select Camera
 		/// <summary> Selects the default camera as the source. </summary>
-		public void SelectCamera() {
+		public bool SelectCamera() {
 			lock (captureLock) {
 				lock (streamLock) {
-					if (grabbingThread == null) return;
+					if (grabbingThread == null) return false;
+					endStream();
 					capture = new VideoCapture();
+					if (!setupCapture()) return false;
 					StreamSource = StreamType.Camera;
-					setupCapture();
+					return true;
 				}
 			}
 		}
 
 		/// <summary> Select a camera with the specified index as the source. </summary>
 		/// <param name="index">Index of camera to be selected.</param>
-		public void SelectCamera(int index) {
+		public bool SelectCamera(int index) {
 			lock (captureLock) {
 				lock (streamLock) {
-					if (grabbingThread == null) return;
+					if (grabbingThread == null) return false;
+					endStream();
 					capture = new VideoCapture(index);
+					if (!setupCapture()) return false;
 					StreamSource = StreamType.Camera;
-					setupCapture();
+					return true;
 				}
 			}
 		}
@@ -392,7 +395,7 @@ namespace RobotArmUR2.Util {
 			}
 
 			return StreamType.None;
-		}//TODO can we check "IsOpened" after to see if a camera opened properly?
+		}
 
 		/// <summary> Loads a file to be used as the source. Supports most common image and video files. </summary>
 		/// <param name="filepath">Full path to the file to be loaded.</param>
@@ -407,15 +410,16 @@ namespace RobotArmUR2.Util {
 					}
 					
 					string ext = Path.GetExtension(filepath).ToLower(); 
-					StreamSource = (ext == ".gif") ? getGifStreamType(filepath) : getExtensionStreamType(ext); //Get the type of stream the file is
+					StreamType streamType = (ext == ".gif") ? getGifStreamType(filepath) : getExtensionStreamType(ext); //Get the type of stream the file is
 
-					if (StreamSource != StreamType.None) { //Setup the capture.
+					endStream();
+					if (streamType != StreamType.None) { //Setup the capture.
 						capture = new VideoCapture(filepath);
-						setupCapture();
-						if (StreamSource == StreamType.Video) lastVideoFilePath = filepath;
+						if (!setupCapture()) return false;
+						StreamSource = streamType;
+						if (streamType == StreamType.Video) lastVideoFilePath = filepath;
 						return true;
 					} else {
-						endStream();
 						return false;
 					}
 				}
@@ -444,15 +448,17 @@ namespace RobotArmUR2.Util {
 		#endregion
 
 		/// <summary>Sets up a capture so it is ready to use. Assumed to be called from inside a streamLock </summary>
-		private void setupCapture() {
+		private bool setupCapture() {
+			if (!capture.IsOpened) return false;
 			capture.FlipHorizontal = flipHorizontal;
 			capture.FlipVertical = flipVertical;
 			imageBuffer = null;
-			isPaused = false;
+			isPaused = true;
 			fpsCounter.Reset();
 			FPS = 0;
 			TargetFPS = 0;
 			lastVideoFilePath = null;
+			return true;
 		}
 		#endregion
 
