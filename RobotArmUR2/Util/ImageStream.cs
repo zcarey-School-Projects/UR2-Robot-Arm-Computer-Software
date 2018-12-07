@@ -15,15 +15,8 @@ namespace RobotArmUR2.Util {
 	/// Also has functions to prompt the user to load a file, or save a screenshot.
 	/// </summary>
 	public class ImageStream : IDisposable {
-		/// <summary> Used for checking if disposed or not. </summary>
-		private readonly object streamLock = new object(); 
 
-		/// <summary> Prevent running while a frame is being grabbed. </summary>
-		private readonly object captureLock = new object();
-
-		/// <summary> Ensures Dispose is only being called by one thread at a time. </summary>
-		private readonly object disposeLock = new object();
-
+		#region Static Things
 		//Used to prompt the user to open/save files
 		private static OpenFileDialog openDialog;
 		private static SaveFileDialog saveDialog;
@@ -86,6 +79,18 @@ namespace RobotArmUR2.Util {
 			saveFilter = saveFilter.TrimEnd('|'); //Trim the end to comply with filter format.
 			saveDialog.Filter = saveFilter; //Apply filter to save dialog
 		}
+		#endregion
+
+		#region Locks
+		/// <summary> Used for checking if disposed or not. </summary>
+		private readonly object streamLock = new object();
+
+		/// <summary> Prevent running while a frame is being grabbed. </summary>
+		private readonly object captureLock = new object();
+
+		/// <summary> Ensures Dispose is only being called by one thread at a time. </summary>
+		private readonly object disposeLock = new object();
+		#endregion
 
 		private VideoCapture capture; //EmguCV class that assists in loading camera/files
 		private Thread grabbingThread; //New thread that continously tries to grab images from the source.
@@ -97,55 +102,35 @@ namespace RobotArmUR2.Util {
 		private string lastVideoFilePath = null; //Stores the last loaded video file path for auto-looping
 
 		#region Events and Handlers
-		/// <summary>
-		/// Fired when a new image is grabbed from the selected source.
-		/// </summary>
+		/// <summary> Fired when a new image is grabbed from the selected source. </summary>
 		public event NewImageHandler OnNewImage;
 		public delegate void NewImageHandler(ImageStream sender, Mat image);
 
-		/// <summary>
-		/// Fired when a running stream is ended, either by the user, disposal of the object, or error reading the stream.
-		/// </summary>
+		/// <summary> Fired when a running stream is ended, either by the user, disposal of the object, or error reading the stream. </summary>
 		public event StreamEndedHandler OnStreamEnded;
 		public delegate void StreamEndedHandler(ImageStream sender); //Called when the current stream ends and is closed.
 		#endregion
 
 		#region Properties
-		/// <summary>
-		/// The width of the stream (i.e. grabbed images).
-		/// </summary>
+		/// <summary> The width of the stream (i.e. grabbed images). </summary>
 		public int Width { get { lock (captureLock) { return (capture == null) ? 0 : capture.Width; } } } 
 
-		/// <summary>
-		/// The height of the stream (i.e. grabbed images).
-		/// </summary>
+		/// <summary> The height of the stream (i.e. grabbed images). </summary>
 		public int Height { get { lock (captureLock) { return (capture == null) ? 0 : capture.Height; } } }
 
-		/// <summary>
-		/// The size of the stream (i.e. grabbed images).
-		/// </summary>
+		/// <summary> The size of the stream (i.e. grabbed images). </summary>
 		public Size Size { get { lock (captureLock) { return (capture == null) ? (new Size(0, 0)) : (new Size(capture.Width, capture.Height)); } } }
 
-		/// <summary>
-		/// Whether or not there is an opened stream.
-		/// </summary>
+		/// <summary> Whether or not there is an opened stream. </summary>
 		public bool IsOpened { get { return StreamSource != StreamType.None; } }
 
-		/// <summary>
-		/// The target FPS defined by the selected stream.
-		/// For a camera input, this is generally zero.
-		/// </summary>
+		/// <summary> The target FPS defined by the selected stream. For a camera input, this is generally zero. </summary>
 		public float TargetFPS { get; private set; } = 0f;
 
-		/// <summary>
-		/// The estimated measured FPS that is being achieved.
-		/// This includes the time taken to fire new image events.
-		/// </summary>
+		/// <summary> The estimated measured FPS that is being achieved. This includes the time taken to fire new image events. </summary>
 		public float FPS { get; private set; } = 0f;
 
-		/// <summary>
-		/// Whether or not the input image should be flipped horizontally.
-		/// </summary>
+		/// <summary> Whether or not the input image should be flipped horizontally. </summary>
 		public bool FlipHorizontal {
 			get { return flipHorizontal; }
 
@@ -158,9 +143,7 @@ namespace RobotArmUR2.Util {
 		}
 		private bool flipHorizontal = false;
 
-		/// <summary>
-		/// Whether or not the input image should be flipped vertically.
-		/// </summary>
+		/// <summary> Whether or not the input image should be flipped vertically. </summary>
 		public bool FlipVertical {
 			get { return flipVertical; }
 
@@ -173,10 +156,7 @@ namespace RobotArmUR2.Util {
 		}
 		private bool flipVertical = false;
 
-		/// <summary>
-		/// Will rotate the input image by 180 degrees.
-		/// It does so by setting FlipHorizontal and FlipVertical to true.
-		/// </summary>
+		/// <summary> Will rotate the input image by 180 degrees. It does so by setting FlipHorizontal and FlipVertical to true. </summary>
 		public bool Rotate180 {
 			get { lock (captureLock) { return flipHorizontal && flipVertical; } }
 
@@ -188,25 +168,18 @@ namespace RobotArmUR2.Util {
 			}
 		}
 
-		/// <summary>
-		/// The FPS that will be used when streaming a static image or when the stream is paused.
-		/// </summary>
+		/// <summary> The FPS that will be used when streaming a static image or when the stream is paused. </summary>
 		public float ImageFps { get => imageFPS; set { if (value >= 0) imageFPS = value; } }
 		private float imageFPS = 15;
 
-		/// <summary>
-		/// The currently selected source of the stream.
-		/// </summary>
+		/// <summary> The currently selected source of the stream. </summary>
 		public StreamType StreamSource { get; private set; } = StreamType.None;
 
-		/// <summary>
-		/// If set to true, video streams will repeat from the beginning when the end is reached.
-		/// </summary>
+		/// <summary> If set to true, video streams will repeat from the beginning when the end is reached. </summary>
 		public bool AutoLoop { get; set; } = false;
 		#endregion
 
 		//TODO add option to artificially change FPS (i.e. camera runs at 60 fps, but you selected  15 fps)
-		//TODO make docs one liners
 
 		/// <summary>
 		/// Once created, a background thread is started that runs until the object is disposed.
@@ -223,10 +196,7 @@ namespace RobotArmUR2.Util {
 			Dispose();
 		}
 
-		/// <summary>
-		/// Stops the grabbing thread and releases any inputs that were being used. 
-		/// If a stream was running, calling this fires an end of stream event.
-		/// </summary>
+		/// <summary> Stops the grabbing thread and releases any inputs that were being used. If a stream was running, calling this fires an end of stream event. </summary>
 		public void Dispose() {
 			lock (disposeLock) {
 				lock (streamLock) {
@@ -250,7 +220,8 @@ namespace RobotArmUR2.Util {
 		}
 
 		#region Image Grabbing Thread
-		private void imageGrabbingLoop() { //This is the grabbing thread that runs in the background.
+		/// <summary> The grabbing thread that runs in the background. </summary>
+		private void imageGrabbingLoop() {
 			try { 
 				while (!exitThread) { //Loops until the Dispose() flags up to stop 
 					StreamType effectiveSource = StreamType.None; //After settings, what the source is effectivley acting as (i.e. if paused, acts as an iamge)
@@ -308,9 +279,7 @@ namespace RobotArmUR2.Util {
 			}
 		}
 
-		/// <summary>
-		/// Attemps to grab grab an image from the stream, catching any errors.
-		/// </summary>
+		/// <summary> Attemps to grab grab an image from the stream, catching any errors. </summary>
 		/// <param name="outputImage">Where the grabbed image will be saved to.</param>
 		/// <returns>true if was grabbed successfully, false otherwise.</returns>
 		private bool grabImage(Mat outputImage) {
