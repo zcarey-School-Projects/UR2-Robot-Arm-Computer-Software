@@ -138,9 +138,12 @@ namespace RobotArmUR2.Util {
 			get { return flipHorizontal; }
 
 			set {
-				lock (captureLock) { 
-					flipHorizontal = value;
-					if (capture != null) capture.FlipHorizontal = value;
+				lock (captureLock) {
+					if (value != flipHorizontal) {
+						flipHorizontal = value;
+						if (capture != null) capture.FlipHorizontal = value;
+						if (StreamSource == StreamType.Image && imageBuffer != null) CvInvoke.Flip(imageBuffer, imageBuffer, FlipType.Horizontal);
+					}
 				}
 			}
 		}
@@ -152,8 +155,11 @@ namespace RobotArmUR2.Util {
 
 			set {
 				lock (captureLock) {
-					flipVertical = value;
-					if (capture != null) capture.FlipVertical = value;
+					if (value != flipVertical) {
+						flipVertical = value;
+						if (capture != null) capture.FlipVertical = value;
+						if (StreamSource == StreamType.Image && imageBuffer != null) CvInvoke.Flip(imageBuffer, imageBuffer, FlipType.Vertical); 
+					}
 				}
 			}
 		}

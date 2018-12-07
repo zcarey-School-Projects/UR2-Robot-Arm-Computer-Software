@@ -15,8 +15,6 @@ namespace RobotArmUR2.VisionProcessing {
 		public ImageStream InputStream { get; } = new ImageStream();
 
 		public VisionImages Images { get; private set; }
-
-		public bool RotateImage180 { get; set; } = false; //TODO pass to input stream
 		public byte GrayscaleThreshold { get; set; } = (byte)(255 / 2);
 
 		#region Events and Handlers
@@ -27,9 +25,6 @@ namespace RobotArmUR2.VisionProcessing {
 		public Vision() {
 			InputStream.OnNewImage += InputStream_OnNewImage;
 			InputStream.OnStreamEnded += InputStream_OnStreamEnded;
-
-			//TODO make an option
-			InputStream.AutoLoop = true;
 		}
 
 		private void InputStream_OnNewImage(ImageStream stream, Mat image) {
@@ -54,10 +49,6 @@ namespace RobotArmUR2.VisionProcessing {
 
 			if (image != null) {
 				Image<Bgr, byte> inputImage = image.Resize(ApplicationSettings.WorkingImageScaledHeight / image.Height, Emgu.CV.CvEnum.Inter.Cubic); //Scale image so Height = 480, but still keeps aspect ratio.
-				if (RotateImage180) {
-					inputImage._Flip(Emgu.CV.CvEnum.FlipType.Horizontal);  //TODO put into ImageStream if ever improve it
-					inputImage._Flip(Emgu.CV.CvEnum.FlipType.Vertical);
-				}
 
 				Image<Gray, byte> grayImage = ImageProcessing.GetGrayImage(inputImage);
 				Image<Gray, byte> threshImage = ImageProcessing.GetThresholdImage(grayImage, new Gray(GrayscaleThreshold), new Gray(255));

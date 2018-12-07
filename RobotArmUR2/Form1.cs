@@ -231,7 +231,7 @@ namespace RobotArmUR2
 
 		//When RotateImage checkbox is changed, set the property in the input class
 		private void Rotate180Checkbox_CheckedChanged(object sender, EventArgs e) {
-			vision.RotateImage180 = Rotate180Checkbox.Checked;
+			vision.InputStream.Rotate180 = Rotate180Checkbox.Checked;
 		}
 
 		//When user changes threshold, apply the new value to the image.
