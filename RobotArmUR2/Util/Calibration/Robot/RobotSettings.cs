@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 
-namespace RobotArmUR2.Util.Calibration {
+namespace RobotArmUR2.Util.Calibration.Robot {
 	public partial class RobotSettings : Form {
 
 		private RobotControl.Robot robot;
@@ -24,7 +24,7 @@ namespace RobotArmUR2.Util.Calibration {
 		}
 
 		private void RobotSettings_Load(object sender, EventArgs e) {
-			//TODO move form into folder
+			
 		}
 
 		private void BasePrescaleSlider_Scroll(object sender, EventArgs e) {

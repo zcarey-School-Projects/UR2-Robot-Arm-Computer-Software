@@ -81,10 +81,10 @@
     <Compile Include="ApplicationSettings.cs" />
     <Compile Include="RobotControl\Commands\GetPositionCommand.cs" />
     <Compile Include="RobotControl\Commands\SetPrescaleCommand.cs" />
-    <Compile Include="Util\Calibration\RobotSettings.cs">
+    <Compile Include="Util\Calibration\Robot\RobotSettings.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Util\Calibration\RobotSettings.Designer.cs">
+    <Compile Include="Util\Calibration\Robot\RobotSettings.Designer.cs">
       <DependentUpon>RobotSettings.cs</DependentUpon>
     </Compile>
     <Compile Include="Util\ImageStream.cs" />
@@ -155,7 +155,7 @@
     <EmbeddedResource Include="Util\Calibration\Robot\RobotCalibrater.resx">
       <DependentUpon>RobotCalibrater.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Util\Calibration\RobotSettings.resx">
+    <EmbeddedResource Include="Util\Calibration\Robot\RobotSettings.resx">
       <DependentUpon>RobotSettings.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="packages.config" />
