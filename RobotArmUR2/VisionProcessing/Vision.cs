@@ -11,7 +11,7 @@ namespace RobotArmUR2.VisionProcessing {
 	public class Vision {
 
 		private readonly object inputLock = new object(); //Protects changing the input stream while trying to input a new image.
-		//TODO make locks NON STATIC for ability to use multiple classes.
+		
 		public ImageStream InputStream { get; } = new ImageStream();
 
 		public VisionImages Images { get; private set; }

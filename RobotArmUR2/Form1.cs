@@ -64,7 +64,7 @@ namespace RobotArmUR2
 		private void Form1_FormClosing(object sender, FormClosingEventArgs e) {
 			//Stop grabbing new images and disconnect the robot.
 			robot.Interface.Disconnect(); //Stops robot movement and such.
-			vision.InputStream.Stop();//TODO save image flip
+			vision.InputStream.Stop();
 		}
 
 		#region Vision Events
