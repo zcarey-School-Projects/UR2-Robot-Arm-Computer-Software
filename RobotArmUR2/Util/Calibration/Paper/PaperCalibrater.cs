@@ -9,13 +9,13 @@ namespace RobotArmUR2.Util.Calibration.Paper {
 	public partial class PaperCalibrater : Form {
 
 		private PaperPoint draggingPoint = null;
-		private EmguPictureBox<Bgr, byte> picture;
+		private EmguPictureBox picture;
 		private volatile bool autoDetectPaper = false;
 		private volatile bool isOpen = false;
 
 		public PaperCalibrater(Vision vision) {
 			InitializeComponent();
-			picture = new EmguPictureBox<Bgr, byte>(this, PaperPicture);
+			picture = new EmguPictureBox(this, PaperPicture);
 
 			vision.OnNewFrameProcessed += Vision_OnNewFrameFinished;
 		}

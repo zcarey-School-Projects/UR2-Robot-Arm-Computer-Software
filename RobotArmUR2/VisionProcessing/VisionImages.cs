@@ -57,5 +57,30 @@ namespace RobotArmUR2.VisionProcessing {
 			this.Shapes = shapes;
 		}
 
+		public Image<Bgr, byte> GetImage(VisionImage type) {
+			switch (type) {
+				case VisionImage.Raw: return Raw;
+				case VisionImage.Input: return Input;
+				case VisionImage.Grayscale: return (Grayscale == null) ? null : Grayscale.Convert<Bgr, byte>();
+				case VisionImage.Threshold: return (Threshold == null) ? null : Threshold.Convert<Bgr, byte>();
+				case VisionImage.Warped: return (Warped == null) ? null : Warped.Convert<Bgr, byte>();
+				case VisionImage.Canny: return (Canny == null) ? null : Canny.Convert<Bgr, byte>();
+				case VisionImage.Shapes: return WarpedWithShapes;
+			}
+
+			return null;
+		}
+
+	}
+
+	public enum VisionImage {
+		None,
+		Raw, 
+		Input, 
+		Grayscale,
+		Threshold,
+		Warped,
+		Canny,
+		Shapes
 	}
 }

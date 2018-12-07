@@ -27,17 +27,17 @@ namespace RobotArmUR2
 		private RobotSettings robotSettings;
 		
 		//Custom PictureBox wrappers that make using them simpler
-		private EmguPictureBox<Bgr, byte> LeftPictureBox;
-		private EmguPictureBox<Gray, byte> MiddlePictureBox;
-		private EmguPictureBox<Bgr, byte> RightPictureBox;
+		private SelectablePictureBox LeftPictureBox;
+		private SelectablePictureBox MiddlePictureBox;
+		private SelectablePictureBox RightPictureBox;
 
 		public Form1()
 		{
 			InitializeComponent();
 
-			LeftPictureBox = new EmguPictureBox<Bgr, byte>(this, LeftImage);
-			MiddlePictureBox = new EmguPictureBox<Gray, byte>(this, MiddleImage);
-			RightPictureBox = new EmguPictureBox<Bgr, byte>(this, RightImage);
+			LeftPictureBox = new SelectablePictureBox(this, LeftImage, VisionImage.Input);
+			MiddlePictureBox = new SelectablePictureBox(this, MiddleImage, VisionImage.Threshold);
+			RightPictureBox = new SelectablePictureBox(this, RightImage, VisionImage.Shapes);
 
 			//Initialize vision and assign it's events
 			vision = new Vision();
@@ -71,9 +71,9 @@ namespace RobotArmUR2
 		//Event fires every time a new image is grabbed.
 		private void VisionUI_NewFrameFinished(Vision vision, VisionImages images) {
 			string resolutionText = "Native Resolution: 0 x 0 ";
-			Image<Bgr, byte> leftImage = null;
-			Image<Gray, byte> middleImage = null;
-			Image<Bgr, byte> rightImage = null;
+			//Image<Bgr, byte> leftImage = null;
+			//Image<Bgr, byte> middleImage = null;
+			//Image<Bgr, byte> rightImage = null;
 			float CurrentFPS = 0;
 			float TargetFPS = vision.InputStream.TargetFPS;
 
@@ -82,9 +82,9 @@ namespace RobotArmUR2
 					resolutionText = "Native Resolution: " + images.Raw.Width + " x " + images.Raw.Height;
 					CurrentFPS = vision.InputStream.FPS;
 				}
-				leftImage = images.Input;
-				middleImage = images.Threshold;
-				rightImage = images.WarpedWithShapes;
+				//leftImage = images.Input;
+				//middleImage = images.Threshold.Convert<Bgr, byte>();
+				//rightImage = images.WarpedWithShapes;
 			}
 			
 			BeginInvoke(new Action(() => {
@@ -94,9 +94,9 @@ namespace RobotArmUR2
 			}));
 
 			//Draw a few images for the user
-			LeftPictureBox.Image = leftImage;
-			MiddlePictureBox.Image = middleImage;
-			RightPictureBox.Image = rightImage;
+			LeftPictureBox.Images = images;
+			MiddlePictureBox.Images = images;
+			RightPictureBox.Images = images;
 		}
 		#endregion
 

@@ -1,17 +1,18 @@
 ﻿using Emgu.CV;
+using Emgu.CV.Structure;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
 
 namespace RobotArmUR2.Util {
-	public class EmguPictureBox<TColor, TDepth> where TColor : struct, IColor where TDepth : new() { 
+	public class EmguPictureBox { 
 
 		private static readonly object pictureLock = new object();
 		private Form invoker;
 		private PictureBox picture;
 
-		private Image<TColor, TDepth> image;
-		public Image<TColor, TDepth> Image {
+		private Image<Bgr, byte> image;
+		public Image<Bgr, byte> Image{
 			get => image;
 			set {
 				//lock (pictureLock) {
@@ -28,7 +29,7 @@ namespace RobotArmUR2.Util {
 					}
 				///}
 			}
-		}
+		} 
 
 		public EmguPictureBox(Form form, PictureBox picture) {
 			this.invoker = form;
