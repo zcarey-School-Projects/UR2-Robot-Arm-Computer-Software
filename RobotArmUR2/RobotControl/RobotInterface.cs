@@ -12,9 +12,9 @@ using System.Timers;
 
 namespace RobotArmUR2.RobotControl { 
 	public class RobotInterface {
-		private static readonly object timerLock = new object(); //Allows easy stopping of the timer.
-		private static readonly object settingsLock = new object(); //Prevents manual events mishaps
-		private static readonly object connectionLock = new object(); //Stop sending commands while attempting a connect.
+		private readonly object timerLock = new object(); //Allows easy stopping of the timer.
+		private readonly object settingsLock = new object(); //Prevents manual events mishaps
+		private readonly object connectionLock = new object(); //Stop sending commands while attempting a connect.
 
 		private SerialCommunicator serial = new SerialCommunicator();
 		private Timer comTimer = new Timer(1000/20); //20 times per second

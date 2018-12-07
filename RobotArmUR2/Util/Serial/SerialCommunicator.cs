@@ -7,7 +7,7 @@ using System.Threading;
 
 namespace RobotArmUR2.Util.Serial {
 	public class SerialCommunicator {
-		private static readonly object serialLock = new object();
+		private readonly object serialLock = new object();
 		private SerialPort serial;
 
 		public bool IsOpen { get { lock (serialLock) { return serial.IsOpen; } } }

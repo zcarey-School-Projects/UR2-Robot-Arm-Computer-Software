@@ -7,7 +7,7 @@ using System.Windows.Forms;
 namespace RobotArmUR2.Util {
 	public class EmguPictureBox { 
 
-		private static readonly object pictureLock = new object();
+		private readonly object pictureLock = new object();
 		private Form invoker;
 		private PictureBox picture;
 

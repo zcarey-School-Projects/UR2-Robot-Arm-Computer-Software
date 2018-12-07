@@ -4,7 +4,7 @@ using System.Windows.Forms;
 
 namespace RobotArmUR2.RobotControl {
 	public class Robot {
-		private static readonly object programLock = new object();
+		private readonly object programLock = new object();
 		
 		public RobotInterface Interface { get; } = new RobotInterface();
 
