@@ -264,6 +264,11 @@ namespace RobotArmUR2
 		private void button4_Click(object sender, EventArgs e) {
 			vision.InputStream.Dispose();
 		}
+
+		private void trackBar1_Scroll(object sender, EventArgs e) {
+			vision.InputStream.AdjustedFPS = trackBar1.Value;
+			Console.WriteLine("{0} fps", trackBar1.Value);
+		}
 	}
 
 }

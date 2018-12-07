@@ -130,6 +130,9 @@ namespace RobotArmUR2.Util {
 		/// <summary> The estimated measured FPS that is being achieved. This includes the time taken to fire new image events. </summary>
 		public float FPS { get; private set; } = 0f;
 
+		/// <summary>Setting this will override the target FPS and attempt to read images at this speed. Set to zero to turn off and operate normally. Note: Does not change TargetFPS property. </summary>
+		public float AdjustedFPS { get; set; } = 0f;
+
 		/// <summary> Whether or not the input image should be flipped horizontally. </summary>
 		public bool FlipHorizontal {
 			get { return flipHorizontal; }
@@ -179,8 +182,6 @@ namespace RobotArmUR2.Util {
 		public bool AutoLoop { get; set; } = false;
 		#endregion
 
-		//TODO add option to artificially change FPS (i.e. camera runs at 60 fps, but you selected  15 fps)
-
 		/// <summary>
 		/// Once created, a background thread is started that runs until the object is disposed.
 		/// The purpose of this thread is to grab images from whatever input source was selected.
@@ -222,7 +223,7 @@ namespace RobotArmUR2.Util {
 		#region Image Grabbing Thread
 		/// <summary> The grabbing thread that runs in the background. </summary>
 		private void imageGrabbingLoop() {
-			try { 
+			try {
 				while (!exitThread) { //Loops until the Dispose() flags up to stop 
 					StreamType effectiveSource = StreamType.None; //After settings, what the source is effectivley acting as (i.e. if paused, acts as an iamge)
 					Mat newImage = null; //Any new images grabbed that should be stored in the buffer
@@ -242,10 +243,8 @@ namespace RobotArmUR2.Util {
 									if (LoadFile(lastVideoFilePath)) { //Attempt to reload the video.
 										Play();
 										continue; //We have to try and read a frame again.
-									}
-									else endStream(); //Could not load, end stream.
-								}
-								else endStream();//Source must be closed.
+									} else endStream(); //Could not load, end stream.
+								} else endStream();//Source must be closed.
 							}
 						}
 
@@ -268,9 +267,16 @@ namespace RobotArmUR2.Util {
 					}
 
 					//Wait the necessary time to acieve desired FPS
+					float adjustedFps = AdjustedFPS;
+					if (adjustedFps > 0) {
+						int adjustedMS = (int)(1000 / adjustedFps);
+						delayMS = adjustedMS;
+					}
+
 					timer.Stop();
 					long millis = timer.ElapsedMilliseconds; //Read in the time it took to process one frame
 					if (millis < delayMS && millis >= 0) delayMS -= (int)millis; //If the elapsed time is less than our desired time, calculate the time we should wait
+
 					if (delayMS > 0) Thread.Sleep(delayMS); //This way if we can't keep up it will just run as fast as it can.
 				}
 			} finally {
