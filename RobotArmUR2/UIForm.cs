@@ -123,6 +123,7 @@ namespace RobotArmUR2
 		/// <param name="isConnected">If the robot was connected, false if disconnected.</param>
 		/// <param name="portName">The name of the port connected to.</param>
 		private void RobotInterface_OnConnectionChanged(bool isConnected, string portName) {
+			robotSettings.SendSettings();
 			BeginInvoke(new Action(() => {
 				RobotConnected.CheckState = (isConnected ? CheckState.Checked : CheckState.Unchecked);
 				RobotPort.Text = "Port: " + portName;

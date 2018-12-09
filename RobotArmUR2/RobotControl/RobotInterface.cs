@@ -65,7 +65,6 @@ namespace RobotArmUR2.RobotControl {
 				if (serial.AutoConnect("CH340")) {
 					lock (settingsLock) {
 						//TODO send robot "onConnect" command, which enables fan, steppers, etc
-						//TODO send prescale data on connect.
 						StopAll();
 						PowerMagnetOff();
 						RaiseServo();

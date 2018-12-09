@@ -31,6 +31,12 @@ namespace RobotArmUR2.Util.Calibration.Robot {
 			
 		}
 
+
+		public void SendSettings() {
+			BasePrescaleSlider_Scroll(null, null);
+			CarriagePrescaleSlider_Scroll(null, null);
+		}
+
 		//Change base speed
 		private void BasePrescaleSlider_Scroll(object sender, EventArgs e) {
 			int val = BasePrescaleSlider.Value;
