@@ -34,26 +34,25 @@ namespace RobotArmUR2.VisionProcessing {
 
 		//Listener fired whenever a new image is grabbed from the input stream.
 		private void InputStream_OnNewImage(ImageStream stream, Mat image) {
-			VisionImages output = null;
+			VisionImages images = null;
 
 			if (image != null) {
-				Image<Bgr, byte> input = image.ToImage<Bgr, byte>();
-				Image<Bgr, byte> inputImage = input.Resize(ApplicationSettings.WorkingImageScaledHeight / image.Height, Emgu.CV.CvEnum.Inter.Cubic); //Scale image so Height = 480, but still keeps aspect ratio.
+				images = new VisionImages();
+				images.Raw = image.ToImage<Bgr, byte>();
+				images.Input = images.Raw.Resize(ApplicationSettings.WorkingImageScaledHeight / image.Height, Emgu.CV.CvEnum.Inter.Cubic); //Scale image so Height = 480, but still keeps aspect ratio.
 
-				Image<Gray, byte> grayImage = ImageProcessing.GetGrayImage(inputImage);
-				Image<Gray, byte> threshImage = ImageProcessing.GetThresholdImage(grayImage, new Gray(GrayscaleThreshold), new Gray(255));
-				Image<Gray, byte> warpedImage = ImageProcessing.GetWarpedImage(threshImage, ApplicationSettings.PaperCalibration);
-				UMat edges = ImageProcessing.EdgeDetection(warpedImage);
-				Image<Gray, byte> cannyImage = ImageProcessing.GetEdgeImage<Gray, byte>(edges);
-				DetectedShapes shapes = ImageProcessing.DetectShapes(edges);
-				Image<Bgr, byte> warpedShapes = warpedImage.Convert<Bgr, byte>();
-				ImageProcessing.DrawShapes(warpedShapes, shapes, ApplicationSettings.TriangleHighlightColor, ApplicationSettings.SquareHighlightColor, ApplicationSettings.ShapeHighlightThickness);
-
-				output = new VisionImages(input, inputImage, grayImage, threshImage, warpedImage, cannyImage, warpedShapes, shapes);
+				images.Grayscale = ImageProcessing.GetGrayImage(images.Input);
+				images.Threshold = ImageProcessing.GetThresholdImage(images.Grayscale, new Gray(GrayscaleThreshold), new Gray(255));
+				images.Warped = ImageProcessing.GetWarpedImage(images.Threshold, ApplicationSettings.PaperCalibration);
+				UMat edges = ImageProcessing.EdgeDetection(images.Warped);
+				images.Canny = ImageProcessing.GetEdgeImage<Gray, byte>(edges);
+				images.Shapes = ImageProcessing.DetectShapes(edges);
+				images.WarpedWithShapes = images.Warped.Convert<Bgr, byte>();
+				ImageProcessing.DrawShapes(images.WarpedWithShapes, images.Shapes, ApplicationSettings.TriangleHighlightColor, ApplicationSettings.SquareHighlightColor, ApplicationSettings.ShapeHighlightThickness);
 			}
 
-			Images = output;
-			OnNewFrameProcessed?.Invoke(this, output);
+			Images = images;
+			OnNewFrameProcessed?.Invoke(this, images);
 		}
 
 		//Listener fired whenever the input stream is closed.

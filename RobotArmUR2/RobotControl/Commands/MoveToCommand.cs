@@ -8,7 +8,7 @@ namespace RobotArmUR2.RobotControl.Commands {
 		//TODO Combine MoveTo and MoveToWait, using a bool.
 		private RobotPoint target;
 
-		public MoveToCommand(RobotPoint target) { //TODO if target is null?
+		public MoveToCommand(RobotPoint target) {
 			this.target = target;
 		}
 
@@ -17,6 +17,7 @@ namespace RobotArmUR2.RobotControl.Commands {
 		}
 
 		public string[] GetArguments() {
+			if (target == null) return new string[] { };
 			return new string[] { "R" + target.Rotation.ToString("N2"), "E" + target.Extension.ToString("N2") };
 		}
 

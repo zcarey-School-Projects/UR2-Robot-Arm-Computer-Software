@@ -1,7 +1,7 @@
 ﻿using RobotArmUR2.Util.Serial;
 
 namespace RobotArmUR2.RobotControl.Commands {
-	//TODO move to where RobotInterface is.
+	
 	/// <summary>Send a manual move event. Used automatically by RobotInterface</summary>
 	class ManualMoveCommand : ISerialCommand{
 

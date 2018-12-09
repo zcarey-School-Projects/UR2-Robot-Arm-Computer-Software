@@ -221,7 +221,6 @@ namespace RobotArmUR2.RobotControl {
 				setBasePrescale = prescale;
 			}
 		}
-		//TODO send motor prescales on connect
 
 		/// <summary> Sets the prescale of the carriage. NOTE: does not change immediately, will send command on next timer tick. </summary>
 		/// <param name="prescale"></param>
