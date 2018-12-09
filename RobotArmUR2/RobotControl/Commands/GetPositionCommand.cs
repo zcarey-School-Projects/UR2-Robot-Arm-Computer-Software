@@ -2,7 +2,9 @@
 using RobotArmUR2.Util.Serial;
 
 namespace RobotArmUR2.RobotControl.Commands {
-	class GetPositionCommand : SerialCommand {
+
+	/// <summary>Retrieve the current position from the robot.</summary>
+	class GetPositionCommand : ISerialCommand {
 
 		public GetPositionCommand() {
 

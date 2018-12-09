@@ -1,5 +1,7 @@
 ﻿
 namespace RobotArmUR2.Util.Calibration.Robot {
+
+	/// <summary>Calibration used to link real-world paper with image paper.</summary>
 	public class RobotCalibration {
 		
 		public RobotCalibrationPoint BottomLeft { get; private set; } = new RobotCalibrationPoint(nameof(Properties.Settings.Default.BLRobotRotation), nameof(Properties.Settings.Default.BLRobotExtension));
@@ -14,6 +16,7 @@ namespace RobotArmUR2.Util.Calibration.Robot {
 			
 		}
 
+		/// <summary>Saves every point to persistant storage.</summary>
 		public void SaveAllSettings() { 
 			BottomLeft.Save();
 			TopLeft.Save();
@@ -24,6 +27,7 @@ namespace RobotArmUR2.Util.Calibration.Robot {
 			ApplicationSettings.SaveSettings();
 		}
 
+		/// <summary>Resets every point to their default.</summary>
 		public void ResetAllToDefault() {
 			BottomLeft.ResetToDefault();
 			TopLeft.ResetToDefault();

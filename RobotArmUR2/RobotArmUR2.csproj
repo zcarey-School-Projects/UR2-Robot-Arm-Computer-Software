@@ -105,11 +105,11 @@
     <Compile Include="Util\Calibration\Robot\RobotCalibrater.Designer.cs">
       <DependentUpon>RobotCalibrater.cs</DependentUpon>
     </Compile>
-    <Compile Include="Form1.cs">
+    <Compile Include="UIForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Form1.Designer.cs">
-      <DependentUpon>Form1.cs</DependentUpon>
+    <Compile Include="UIForm.Designer.cs">
+      <DependentUpon>UIForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Util\Calibration\Robot\RobotCalibration.cs" />
     <Compile Include="Util\Calibration\Robot\RobotCalibrationPoint.cs" />
@@ -136,8 +136,8 @@
     <Compile Include="VisionProcessing\SelectablePictureBox.cs" />
     <Compile Include="VisionProcessing\Vision.cs" />
     <Compile Include="VisionProcessing\VisionImages.cs" />
-    <EmbeddedResource Include="Form1.resx">
-      <DependentUpon>Form1.cs</DependentUpon>
+    <EmbeddedResource Include="UIForm.resx">
+      <DependentUpon>UIForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Util\Calibration\Paper\PaperCalibrater.resx">
       <DependentUpon>PaperCalibrater.cs</DependentUpon>

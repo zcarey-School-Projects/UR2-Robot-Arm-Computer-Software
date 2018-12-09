@@ -1,7 +1,9 @@
 ﻿using RobotArmUR2.Util.Serial;
 
 namespace RobotArmUR2.RobotControl.Commands {
-	class ManualMoveCommand : SerialCommand{
+	//TODO move to where RobotInterface is.
+	/// <summary>Send a manual move event. Used automatically by RobotInterface</summary>
+	class ManualMoveCommand : ISerialCommand{
 
 		private Rotation rotationMove; 
 		private Extension extensionMove;

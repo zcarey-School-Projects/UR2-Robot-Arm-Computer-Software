@@ -3,11 +3,16 @@ using System.Collections.Generic;
 using RobotArmUR2.Util.Serial;
 
 namespace RobotArmUR2.RobotControl.Commands {
-	class SetPrescaleCommand : SerialCommand {
+
+	/// <summary>Sets the speed of a motor by changing its prescale value.</summary>
+	class SetPrescaleCommand : ISerialCommand {
 
 		private byte? basePrescale;
 		private byte? carriagePrescale;
 
+		/// <summary>Prescales can't exceed 20. Give null if don;t wish to change.</summary>
+		/// <param name="BasePrescale"></param>
+		/// <param name="CarriagePrescale"></param>
 		public SetPrescaleCommand(byte? BasePrescale, byte? CarriagePrescale) {
 			this.basePrescale = BasePrescale;
 			this.carriagePrescale = CarriagePrescale;
@@ -22,6 +27,9 @@ namespace RobotArmUR2.RobotControl.Commands {
 			}
 		}
 
+		/// <summary>Prescales can't exceed 20. Give null if don;t wish to change.</summary>
+		/// <param name="BasePrescale"></param>
+		/// <param name="CarriagePrescale"></param>
 		public SetPrescaleCommand(byte BasePrescale, byte CarriagePrescale) : this((byte?)BasePrescale, (byte?)CarriagePrescale) { }
 
 		public string GetCommand() {

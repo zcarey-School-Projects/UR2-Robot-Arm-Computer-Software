@@ -2,7 +2,9 @@
 using RobotArmUR2.Util.Serial;
 
 namespace RobotArmUR2.RobotControl.Commands {
-	class GoToHomeCommand : SerialCommand {
+
+	/// <summary>Moves the robot to its home position and calibrates it. </summary>
+	class GoToHomeCommand : ISerialCommand {
 
 		public string GetName() {
 			return "Return Home";

@@ -2,11 +2,13 @@
 using RobotArmUR2.Util.Serial;
 
 namespace RobotArmUR2.RobotControl.Commands {
-	class MoveToCommand : SerialCommand {
 
+	/// <summary>Moves the robot to a specified position.</summary>
+	class MoveToCommand : ISerialCommand {
+		//TODO Combine MoveTo and MoveToWait, using a bool.
 		private RobotPoint target;
 
-		public MoveToCommand(RobotPoint target) {
+		public MoveToCommand(RobotPoint target) { //TODO if target is null?
 			this.target = target;
 		}
 

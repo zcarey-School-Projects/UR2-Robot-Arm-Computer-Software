@@ -1,7 +1,9 @@
 ﻿using RobotArmUR2.Util.Serial;
 
 namespace RobotArmUR2.RobotControl.Commands {
-	class EndMoveCommand : SerialCommand {
+
+	/// <summary>Stops all movement from the robot.</summary>
+	class EndMoveCommand : ISerialCommand {
 
 		public string GetName() {
 			return "End Move Command";

@@ -1,7 +1,9 @@
 ﻿using RobotArmUR2.Util.Serial;
 
 namespace RobotArmUR2.RobotControl.Commands {
-	class MoveServoCommand : SerialCommand {
+
+	/// <summary>Either raises or lowers the servo holding the magnet.</summary>
+	class MoveServoCommand : ISerialCommand {
 
 		private bool raiseServo;
 

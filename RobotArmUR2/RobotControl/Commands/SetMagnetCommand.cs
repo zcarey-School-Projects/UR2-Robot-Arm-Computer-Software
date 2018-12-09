@@ -1,7 +1,9 @@
 ﻿using RobotArmUR2.Util.Serial;
 
 namespace RobotArmUR2.RobotControl.Commands {
-	public class SetMagnetCommand : SerialCommand {
+
+	/// <summary>Powers the magnet on or off.</summary>
+	public class SetMagnetCommand : ISerialCommand {
 
 		private bool isOn;
 

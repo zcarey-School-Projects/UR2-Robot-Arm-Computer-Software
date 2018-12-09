@@ -3,15 +3,23 @@ using System.Configuration;
 using System.Reflection;
 
 namespace RobotArmUR2.Util {
+
+	/// <summary>Assists in using application settings to save/load data in persistent storage.</summary>
+	/// <typeparam name="T">The type of data being stored.</typeparam>
 	public class Setting<T> where T : struct {
 
+		/// <summary>The stored property info.</summary>
 		private PropertyInfo property;
 
+		/// <summary>Initializes the class by finding a property with the given name.</summary>
+		/// <param name="SettingName"></param>
 		public Setting(string SettingName) {
 			property = parsePropertyFromName(SettingName);
 		}
 
-		public T? Load() {
+		/// <summary>Attempts to read the data from storage and parse it into the correct data type.</summary>
+		/// <returns>Null if any errors occure.</returns>
+		public T? Read() {
 			try {
 				if (property == null) throw new ArgumentNullException("Property was null, can't read.");
 				if (!property.CanRead) throw new ArgumentOutOfRangeException("Could not read property.");
@@ -25,7 +33,11 @@ namespace RobotArmUR2.Util {
 			}
 		}
 
-		public bool Save(T value) {
+		/// <summary>Attempts to write the given data to the setting in persistent storage.
+		/// THIS DOES NOT MEAN IT IS SAVED. You MUST call Properties.Setting.Default.Save() or similar function to dump data into storage.</summary>
+		/// <param name="value">Value to be written.</param>
+		/// <returns></returns>
+		public bool Set(T value) {
 			try {
 				if (property == null) throw new ArgumentNullException("Property was null.");
 				if (!property.CanWrite) throw new ArgumentOutOfRangeException("Unable to write to property.");
@@ -37,6 +49,8 @@ namespace RobotArmUR2.Util {
 			}
 		}
 
+		/// <summary>Attempts to read the default value of the setting, however this value is a string so it can not be parsed automatically.</summary>
+		/// <returns></returns>
 		public string GetDefaultValue() {
 			try {
 				if (property == null) throw new ArgumentNullException("Property was null.");
@@ -53,6 +67,9 @@ namespace RobotArmUR2.Util {
 			}
 		}
 
+		/// <summary>Tries to find a property with the given name in the application settings.</summary>
+		/// <param name="name"></param>
+		/// <returns></returns>
 		private static PropertyInfo parsePropertyFromName(string name) {
 			Type type = Properties.Settings.Default.GetType();
 			if(type == null) {

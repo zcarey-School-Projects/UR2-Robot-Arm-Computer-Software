@@ -1,6 +1,6 @@
 ﻿namespace RobotArmUR2
 {
-	partial class Form1
+	partial class UIForm
 	{
 		/// <summary>
 		/// Required designer variable.
@@ -44,7 +44,6 @@
 			this.robotPositionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.robotToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.imageToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
 			this.AutoConnect = new System.Windows.Forms.Button();
 			this.RGBValues = new System.Windows.Forms.Label();
 			this.ClickLocation = new System.Windows.Forms.Label();
@@ -182,29 +181,28 @@
 			// goToHomeToolStripMenuItem
 			// 
 			this.goToHomeToolStripMenuItem.Name = "goToHomeToolStripMenuItem";
-			this.goToHomeToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
+			this.goToHomeToolStripMenuItem.Size = new System.Drawing.Size(216, 26);
 			this.goToHomeToolStripMenuItem.Text = "Go To Home";
 			this.goToHomeToolStripMenuItem.Click += new System.EventHandler(this.goToHomeToolStripMenuItem_Click);
 			// 
 			// paperPositionToolStripMenuItem
 			// 
 			this.paperPositionToolStripMenuItem.Name = "paperPositionToolStripMenuItem";
-			this.paperPositionToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
+			this.paperPositionToolStripMenuItem.Size = new System.Drawing.Size(216, 26);
 			this.paperPositionToolStripMenuItem.Text = "Paper Position";
 			this.paperPositionToolStripMenuItem.Click += new System.EventHandler(this.paperPositionToolStripMenuItem_Click);
 			// 
 			// robotPositionToolStripMenuItem
 			// 
 			this.robotPositionToolStripMenuItem.Name = "robotPositionToolStripMenuItem";
-			this.robotPositionToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
+			this.robotPositionToolStripMenuItem.Size = new System.Drawing.Size(216, 26);
 			this.robotPositionToolStripMenuItem.Text = "Robot Position";
 			this.robotPositionToolStripMenuItem.Click += new System.EventHandler(this.robotPositionToolStripMenuItem_Click);
 			// 
 			// settingsToolStripMenuItem
 			// 
 			this.settingsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.robotToolStripMenuItem,
-            this.imageToolStripMenuItem1});
+            this.robotToolStripMenuItem});
 			this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
 			this.settingsToolStripMenuItem.Size = new System.Drawing.Size(74, 24);
 			this.settingsToolStripMenuItem.Text = "Settings";
@@ -212,15 +210,9 @@
 			// robotToolStripMenuItem
 			// 
 			this.robotToolStripMenuItem.Name = "robotToolStripMenuItem";
-			this.robotToolStripMenuItem.Size = new System.Drawing.Size(126, 26);
+			this.robotToolStripMenuItem.Size = new System.Drawing.Size(216, 26);
 			this.robotToolStripMenuItem.Text = "Robot";
 			this.robotToolStripMenuItem.Click += new System.EventHandler(this.robotToolStripMenuItem_Click);
-			// 
-			// imageToolStripMenuItem1
-			// 
-			this.imageToolStripMenuItem1.Name = "imageToolStripMenuItem1";
-			this.imageToolStripMenuItem1.Size = new System.Drawing.Size(126, 26);
-			this.imageToolStripMenuItem1.Text = "Image";
 			// 
 			// AutoConnect
 			// 
@@ -376,7 +368,7 @@
 			// Rotate180Checkbox
 			// 
 			this.Rotate180Checkbox.AutoSize = true;
-			this.Rotate180Checkbox.Location = new System.Drawing.Point(232, 304);
+			this.Rotate180Checkbox.Location = new System.Drawing.Point(217, 290);
 			this.Rotate180Checkbox.Name = "Rotate180Checkbox";
 			this.Rotate180Checkbox.Size = new System.Drawing.Size(100, 21);
 			this.Rotate180Checkbox.TabIndex = 29;
@@ -403,7 +395,7 @@
 			this.ThresholdValueLabel.TabIndex = 32;
 			this.ThresholdValueLabel.Text = "Threshold: ";
 			// 
-			// Form1
+			// UIForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -429,10 +421,10 @@
 			this.Controls.Add(this.menuStrip1);
 			this.KeyPreview = true;
 			this.MainMenuStrip = this.menuStrip1;
-			this.Name = "Form1";
+			this.Name = "UIForm";
 			this.Text = "Robot Arm UR2";
-			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
-			this.Load += new System.EventHandler(this.Form1_Load);
+			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.UIForm_FormClosing);
+			this.Load += new System.EventHandler(this.UIForm_Load);
 			this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Form1_KeyDown);
 			this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.Form1_KeyUp);
 			this.menuStrip1.ResumeLayout(false);
@@ -488,7 +480,6 @@
 		private System.Windows.Forms.Label ThresholdValueLabel;
 		private System.Windows.Forms.ToolStripMenuItem settingsToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem robotToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem imageToolStripMenuItem1;
 		private System.Windows.Forms.ToolStripStatusLabel TargetFpsStatusLabel;
 	}
 }

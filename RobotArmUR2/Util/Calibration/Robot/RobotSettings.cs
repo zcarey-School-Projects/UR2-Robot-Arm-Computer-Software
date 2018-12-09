@@ -2,6 +2,8 @@
 using System.Windows.Forms;
 
 namespace RobotArmUR2.Util.Calibration.Robot {
+
+	/// <summary>Changes a few misc robot settings.</summary>
 	public partial class RobotSettings : Form {
 
 		private RobotControl.Robot robot;
@@ -10,13 +12,15 @@ namespace RobotArmUR2.Util.Calibration.Robot {
 			this.robot = robot;
 			InitializeComponent();
 
-			byte? loadedValue = ApplicationSettings.BasePrescale.Load();
+			//Attempt to load base prescale
+			byte? loadedValue = ApplicationSettings.BasePrescale.Read();
 			if (loadedValue != null) {
 				BasePrescaleSlider.Value = (int)loadedValue;
 				BasePrescaleSlider_Scroll(null, null);
 			}
 
-			loadedValue = ApplicationSettings.CarriagePrescale.Load();
+			//Attempt to load carriage prescale
+			loadedValue = ApplicationSettings.CarriagePrescale.Read();
 			if (loadedValue != null) {
 				CarriagePrescaleSlider.Value = (int)loadedValue;
 				CarriagePrescaleSlider_Scroll(null, null);
@@ -27,6 +31,7 @@ namespace RobotArmUR2.Util.Calibration.Robot {
 			
 		}
 
+		//Change base speed
 		private void BasePrescaleSlider_Scroll(object sender, EventArgs e) {
 			int val = BasePrescaleSlider.Value;
 			if (val < 0 || val > 255) return;
@@ -35,6 +40,7 @@ namespace RobotArmUR2.Util.Calibration.Robot {
 			BasePrescaleLabel.Text = "Base Prescale: " + value.ToString().PadLeft(2);
 		}
 
+		//Change carriage speed
 		private void CarriagePrescaleSlider_Scroll(object sender, EventArgs e) {
 			int val = CarriagePrescaleSlider.Value;
 			if (val < 0 || val > 255) return;
@@ -43,21 +49,24 @@ namespace RobotArmUR2.Util.Calibration.Robot {
 			CarriagePrescaleLabel.Text = "Carriage Prescale: " + value.ToString().PadLeft(2);
 		}
 
+		//Saves settings to persistant storage.
 		private void SaveSettings_Click(object sender, EventArgs e) {
 			int val = BasePrescaleSlider.Value;
-			if (val >= 0 && val <= 255) ApplicationSettings.BasePrescale.Save((byte)val);
+			if (val >= 0 && val <= 255) ApplicationSettings.BasePrescale.Set((byte)val);
 
 			val = CarriagePrescaleSlider.Value;
-			if (val >= 0 && val <= 255) ApplicationSettings.CarriagePrescale.Save((byte)val);
+			if (val >= 0 && val <= 255) ApplicationSettings.CarriagePrescale.Set((byte)val);
 
 			ApplicationSettings.SaveSettings();
 			MessageBox.Show("Successfully saved."); //It lies. Just lets user now the button worked.
 		}
 
+		//Key event to move robot.
 		private void RobotSettings_KeyDown(object sender, KeyEventArgs e) {
 			robot.ManualControlKeyEvent(e.KeyCode, true);
 		}
 
+		//Key event to move robot.
 		private void RobotSettings_KeyUp(object sender, KeyEventArgs e) {
 			robot.ManualControlKeyEvent(e.KeyCode, false);
 		}

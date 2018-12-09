@@ -27,7 +27,6 @@ namespace RobotArmUR2.Util.Calibration.Paper {
 			this.PaperPicture = new System.Windows.Forms.PictureBox();
 			this.ResetBounds = new System.Windows.Forms.Button();
 			this.AutoDetect = new System.Windows.Forms.Button();
-			this.PaperCoords = new System.Windows.Forms.Label();
 			((System.ComponentModel.ISupportInitialize)(this.PaperPicture)).BeginInit();
 			this.SuspendLayout();
 			// 
@@ -64,21 +63,11 @@ namespace RobotArmUR2.Util.Calibration.Paper {
 			this.AutoDetect.UseVisualStyleBackColor = true;
 			this.AutoDetect.Click += new System.EventHandler(this.AutoDetect_Click);
 			// 
-			// PaperCoords
-			// 
-			this.PaperCoords.AutoSize = true;
-			this.PaperCoords.Location = new System.Drawing.Point(646, 158);
-			this.PaperCoords.Name = "PaperCoords";
-			this.PaperCoords.Size = new System.Drawing.Size(46, 17);
-			this.PaperCoords.TabIndex = 3;
-			this.PaperCoords.Text = "label1";
-			// 
 			// PaperCalibrater
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(999, 489);
-			this.Controls.Add(this.PaperCoords);
+			this.ClientSize = new System.Drawing.Size(793, 489);
 			this.Controls.Add(this.AutoDetect);
 			this.Controls.Add(this.ResetBounds);
 			this.Controls.Add(this.PaperPicture);
@@ -90,7 +79,6 @@ namespace RobotArmUR2.Util.Calibration.Paper {
 			this.Load += new System.EventHandler(this.PaperCalibrater_Load);
 			((System.ComponentModel.ISupportInitialize)(this.PaperPicture)).EndInit();
 			this.ResumeLayout(false);
-			this.PerformLayout();
 
 		}
 
@@ -99,6 +87,5 @@ namespace RobotArmUR2.Util.Calibration.Paper {
 		private System.Windows.Forms.PictureBox PaperPicture;
 		private System.Windows.Forms.Button ResetBounds;
 		private System.Windows.Forms.Button AutoDetect;
-		private System.Windows.Forms.Label PaperCoords;
 	}
 }

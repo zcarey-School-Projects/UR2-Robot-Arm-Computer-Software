@@ -5,20 +5,19 @@ using Emgu.CV;
 using Emgu.CV.Structure;
 using RobotArmUR2.RobotControl;
 using RobotArmUR2.RobotControl.Programs;
-using RobotArmUR2.Util;
-using RobotArmUR2.Util.Calibration;
 using RobotArmUR2.Util.Calibration.Paper;
 using RobotArmUR2.Util.Calibration.Robot;
 using RobotArmUR2.VisionProcessing;
 
 namespace RobotArmUR2
 {
-	public partial class Form1 : Form
+	/// <summary> This form deals with the main user interface that essentially controls the entire program. </summary>
+	public partial class UIForm : Form
 	{
-		//Class for grabbing images and finding shapes
+		//Class that will be in charge of grabbing new images and processing them to find shapes.
 		private Vision vision;
 
-		//Contains controls for the robot
+		//Contains all the necessary methods to control the robot.
 		private Robot robot;
 
 		//Pop-up forms that contain various settings
@@ -26,15 +25,16 @@ namespace RobotArmUR2
 		private RobotCalibrater robotCalibrater;
 		private RobotSettings robotSettings;
 		
-		//Custom PictureBox wrappers that make using them simpler
+		//Custom PictureBox wrappers that make using them simpler, and allow the user to select which image to be displayed.
 		private SelectablePictureBox LeftPictureBox;
 		private SelectablePictureBox MiddlePictureBox;
 		private SelectablePictureBox RightPictureBox;
 
-		public Form1()
+		public UIForm()
 		{
 			InitializeComponent();
 
+			//Initialize picture boxes and their default displayed image.
 			LeftPictureBox = new SelectablePictureBox(this, LeftImage, VisionImage.Input);
 			MiddlePictureBox = new SelectablePictureBox(this, MiddleImage, VisionImage.Threshold);
 			RightPictureBox = new SelectablePictureBox(this, RightImage, VisionImage.Shapes);
@@ -55,36 +55,30 @@ namespace RobotArmUR2
 			robotSettings = new RobotSettings(robot);
 		}
 
-		private void Form1_Load(object sender, EventArgs e) {
+		private void UIForm_Load(object sender, EventArgs e) {
 			//Once the form is finished loading, open a test image.
 			vision.InputStream.LoadLocalFile("DebugImages\\Test Table.jpg");
 			vision.InputStream.Play();
 		}
 
-		private void Form1_FormClosing(object sender, FormClosingEventArgs e) {
+		private void UIForm_FormClosing(object sender, FormClosingEventArgs e) {
 			//Stop grabbing new images and disconnect the robot.
 			robot.Interface.Disconnect(); //Stops robot movement and such.
 			vision.InputStream.Stop();
 		}
 
 		#region Vision Events
-		//Event fires every time a new image is grabbed.
+		/// <summary> Fires every time vision processes a new frame. </summary>
+		/// <param name="vision"> Class that fired the event. </param>
+		/// <param name="images"> Output images from vision. </param>
 		private void VisionUI_NewFrameFinished(Vision vision, VisionImages images) {
-			string resolutionText = "Native Resolution: 0 x 0 ";
-			//Image<Bgr, byte> leftImage = null;
-			//Image<Bgr, byte> middleImage = null;
-			//Image<Bgr, byte> rightImage = null;
-			float CurrentFPS = 0;
+			string resolutionText = "Native Resolution: " + vision.InputStream.Width + " x " + vision.InputStream.Height;
+			float CurrentFPS = vision.InputStream.FPS;
 			float TargetFPS = vision.InputStream.TargetFPS;
 
-			if (images != null) {
-				if (images.Raw != null) {
-					resolutionText = "Native Resolution: " + images.Raw.Width + " x " + images.Raw.Height;
-					CurrentFPS = vision.InputStream.FPS;
-				}
-				//leftImage = images.Input;
-				//middleImage = images.Threshold.Convert<Bgr, byte>();
-				//rightImage = images.WarpedWithShapes;
+			
+			if ((images != null) && (images.Raw != null)) {
+				//resolutionText = "Native Resolution: " + images.Raw.Width + " x " + images.Raw.Height; //TODO remove if working
 			}
 			
 			BeginInvoke(new Action(() => {
@@ -101,7 +95,8 @@ namespace RobotArmUR2
 		#endregion
 
 		#region Robot Events
-		//Event fired when the robot starts or stops a program.
+		/// <summary>Fired when the robot starts or stops a program. </summary>
+		/// <param name="running">true id a program is running</param>
 		private void Robot_OnProgramStateChanged(bool running) {
 			BeginInvoke(new Action(() => {
 				//Enable/disable certain elements depending if a program is running.
@@ -111,7 +106,9 @@ namespace RobotArmUR2
 			}));
 		}
 
-		//Event fired when a manual input is changed (i.e. Rotate Clock-wise key is pressed)
+		/// <summary> Event fired when a manual input is changed (i.e. Rotate Clock-wise key is pressed) </summary>
+		/// <param name="rotation">State of rotation</param>
+		/// <param name="extension">State of extension</param>
 		private void Robot_OnManualControlChanged(Rotation rotation, Extension extension) {
 			BeginInvoke(new Action(() => {
 				//Change the arrow images depending on which direction the robot is moving.
@@ -122,10 +119,11 @@ namespace RobotArmUR2
 			}));
 		}
 
-		//Event fires when a robot is connected/disconnected
+		/// <summary> Event fires when a robot is connected/disconnected </summary>
+		/// <param name="isConnected">If the robot was connected, false if disconnected.</param>
+		/// <param name="portName">The name of the port connected to.</param>
 		private void RobotInterface_OnConnectionChanged(bool isConnected, string portName) {
 			BeginInvoke(new Action(() => {
-				//Show it's connected and display the port name
 				RobotConnected.CheckState = (isConnected ? CheckState.Checked : CheckState.Unchecked);
 				RobotPort.Text = "Port: " + portName;
 			}));
@@ -137,40 +135,41 @@ namespace RobotArmUR2
 		#region Menu Strip Controls
 
 		#region Pop-up Forms
-		//Opens Paper Position Calibrater pop-up form.
+		//Opens Paper Position Calibrater pop-up form. (Calibration > Paper)
 		private void paperPositionToolStripMenuItem_Click(object sender, EventArgs e) {
 			paperCalibrater.ShowDialog();
 		}
 
-		//Opens RobotSettings pop-up form
+		//Opens RobotSettings pop-up  (Settings > Robot)
 		private void robotToolStripMenuItem_Click(object sender, EventArgs e) {
 			robotSettings.ShowDialog();
 		}
 
-		//Opens Robot Position Pop-up form.
+		//Opens Robot Position Pop-up form. (Calibration > Robot)
 		private void robotPositionToolStripMenuItem_Click(object sender, EventArgs e) {
 			robotCalibrater.ShowDialog();
 		}
 		#endregion
 
-		//Rruns a program to return the robot to home.
+		//Runs a program to return the robot to home. (Calibration > Go To Home)
 		private void goToHomeToolStripMenuItem_Click(object sender, EventArgs e) {
 			robot.RunProgram(new ReturnHomeProgram());
 		}
 
-		//Save a screenshot
+		//Save a screenshot (File > Save > Screenshot)
 		private void screenshotToolStripMenuItem_Click(object sender, EventArgs e) {
 			vision.InputStream.PromptUserSaveScreenshot();
 		}
 
-		//Load an image from files
+		//Load an image from files (File > Load)
 		private void imageToolStripMenuItem_Click(object sender, EventArgs e) {
 			vision.InputStream.PromptUserLoadFile();
 			vision.InputStream.Play();
 		}
 
 		#region Camera Input Selection
-		//Changes the input source to a camera
+		/// <summary> Changes the input source to a camera and plays it. </summary>
+		/// <param name="cameraIndex">Camera index to select. </param>
 		private void changeCamera(int cameraIndex) {
 			vision.InputStream.SelectCamera(cameraIndex);
 			vision.InputStream.Play();
@@ -222,10 +221,10 @@ namespace RobotArmUR2
 
 		}
 
-		//When Stakc! button is clicked, run a robot program to pick up  the shapes.
-		private void Stack_Click(object sender, EventArgs e) {
-			if (!robot.RunProgram(new StackingProgram(vision))) {
-				robot.CancelProgram();
+		//When Stack! button is clicked, run a robot program to pick up  the shapes.
+		private void Stack_Click(object sender, EventArgs e) { //Button serves as both Stack and Cancel button
+			if (!robot.RunProgram(new StackingProgram(vision))) { //Returns false if a program is already running
+				robot.CancelProgram(); 
 			}
 		}
 
