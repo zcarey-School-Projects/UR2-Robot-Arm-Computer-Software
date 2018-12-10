@@ -79,6 +79,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApplicationSettings.cs" />
+    <Compile Include="RobotControl\Commands\EnableRobotCommand.cs" />
     <Compile Include="RobotControl\Commands\GetPositionCommand.cs" />
     <Compile Include="RobotControl\Commands\SetPrescaleCommand.cs" />
     <Compile Include="Util\Calibration\Robot\RobotSettings.cs">

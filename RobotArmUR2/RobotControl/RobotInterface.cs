@@ -64,13 +64,13 @@ namespace RobotArmUR2.RobotControl {
 				DisableManualControl();
 				if (serial.AutoConnect("CH340")) {
 					lock (settingsLock) {
-						//TODO send robot "onConnect" command, which enables fan, steppers, etc
-						StopAll();
-						PowerMagnetOff();
-						RaiseServo();
-						EnableManualControl();
-
-						return true;
+						if (!sendBasicCommand(new EnableRobotCommand(true)) {
+							serial.Close();
+							return false;
+						} else {
+							EnableManualControl();
+							return true;
+						}
 					}
 				}
 				return false;
@@ -83,7 +83,7 @@ namespace RobotArmUR2.RobotControl {
 			lock (connectionLock) {
 				DisableManualControl();
 				StopAll();
-				PowerMagnetOff();
+				sendBasicCommand(new EnableRobotCommand(false));
 				serial.Close(); ;
 			}
 		}
