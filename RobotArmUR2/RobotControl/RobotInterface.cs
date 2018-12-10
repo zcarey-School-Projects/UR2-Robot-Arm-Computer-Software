@@ -64,7 +64,7 @@ namespace RobotArmUR2.RobotControl {
 				DisableManualControl();
 				if (serial.AutoConnect("CH340")) {
 					lock (settingsLock) {
-						if (!sendBasicCommand(new EnableRobotCommand(true)) {
+						if (!sendBasicCommand(new EnableRobotCommand(true))) {
 							serial.Close();
 							return false;
 						} else {
