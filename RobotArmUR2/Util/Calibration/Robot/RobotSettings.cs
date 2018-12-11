@@ -7,6 +7,8 @@ namespace RobotArmUR2.Util.Calibration.Robot {
 	public partial class RobotSettings : Form {
 
 		private RobotControl.Robot robot;
+		private int baseSliderValue;
+		private int carriageSliderValue;
 
 		public RobotSettings(RobotControl.Robot robot) {
 			this.robot = robot;
@@ -15,52 +17,73 @@ namespace RobotArmUR2.Util.Calibration.Robot {
 			//Attempt to load base prescale
 			byte? loadedValue = ApplicationSettings.BasePrescale.Read();
 			if (loadedValue != null) {
-				BasePrescaleSlider.Value = (int)loadedValue;
-				BasePrescaleSlider_Scroll(null, null);
+				BasePrescaleSlider.Value = baseSliderValue = (int)loadedValue;
+				updateBaseLabel();
 			}
 
 			//Attempt to load carriage prescale
 			loadedValue = ApplicationSettings.CarriagePrescale.Read();
 			if (loadedValue != null) {
-				CarriagePrescaleSlider.Value = (int)loadedValue;
-				CarriagePrescaleSlider_Scroll(null, null);
+				CarriagePrescaleSlider.Value = carriageSliderValue = (int)loadedValue;
+				updateCarriageLabel();
 			}
+
+			robot.Interface.OnConnectionChanged += RobotInterface_onRobotConnectionChanged;
 		}
 
 		private void RobotSettings_Load(object sender, EventArgs e) {
 			
 		}
 
+		private void RobotInterface_onRobotConnectionChanged(bool IsConnected, string PortName) {
+			if (IsConnected) {
+				sendBasePrescale();
+				sendCarriagePrescale();
+			}
+		}
 
-		public void SendSettings() {
-			BasePrescaleSlider_Scroll(null, null);
-			CarriagePrescaleSlider_Scroll(null, null);
+		private void sendBasePrescale() {
+			int val = baseSliderValue;
+			if (val < 0 || val > 255) return;
+			byte value = (byte)val;
+			robot.Interface.SetBasePrescale(value);
+		}
+
+		private void sendCarriagePrescale() {
+			int val = carriageSliderValue;
+			if (val < 0 || val > 255) return;
+			byte value = (byte)val;
+			robot.Interface.SetCarriagePrescale(value);
+		}
+
+		private void updateBaseLabel() {
+			BasePrescaleLabel.Text = "Base Prescale: " + baseSliderValue.ToString().PadLeft(2);
+		}
+
+		private void updateCarriageLabel() {
+			CarriagePrescaleLabel.Text = "Carriage Prescale: " + carriageSliderValue.ToString().PadLeft(2);
 		}
 
 		//Change base speed
 		private void BasePrescaleSlider_Scroll(object sender, EventArgs e) {
-			int val = BasePrescaleSlider.Value;
-			if (val < 0 || val > 255) return;
-			byte value = (byte)val;
-			robot.Interface.SetBasePrescale(value);
-			BasePrescaleLabel.Text = "Base Prescale: " + value.ToString().PadLeft(2);
+			baseSliderValue = BasePrescaleSlider.Value;
+			updateBaseLabel();
+			sendBasePrescale();
 		}
 
 		//Change carriage speed
 		private void CarriagePrescaleSlider_Scroll(object sender, EventArgs e) {
-			int val = CarriagePrescaleSlider.Value;
-			if (val < 0 || val > 255) return;
-			byte value = (byte)val;
-			robot.Interface.SetCarriagePrescale(value);
-			CarriagePrescaleLabel.Text = "Carriage Prescale: " + value.ToString().PadLeft(2);
+			carriageSliderValue = CarriagePrescaleSlider.Value;
+			updateCarriageLabel();
+			sendCarriagePrescale();
 		}
 
 		//Saves settings to persistant storage.
 		private void SaveSettings_Click(object sender, EventArgs e) {
-			int val = BasePrescaleSlider.Value;
+			int val = baseSliderValue;
 			if (val >= 0 && val <= 255) ApplicationSettings.BasePrescale.Set((byte)val);
 
-			val = CarriagePrescaleSlider.Value;
+			val = carriageSliderValue;
 			if (val >= 0 && val <= 255) ApplicationSettings.CarriagePrescale.Set((byte)val);
 
 			ApplicationSettings.SaveSettings();

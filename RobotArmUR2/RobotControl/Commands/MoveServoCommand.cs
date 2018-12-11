@@ -16,7 +16,7 @@ namespace RobotArmUR2.RobotControl.Commands {
 		}
 
 		public string[] GetArguments() {
-			return new string[] { (raiseServo ? "R" : "L") };
+			return new string[] { (raiseServo ? "R" : "L"), "T1" }; //TODO get control over this
 		}
 
 		public string GetName() {

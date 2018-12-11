@@ -37,10 +37,10 @@ namespace RobotArmUR2.RobotControl.Programs {
 			DetectedShapes shapes = images.Shapes; 
 			if (shapes.RelativeTrianglePoints.Count > 0) { //If there is a triangle, stack it.
 				PaperPoint center = shapes.RelativeTrianglePoints[0];
-				if (!stackShape(serial, center)) return false;
+				if (!stackShape(serial, center, true)) return false;
 			} else if (shapes.RelativeSquarePoints.Count > 0) { //If there is a square, stack it.
 				PaperPoint center = shapes.RelativeSquarePoints[0];
-				if (!stackShape(serial, center)) return false;
+				if (!stackShape(serial, center, false)) return false;
 			} else { //If there are no detected shapes, increase count and check foe exit.
 				emptyFrameCount++;
 				if (emptyFrameCount >= EmptyFramesNeeded) {
@@ -55,10 +55,14 @@ namespace RobotArmUR2.RobotControl.Programs {
 		/// <param name="serial">Robot interface</param>
 		/// <param name="center">Center of the shape.</param>
 		/// <returns>false if there was an error.</returns>
-		private bool stackShape(RobotInterface serial, PaperPoint center) {
+		private bool stackShape(RobotInterface serial, PaperPoint center, bool isTriangle) {
 			if (!moveRobotToPaperPoint(serial, center)) return false;
 			if (!pickUpShape(serial, true)) return false;
-			if (!moveToTriangleStack(serial)) return false;
+			if (isTriangle) {
+				if (!moveToTriangleStack(serial)) return false;
+			} else {
+				if (!moveToSquareStack(serial)) return false;
+			}
 			if (!pickUpShape(serial, false)) return false;
 			emptyFrameCount = 0;
 			return true;

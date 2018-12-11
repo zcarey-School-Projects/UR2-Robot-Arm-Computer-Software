@@ -209,8 +209,8 @@ namespace RobotArmUR2.Util.Serial {
 		public byte? ReadChar() {
 			lock (serialLock) {
 				if (!serial.IsOpen) return null;
-				try {
-					int data = serial.ReadByte(); 
+				try { 
+					int data = serial.ReadByte(); //TODO System.UnauthorizedAccessException: 'Access to the port 'COM5' is denied.'
 					if (data < 0) throw new EndOfStreamException("Data returned negative, probably null data.");
 					return (byte)data;
 				} catch (ArgumentNullException e) {
