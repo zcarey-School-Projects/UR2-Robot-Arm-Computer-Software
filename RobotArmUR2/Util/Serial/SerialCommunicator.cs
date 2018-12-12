@@ -196,7 +196,13 @@ namespace RobotArmUR2.Util.Serial {
 					return false;
 				} catch (TimeoutException e) {
 					Console.Error.WriteLine("\nA timeout occured while writing/reading serial port: " + e.Message);
-					Console.WriteLine("The serial port will be closed.");
+					Console.Error.WriteLine("The serial port will be closed.");
+					Console.Error.WriteLine(e.StackTrace + '\n');
+					Close();
+					return false;
+				} catch (Exception e) {
+					Console.Error.WriteLine("\nUnknown error occured while writing/reading serial port: " + e.Message);
+					Console.Error.WriteLine("The serial port will be closed.");
 					Console.Error.WriteLine(e.StackTrace + '\n');
 					Close();
 					return false;
@@ -210,7 +216,7 @@ namespace RobotArmUR2.Util.Serial {
 			lock (serialLock) {
 				if (!serial.IsOpen) return null;
 				try { 
-					int data = serial.ReadByte(); //TODO System.UnauthorizedAccessException: 'Access to the port 'COM5' is denied.'
+					int data = serial.ReadByte();
 					if (data < 0) throw new EndOfStreamException("Data returned negative, probably null data.");
 					return (byte)data;
 				} catch (ArgumentNullException e) {
@@ -225,7 +231,13 @@ namespace RobotArmUR2.Util.Serial {
 					return null;
 				} catch (TimeoutException e) {
 					Console.Error.WriteLine("\nA timeout occured while writing/reading serial port: " + e.Message);
-					Console.WriteLine("The serial port will be closed.");
+					Console.Error.WriteLine("The serial port will be closed.");
+					Console.Error.WriteLine(e.StackTrace + '\n');
+					Close();
+					return null;
+				}catch(Exception e) {
+					Console.Error.WriteLine("\nUnknown error occured while writing/reading serial port: " + e.Message);
+					Console.Error.WriteLine("The serial port will be closed.");
 					Console.Error.WriteLine(e.StackTrace + '\n');
 					Close();
 					return null;
@@ -253,7 +265,13 @@ namespace RobotArmUR2.Util.Serial {
 					return null;
 				} catch (TimeoutException e) {
 					Console.Error.WriteLine("\nA timeout occured while writing/reading serial port: " + e.Message);
-					Console.WriteLine("The serial port will be closed.");
+					Console.Error.WriteLine("The serial port will be closed.");
+					Console.Error.WriteLine(e.StackTrace + '\n');
+					Close();
+					return null;
+				} catch (Exception e) {
+					Console.Error.WriteLine("\nUnknown error occured while writing/reading serial port: " + e.Message);
+					Console.Error.WriteLine("The serial port will be closed.");
 					Console.Error.WriteLine(e.StackTrace + '\n');
 					Close();
 					return null;
