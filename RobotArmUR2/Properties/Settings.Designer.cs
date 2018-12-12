@@ -121,7 +121,7 @@ namespace RobotArmUR2.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("54.6375")]
+        [global::System.Configuration.DefaultSettingValueAttribute("66.37")]
         public float BLRobotRotation {
             get {
                 return ((float)(this["BLRobotRotation"]));
@@ -133,7 +133,7 @@ namespace RobotArmUR2.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("241.38356")]
+        [global::System.Configuration.DefaultSettingValueAttribute("348.49")]
         public float BLRobotExtension {
             get {
                 return ((float)(this["BLRobotExtension"]));
@@ -145,7 +145,7 @@ namespace RobotArmUR2.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("71.301")]
+        [global::System.Configuration.DefaultSettingValueAttribute("75.37")]
         public float TLRobotRotation {
             get {
                 return ((float)(this["TLRobotRotation"]));
@@ -157,7 +157,7 @@ namespace RobotArmUR2.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("435.7497")]
+        [global::System.Configuration.DefaultSettingValueAttribute("553.21")]
         public float TLRobotExtension {
             get {
                 return ((float)(this["TLRobotExtension"]));
@@ -169,7 +169,7 @@ namespace RobotArmUR2.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("108.699")]
+        [global::System.Configuration.DefaultSettingValueAttribute("104.63")]
         public float TRRobotRotation {
             get {
                 return ((float)(this["TRRobotRotation"]));
@@ -181,7 +181,7 @@ namespace RobotArmUR2.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("435.7497")]
+        [global::System.Configuration.DefaultSettingValueAttribute("553.21")]
         public float TRRobotExtension {
             get {
                 return ((float)(this["TRRobotExtension"]));
@@ -193,7 +193,7 @@ namespace RobotArmUR2.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("125.362")]
+        [global::System.Configuration.DefaultSettingValueAttribute("113.63")]
         public float BRRobotRotation {
             get {
                 return ((float)(this["BRRobotRotation"]));
@@ -205,7 +205,7 @@ namespace RobotArmUR2.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("241.38356")]
+        [global::System.Configuration.DefaultSettingValueAttribute("348.49")]
         public float BRRobotExtension {
             get {
                 return ((float)(this["BRRobotExtension"]));
@@ -229,7 +229,7 @@ namespace RobotArmUR2.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("304.8")]
+        [global::System.Configuration.DefaultSettingValueAttribute("406.4")]
         public float TriangleStackExtension {
             get {
                 return ((float)(this["TriangleStackExtension"]));
@@ -253,7 +253,7 @@ namespace RobotArmUR2.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("304.8")]
+        [global::System.Configuration.DefaultSettingValueAttribute("406.4")]
         public float SquareStackExtension {
             get {
                 return ((float)(this["SquareStackExtension"]));

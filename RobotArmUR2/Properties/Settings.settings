@@ -27,40 +27,40 @@
       <Value Profile="(Default)">1</Value>
     </Setting>
     <Setting Name="BLRobotRotation" Type="System.Single" Scope="User">
-      <Value Profile="(Default)">54.6375</Value>
+      <Value Profile="(Default)">66.37</Value>
     </Setting>
     <Setting Name="BLRobotExtension" Type="System.Single" Scope="User">
-      <Value Profile="(Default)">241.38356</Value>
+      <Value Profile="(Default)">348.49</Value>
     </Setting>
     <Setting Name="TLRobotRotation" Type="System.Single" Scope="User">
-      <Value Profile="(Default)">71.301</Value>
+      <Value Profile="(Default)">75.37</Value>
     </Setting>
     <Setting Name="TLRobotExtension" Type="System.Single" Scope="User">
-      <Value Profile="(Default)">435.7497</Value>
+      <Value Profile="(Default)">553.21</Value>
     </Setting>
     <Setting Name="TRRobotRotation" Type="System.Single" Scope="User">
-      <Value Profile="(Default)">108.699</Value>
+      <Value Profile="(Default)">104.63</Value>
     </Setting>
     <Setting Name="TRRobotExtension" Type="System.Single" Scope="User">
-      <Value Profile="(Default)">435.7497</Value>
+      <Value Profile="(Default)">553.21</Value>
     </Setting>
     <Setting Name="BRRobotRotation" Type="System.Single" Scope="User">
-      <Value Profile="(Default)">125.362</Value>
+      <Value Profile="(Default)">113.63</Value>
     </Setting>
     <Setting Name="BRRobotExtension" Type="System.Single" Scope="User">
-      <Value Profile="(Default)">241.38356</Value>
+      <Value Profile="(Default)">348.49</Value>
     </Setting>
     <Setting Name="TriangleStackRotation" Type="System.Single" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
     <Setting Name="TriangleStackExtension" Type="System.Single" Scope="User">
-      <Value Profile="(Default)">304.8</Value>
+      <Value Profile="(Default)">406.4</Value>
     </Setting>
     <Setting Name="SquareStackRotation" Type="System.Single" Scope="User">
       <Value Profile="(Default)">180</Value>
     </Setting>
     <Setting Name="SquareStackExtension" Type="System.Single" Scope="User">
-      <Value Profile="(Default)">304.8</Value>
+      <Value Profile="(Default)">406.4</Value>
     </Setting>
     <Setting Name="BasePrescale" Type="System.Byte" Scope="User">
       <Value Profile="(Default)">15</Value>
