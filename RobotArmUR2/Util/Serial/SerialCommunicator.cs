@@ -160,6 +160,7 @@ namespace RobotArmUR2.Util.Serial {
 
 				//Check if response is in the correct format. If not, assume a bad serial connection and disconnect.
 				if (!response.StartsWith("<" + command + ";")) {
+					Console.Error.WriteLine("\nDid not receive correct response command. Expected \"<" + command + ";\", but instead got \"" + response + "\"\n");
 					Close(); 
 					return null;
 				}
